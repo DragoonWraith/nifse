@@ -1,0 +1,5 @@
+LIBRARY Plugin_BSAArchive
+EXPORTS	
+	dllStartPlugin
+	dllShutdownPlugin
+	dllStopPlugin
