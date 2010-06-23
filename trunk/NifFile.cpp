@@ -31,6 +31,7 @@ NifFile::NifFile(const NifFile& copied) {
 }
 
 NifFile::~NifFile() {
+	dPrintAndLog("NifFile d'tor","Nif "+UIntToString(modID)+"-"+UIntToString(nifID)+" deleted.\n");
 	dereg();
 }
 
@@ -170,11 +171,6 @@ void NifFile::setRoot() {
 			nifVersion = GetNifVersion(getAbsPath());
 			collision = DynamicCast<Niflib::bhkNiCollisionObject>((DynamicCast<Niflib::NiAVObject>(root))->GetCollisionObject());
 			dPrintAndLog("NifFile.setRoot","Nif is good; "+getVersion()+". Loaded "+UIntToString(root->GetExtraData().size())+" ExtraData nodes, "+(collision?string("collision, "):(""))+UIntToString(root->GetChildren().size())+" Children nodes, and "+UIntToString(root->GetEffects().size())+" Effects nodes.");
-			if ( editable ) {
-				dPrintAndLog("NifFile.setRoot","Editable nif, setting basePath and determining filePath.");
-				basePath = filePath;
-				filePath = string("ni\\") + string((*g_dataHandler)->GetNthModName(modID)).substr(0,string((*g_dataHandler)->GetNthModName(modID)).length()-4) + string("_") + UIntToString(nifID) + ".nif";
-			}
 		}
 		else {
 			dPrintAndLog("NifFile.setRoot","Nif could not be read from stream of file \""+filePath+"\".");
