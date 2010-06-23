@@ -91,16 +91,21 @@ bool getRegNif(string filename, NifFile* &nifPtr) {
 SInt64 NifFile::reg() {
 	dPrintAndLog("NifFile.reg","Registering \""+filePath+"\" on RegList.");
 	if ( modID != 255 ) {
-		RegList.insert( pair<UInt8,map<UInt32,NifFile*> >(modID,map<UInt32,NifFile*>()) );
+		if ( RegList.find(modID) == RegList.end() )
+			RegList.insert( pair<UInt8,map<UInt32,NifFile*> >(modID,map<UInt32,NifFile*>()) );
 		UInt32 i = 0;
 		while ( !((RegList[modID].insert(pair<UInt32, NifFile*>(i, this))).second) )
 			++i;
-		if ( editable )
+		nifID = i;
+		if ( editable ) {
+			basePath = filePath;
+			filePath = string("ni\\") + string((*g_dataHandler)->GetNthModName(modID)).substr(0,string((*g_dataHandler)->GetNthModName(modID)).length()-4) + string("_") + UIntToString(nifID) + ".nif";
 			RegListByFilename[filePath.substr(s_nifScriptPathLen,filePath.length()-s_nifScriptPathLen)] = new pair<UInt8, UInt32>(modID, nifID);
+		}
 		else
 			RegListByFilename[filePath] = new pair<UInt8, UInt32>(modID, nifID);
 		dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(i)+".");
-		return i;
+		return nifID;
 	}
 	return -1;
 }
@@ -112,11 +117,15 @@ SInt64 NifFile::reg(UInt8 modIndex, UInt32 nifIndex) {
 	if ( modIndex != modID )
 		return -1;
 	if ( modID != 255 ) {
-		RegList.insert( pair<UInt8, map<UInt32, NifFile*> >(modID, map<UInt32, NifFile*>()));
+		if ( RegList.find(modID) == RegList.end() )
+			RegList.insert( pair<UInt8, map<UInt32, NifFile*> >(modID, map<UInt32, NifFile*>()));
 		if ( (RegList[modID].insert(pair<UInt32, NifFile*>(nifIndex, this))).second ) {
 			nifID = nifIndex;
-			if ( editable )
+			if ( editable ) {
+				basePath = filePath;
+				filePath = string("ni\\") + string((*g_dataHandler)->GetNthModName(modID)).substr(0,string((*g_dataHandler)->GetNthModName(modID)).length()-4) + string("_") + UIntToString(nifID) + ".nif";
 				RegListByFilename[filePath.substr(s_nifScriptPathLen,filePath.length()-s_nifScriptPathLen)] = new pair<UInt8, UInt32>(modID, nifID);
+			}
 			else
 				RegListByFilename[filePath] = new pair<UInt8, UInt32>(modID, nifID);
 			dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+".");
@@ -139,9 +148,9 @@ bool NifFile::isreg() {
 // declared in NifFile.h so Hooks_NifSE.cpp and NifFile.cpp can use it
 void NifFile::dereg() {
 	if ( isreg() ) {
-		delete RegListByFilename[RegList[modID][nifID]->filePath];
+//		delete RegListByFilename[RegList[modID][nifID]->filePath];
 		RegListByFilename.erase(RegList[modID][nifID]->filePath);
-		delete RegList[modID][nifID];
+//		delete RegList[modID][nifID];
 		RegList[modID].erase(nifID);
 	}
 	if ( RegList[modID].empty() )
@@ -153,7 +162,7 @@ void NifFile::dereg() {
 static bool Cmd_NifOpen_Execute(COMMAND_ARGS) {
 	*result = -1;
 
-	char oriPath[kMaxMessageLength] = "";
+	char oriPath[kMaxMessageLength] = " ";
 	int forEdit = 0;
 	if (!ExtractArgs(PASS_EXTRACT_ARGS, &oriPath, &forEdit)) return true;
 	dPrintAndLog("NifOpen", "\""+string(oriPath)+"\" opened"+(forEdit!=0?(" for editing."):(" for reading.")));
@@ -207,7 +216,7 @@ DEFINE_COMMAND_PLUGIN(
 // but Oblivion needs to be calling the correct filename.
 static bool Cmd_NifGetPath_Execute(COMMAND_ARGS) {
 	*result = 0;
-	string pathStr = "";
+	string pathStr = " ";
 
 	int nifID = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifID)) {
@@ -241,12 +250,12 @@ DEFINE_COMMAND_PLUGIN(
 // can be found. For uneditable nif's, this is the same as the path.
 static bool Cmd_NifGetOriginalPath_Execute(COMMAND_ARGS) {
 	*result = 0;
-	string pathStr = "";
+	string pathStr = " ";
 
 	int nifID = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifID)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NifGetOriginalPath","Getting the path to nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
+		dPrintAndLog("NifGetOriginalPath","Getting the original path to nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
 		NifFile* nifPtr = NULL;
 		if ( getRegNif(modID, nifID, nifPtr) ) {
 			if ( nifPtr->root ) {
@@ -453,7 +462,7 @@ DEFINE_COMMAND_PLUGIN(
 // associated with given nifID.
 static bool Cmd_NifGetNthExtraDataName_Execute(COMMAND_ARGS) {
 	*result = 0;
-	string edStr = "";
+	string edStr = " ";
 
 	int edID = -1;
 	int nifID = -1;
@@ -487,7 +496,7 @@ DEFINE_COMMAND_PLUGIN(
 static bool Cmd_NifSetNthExtraDataName_Execute(COMMAND_ARGS) {
 	*result = 0;
 
-	char nuName[kMaxMessageLength] = "";
+	char nuName[kMaxMessageLength] = " ";
 	int edID = -1;
 	int nifID = -1;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &nuName, &edID, &nifID)) {
@@ -554,7 +563,7 @@ DEFINE_COMMAND_PLUGIN(
 // associated with the given nifID.
 static bool Cmd_NifGetNthExtraDataType_Execute(COMMAND_ARGS) {
 	*result = 0;
-	string edStr = "";
+	string edStr = " ";
 
 	int edID = -1;
 	int nifID = -1;
@@ -589,7 +598,7 @@ DEFINE_COMMAND_PLUGIN(
 // in the NifFile associated with the given nifID.
 static bool Cmd_NifGetNthExtraDataString_Execute(COMMAND_ARGS) {
 	*result = 0;
-	string edStr = "";
+	string edStr = " ";
 
 	int edID = -1;
 	int nifID = -1;
@@ -625,7 +634,7 @@ DEFINE_COMMAND_PLUGIN(
 static bool Cmd_NifSetNthExtraDataString_Execute(COMMAND_ARGS) {
 	*result = 0;
 
-	char newStr[kMaxMessageLength] = "";
+	char newStr[kMaxMessageLength] = " ";
 	int edID = -1;
 	int nifID = -1;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &newStr, &edID, &nifID)) {
@@ -686,7 +695,7 @@ DEFINE_COMMAND_PLUGIN(
 
 static bool Cmd_NifGetNthChildName_Execute(COMMAND_ARGS) {
 	*result = 0;
-	string chStr = "";
+	string chStr = " ";
 
 	int chID = -1;
 	int nifID = -1;
@@ -720,7 +729,7 @@ DEFINE_COMMAND_PLUGIN(
 static bool Cmd_NifSetNthChildName_Execute(COMMAND_ARGS) {
 	*result = 0;
 
-	char nuName[kMaxMessageLength] = "";
+	char nuName[kMaxMessageLength] = " ";
 	int chID = -1;
 	int nifID = -1;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &nuName, &chID, &nifID)) {
@@ -787,7 +796,7 @@ DEFINE_COMMAND_PLUGIN(
 // associated with the given nifID.
 static bool Cmd_NifGetNthChildType_Execute(COMMAND_ARGS) {
 	*result = 0;
-	string chStr = "";
+	string chStr = " ";
 
 	int chID = -1;
 	int nifID = -1;
@@ -1293,7 +1302,7 @@ DEFINE_COMMAND_PLUGIN(
 
 static bool Cmd_NifGetNthChildMaterial_Execute(COMMAND_ARGS) {
 	*result = 0;
-	string matStr = "";
+	string matStr = " ";
 
 	int chID = -1;
 	int nifID = -1;
@@ -1461,7 +1470,7 @@ DEFINE_COMMAND_PLUGIN(
 
 static bool Cmd_NifGetNthChildBaseTexture_Execute(COMMAND_ARGS) {
 	*result = 0;
-	string texStr = "";
+	string texStr = " ";
 
 	int chID = -1;
 	int nifID = -1;
@@ -1561,7 +1570,7 @@ DEFINE_COMMAND_PLUGIN(
 static bool Cmd_NifWriteToDisk_Execute(COMMAND_ARGS) {
 	*result = 0;
 
-	char filename[kMaxMessageLength] = "";
+	char filename[kMaxMessageLength] = " ";
 	UInt32 nifID = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &filename, &nifID)) {
 		UInt8 modID = scriptObj->GetModIndex();
@@ -2301,9 +2310,15 @@ static void NifSE_NewCallback(void * reserved) {
 
 static void MessageHandler(OBSEMessagingInterface::Message* msg) {
 	switch (msg->type) {
+		case OBSEMessagingInterface::kMessage_PostLoad:
+//			msgInterface->RegisterListener(g_pluginHandle, "CSE", MessageHandler);
+			_MESSAGE("OBSE Plugins loaded. Listening for CSE dispatches.");
+			break;
+
 		case 'CSEL':
-			dPrintAndLog("msgInterface","Sending function documentation map to CSE.");
 			msgInterface->Dispatch(g_pluginHandle, g_pluginVersion, &FunctionDocMap, sizeof(&FunctionDocMap), "CSE");
+			_MESSAGE("CSE Documentation dispatched.");
+			break;
 	}
 }
 
@@ -2329,46 +2344,33 @@ extern "C" {
 
 			if(obse->oblivionVersion != OBLIVION_VERSION)
 			{
-				_ERROR("incorrect Oblivion version (got %08X need %08X)", obse->oblivionVersion, OBLIVION_VERSION);
+				_ERROR("Incorrect Oblivion version (got %08X need %08X)", obse->oblivionVersion, OBLIVION_VERSION);
 				return true;
-			}
-			
-			msgInterface = (OBSEMessagingInterface*)obse->QueryInterface(kInterface_Messaging);
-			if(!msgInterface)
-			{
-				_ERROR("messaging interface not found");
-				return false;
-			}
-
-			if(msgInterface->version < OBSEMessagingInterface::kVersion)
-			{
-				_ERROR("incorrect messaging version found (got %08X need %08X)", msgInterface->version, OBSEMessagingInterface::kVersion);
-				return false;
 			}
 
 			strInterface = (OBSEStringVarInterface*)obse->QueryInterface(kInterface_StringVar);
 			if(!strInterface)
 			{
-				_ERROR("string_var interface not found");
+				_ERROR("string_var Interface not found");
 				return false;
 			}
 
 			if(strInterface->version < OBSEStringVarInterface::kVersion)
 			{
-				_ERROR("incorrect string_var version found (got %08X need %08X)", strInterface->version, OBSESerializationInterface::kVersion);
+				_ERROR("Incorrect string_var version found (got %08X need %08X)", strInterface->version, OBSESerializationInterface::kVersion);
 				return false;
 			}
 
 			serInterface = (OBSESerializationInterface *)obse->QueryInterface(kInterface_Serialization);
 			if(!serInterface)
 			{
-				_ERROR("serialization interface not found");
+				_ERROR("Serialization Interface not found");
 				return false;
 			}
 
 			if(serInterface->version < OBSESerializationInterface::kVersion)
 			{
-				_ERROR("incorrect serialization version found (got %08X need %08X)", serInterface->version, OBSESerializationInterface::kVersion);
+				_ERROR("Incorrect Serialization version found (got %08X need %08X)", serInterface->version, OBSESerializationInterface::kVersion);
 				return false;
 			}
 
@@ -2381,47 +2383,18 @@ extern "C" {
 		}
 		else
 		{
-			doc("NifGetAltGrip");
-			doc("NifGetOffHand");
-			doc("NifGetBackShield");
-			doc("NifOpen");
-			doc("NifClose");
-			doc("NifGetPath");
-			doc("NifGetOriginalPath");
-			doc("NifGetNumExtraData");
-			doc("NifAddExtraData");
-			doc("NifDeleteNthExtraData");
-			doc("NifGetNthExtraDataName");
-			doc("NifSetNthExtraDataName");
-			doc("NifGetExtraDataIndexByName");
-			doc("NifGetNthExtraDataType");
-			doc("NifGetNthExtraDataString");
-			doc("NifSetNthExtraDataString");
-			doc("NifGetNumChildren");
-			doc("NifDeleteNthChild");
-			doc("NifGetNthChildName");
-			doc("NifSetNthChildName");
-			doc("NifGetChildIndexByName");
-			doc("NifGetNthChildType");
-			doc("NifGetNthChildLocalTransform");
-			doc("NifGetNthChildLocalTranslation");
-			doc("NifGetNthChildLocalRotation");
-			doc("NifGetNthChildLocalScale");
-			doc("NifSetNthChildLocalScale");
-			doc("NifSetNthChildLocalTransformTEMP");
-			doc("NifSetNthChildLocalTranslationTEMP");
-			doc("NifSetNthChildLocalRotationTEMP");
-			doc("NifNthChildHasMaterial");
-			doc("NifGetNthChildMaterial");
-			doc("NifSetNthChildMaterial");
-			doc("NifNthChildHasTexturingProp");
-			doc("NifNthChildHasBaseTexture");
-			doc("NifGetNthChildBaseTexture");
-			doc("NifSetNthChildBaseTexture");
+			msgInterface = (OBSEMessagingInterface*)obse->QueryInterface(kInterface_Messaging);
+			if(!msgInterface)
+			{
+				_ERROR("Messaging Interface not found");
+				return false;
+			}
 
-			_MESSAGE("\nRegistering Messaging Interface.");
-			msgInterface->RegisterListener(g_pluginHandle, "CSE", MessageHandler);
-			msgInterface->Dispatch(g_pluginHandle, 0, &FunctionDocMap, sizeof(map<const char*, const char*>*), "CSE");
+			if(msgInterface->version < OBSEMessagingInterface::kVersion)
+			{
+				_ERROR("Incorrect messaging version found (got %08X need %08X)", msgInterface->version, OBSEMessagingInterface::kVersion);
+				return false;
+			}
 		}
 
 		// version checks pass
@@ -2530,16 +2503,59 @@ extern "C" {
 			_MESSAGE("\nRegistering String Interface.");
 			strInterface->Register(strInterface);
 
-			_MESSAGE("\nRegistering Serialization Interface.");
+			_MESSAGE("\nSetting Serialization callbacks.");
 			serInterface->SetSaveCallback(g_pluginHandle, NifSE_SaveCallback);
 			serInterface->SetLoadCallback(g_pluginHandle, NifSE_LoadCallback);
 			serInterface->SetNewGameCallback(g_pluginHandle, NifSE_NewCallback);
 
-			_MESSAGE("\nRegistering NifSE Hooks.");
+			_MESSAGE("\nInitializing NifSE Hooks.");
 			Hooks_NifSE_Init();
-
-			_MESSAGE("\n\tInitialization complete.\n\n");
 		}
+		else {
+			_MESSAGE("Listening to OBSE dispatches.");
+			msgInterface->RegisterListener(g_pluginHandle, "OBSE", MessageHandler);
+
+			_MESSAGE("\nDocumenting functions for CSE.");
+			doc("NifGetAltGrip");
+			doc("NifGetOffHand");
+			doc("NifGetBackShield");
+			doc("NifOpen");
+			doc("NifClose");
+			doc("NifGetPath");
+			doc("NifGetOriginalPath");
+			doc("NifGetNumExtraData");
+			doc("NifAddExtraData");
+			doc("NifDeleteNthExtraData");
+			doc("NifGetNthExtraDataName");
+			doc("NifSetNthExtraDataName");
+			doc("NifGetExtraDataIndexByName");
+			doc("NifGetNthExtraDataType");
+			doc("NifGetNthExtraDataString");
+			doc("NifSetNthExtraDataString");
+			doc("NifGetNumChildren");
+			doc("NifDeleteNthChild");
+			doc("NifGetNthChildName");
+			doc("NifSetNthChildName");
+			doc("NifGetChildIndexByName");
+			doc("NifGetNthChildType");
+			doc("NifGetNthChildLocalTransform");
+			doc("NifGetNthChildLocalTranslation");
+			doc("NifGetNthChildLocalRotation");
+			doc("NifGetNthChildLocalScale");
+			doc("NifSetNthChildLocalScale");
+			doc("NifSetNthChildLocalTransformTEMP");
+			doc("NifSetNthChildLocalTranslationTEMP");
+			doc("NifSetNthChildLocalRotationTEMP");
+			doc("NifNthChildHasMaterial");
+			doc("NifGetNthChildMaterial");
+			doc("NifSetNthChildMaterial");
+			doc("NifNthChildHasTexturingProp");
+			doc("NifNthChildHasBaseTexture");
+			doc("NifGetNthChildBaseTexture");
+			doc("NifSetNthChildBaseTexture");
+		}
+
+		_MESSAGE("\n\tInitialization complete.\n\n");
 
 		return true;
 	}

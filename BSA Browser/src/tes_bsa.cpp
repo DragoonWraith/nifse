@@ -1,3 +1,5 @@
+#define ZLIB_WINAPI
+
 #include "../include/tes_bsa.h"
 #include "../include/tes4_bsa.h"
 
