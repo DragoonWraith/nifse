@@ -9,6 +9,8 @@ NifFile::NifFile(const string& file, UInt8 modIndex, UInt32 nifIndex, bool forEd
 	setRoot();
 	if ( root )
 		reg(modID,nifID);
+	else
+		throw exception("Nif root not set; construction failed.");
 }
 
 NifFile::NifFile(const string& file, UInt8 modIndex, bool forEdit) : filePath(file), basePath(""), editable(forEdit), modID(modIndex), nifID(0) {
@@ -16,6 +18,8 @@ NifFile::NifFile(const string& file, UInt8 modIndex, bool forEdit) : filePath(fi
 	setRoot();
 	if ( root )
 		reg();
+	else
+		throw exception("Nif root not set; construction failed.");
 }
 
 NifFile::NifFile(const NifFile& copied) {
@@ -179,6 +183,7 @@ void NifFile::setRoot() {
 	}
 	catch (exception& except) {
 		dPrintAndLog("NifFile.setRoot","Nif cannot be read. Exception \""+string(except.what())+"\" thrown.");
+		nifID = -1;
 	}
 }
 
