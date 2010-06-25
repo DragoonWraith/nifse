@@ -107,7 +107,7 @@ SInt64 NifFile::reg() {
 		dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(i)+".");
 		return nifID;
 	}
-	return -1;
+	return nifID = -1;
 }
 
 // registers nif in given modID and index; mostly for loading.
@@ -115,7 +115,7 @@ SInt64 NifFile::reg() {
 SInt64 NifFile::reg(UInt8 modIndex, UInt32 nifIndex) {
 	dPrintAndLog("NifFile.reg","Registering \""+filePath+"\" on RegList as #"+UIntToString(modID)+"-"+UIntToString(nifID)+".");
 	if ( modIndex != modID )
-		return -1;
+		return nifID = -1;
 	if ( modID != 255 ) {
 		if ( RegList.find(modID) == RegList.end() )
 			RegList.insert( pair<UInt8, map<UInt32, NifFile*> >(modID, map<UInt32, NifFile*>()));
@@ -132,7 +132,7 @@ SInt64 NifFile::reg(UInt8 modIndex, UInt32 nifIndex) {
 			return nifID;
 		}
 	}
-	return -1;
+	return nifID = -1;
 }
 
 // returns true if the given NifFile is on RegList
@@ -167,13 +167,18 @@ static bool Cmd_NifOpen_Execute(COMMAND_ARGS) {
 	if (!ExtractArgs(PASS_EXTRACT_ARGS, &oriPath, &forEdit)) return true;
 	dPrintAndLog("NifOpen", "\""+string(oriPath)+"\" opened"+(forEdit!=0?(" for editing."):(" for reading.")));
 
-	NifFile* nifPtr = new NifFile(string(oriPath), scriptObj->GetModIndex(), (forEdit!=0));
-	if ( nifPtr->nifID >= 0 ) {
-		*result = nifPtr->nifID;
-		dPrintAndLog("NifOpen", "\""+string(oriPath)+"\" registered as #"+UIntToString(nifPtr->modID)+"-"+UIntToString(*result)+".\n");
+	try {
+		NifFile* nifPtr = new NifFile(string(oriPath), scriptObj->GetModIndex(), (forEdit!=0));
+		if ( nifPtr->nifID >= 0 ) {
+			*result = nifPtr->nifID;
+			dPrintAndLog("NifOpen", "\""+string(oriPath)+"\" registered as #"+UIntToString(nifPtr->modID)+"-"+UIntToString(*result)+".\n");
+		}
+		else
+			dPrintAndLog("NifOpen", "\""+string(oriPath)+"\" failed to register!\n");
 	}
-	else
-		dPrintAndLog("NifOpen", "\""+string(oriPath)+"\" failed to register!\n");
+	catch (exception& except) {
+		dPrintAndLog("NifOpen","Failed to create NifFile; exception \""+string(except.what())+"\" thrown.\n");
+	}
 	return true;
 }
 
