@@ -1905,7 +1905,7 @@ void LoadChangelog(string &changes, string &chNode, UInt32 &chType, UInt32 &chAc
 	changes.erase(0,posF+1);
 }
 
-static void NifSE_LoadCallback(void * reserved) {
+static void NifSE_PreloadCallback(void * reserved) {
 	dPrintAndLog("NifLoad","loading saved NifFiles");
 	UInt32 type, version, length;
 
@@ -2316,7 +2316,7 @@ static void NifSE_NewCallback(void * reserved) {
 static void MessageHandler(OBSEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 		case OBSEMessagingInterface::kMessage_PostLoad:
-//			msgInterface->RegisterListener(g_pluginHandle, "CSE", MessageHandler);
+			msgInterface->RegisterListener(g_pluginHandle, "CSE", MessageHandler);
 			_MESSAGE("OBSE Plugins loaded. Listening for CSE dispatches.");
 			break;
 
@@ -2510,7 +2510,7 @@ extern "C" {
 
 			_MESSAGE("\nSetting Serialization callbacks.");
 			serInterface->SetSaveCallback(g_pluginHandle, NifSE_SaveCallback);
-			serInterface->SetLoadCallback(g_pluginHandle, NifSE_LoadCallback);
+			serInterface->SetPreloadCallback(g_pluginHandle, NifSE_PreloadCallback);
 			serInterface->SetNewGameCallback(g_pluginHandle, NifSE_NewCallback);
 
 			_MESSAGE("\nInitializing NifSE Hooks.");
