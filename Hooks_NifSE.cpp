@@ -35,7 +35,7 @@ static bool __stdcall CreateNifFile(const char* nifPath) {
 	
 	// Create the .nif and save to disk
 	NifFile* nifPtr = NULL;
-	if ( getRegNif(string(&(nifPath[s_nifScriptFullPathLen])), nifPtr) ) {
+	if ( NifFile::getRegNif(string(&(nifPath[s_nifScriptFullPathLen])), nifPtr) ) {
 		if ( nifPtr->editable ) {
 			nifPtr->loc = 1;
 			ofstream newNif (nifPtr->getAbsPath().c_str(), ios::out);
@@ -103,7 +103,7 @@ static void __stdcall DeleteNifFile(const char* nifPath) {
 
 	// delete the file
 	NifFile* nifPtr = NULL;
-	if ( getRegNif(string(&(nifPath[s_nifScriptPathLen])), nifPtr) ) {
+	if ( NifFile::getRegNif(string(&(nifPath[s_nifScriptPathLen])), nifPtr) ) {
 		if ( nifPtr->editable ) {
 			nifPtr->loc = 0;
 			std::remove(nifPtr->getAbsPath().c_str());
