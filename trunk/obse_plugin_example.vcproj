@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-D_SCL_SECURE_NO_WARNINGS"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;F:\Bethesda Softworks\Oblivion\NifTools\niflib\lib&quot;;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)\..&quot;;&quot;$(SolutionDir)\..\obse\obse&quot;;&quot;$(SolutionDir)\..\obse\&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)\..&quot;;&quot;$(SolutionDir)\..\obse\obse&quot;;&quot;$(SolutionDir)\..\obse\&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;OBLIVION_VERSION=0x010201A0;OBLIVION;NIFLIB_STATIC_LINK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -68,7 +68,7 @@
 				AdditionalDependencies="ws2_32.lib niflib_static_debug.lib Psapi.lib dzlib.lib"
 				LinkIncremental="0"
 				IgnoreAllDefaultLibraries="false"
-				IgnoreDefaultLibraryNames=""
+				IgnoreDefaultLibraryNames="LIBCMT"
 				ModuleDefinitionFile="exports.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -135,6 +135,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
 				ForcedIncludeFiles="obse_common/obse_prefix.h"
 			/>
 			<Tool
@@ -521,6 +522,154 @@
 				</File>
 			</Filter>
 		</Filter>
+		<Filter
+			Name="Commands"
+			>
+			<File
+				RelativePath=".\Commands_Basic.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_Basic.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_Children.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_Children.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_Collision.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_Collision.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_Debug.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_Debug.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_Deprecated.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_Deprecated.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_ExtraData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_ExtraData.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Backbone"
+			>
+			<File
+				RelativePath=".\Hooks_NifSE.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Hooks_NifSE.h"
+				>
+			</File>
+			<File
+				RelativePath=".\NifFile.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\NifFile.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Param_Infos.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Utilities.cpp"
+				>
+				<FileConfiguration
+					Name="Debug - Static|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release - Static|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug - Dynamic|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release - Dynamic|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\Utilities.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Callbacks"
+			>
+			<File
+				RelativePath=".\Load.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Load.h"
+				>
+			</File>
+			<File
+				RelativePath=".\New.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\New.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Save.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Save.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\dllmain.c"
 			>
@@ -562,71 +711,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Hooks_NifSE.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\Hooks_NifSE.h"
-			>
-		</File>
-		<File
 			RelativePath=".\main.cpp"
 			>
 		</File>
 		<File
 			RelativePath=".\main.h"
-			>
-		</File>
-		<File
-			RelativePath=".\NifFile.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\NifFile.h"
-			>
-		</File>
-		<File
-			RelativePath=".\Utilities.cpp"
-			>
-			<FileConfiguration
-				Name="Debug - Static|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\$(InputName)1.obj"
-					XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release - Static|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\$(InputName)1.obj"
-					XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug - Dynamic|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\$(InputName)1.obj"
-					XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release - Dynamic|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					ObjectFile="$(IntDir)\$(InputName)1.obj"
-					XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\Utilities.h"
 			>
 		</File>
 	</Files>

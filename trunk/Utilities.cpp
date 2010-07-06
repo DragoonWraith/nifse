@@ -1,5 +1,15 @@
 #include "Utilities.h"
 
+extern string						g_pluginName	("NifSE");
+extern IDebugLog					g_Log			((g_pluginName+".log").c_str());
+extern UInt32						g_pluginVersion (999);
+extern PluginHandle					g_pluginHandle	(kPluginHandle_Invalid);
+
+extern OBSEArrayVarInterface*		arrInterface	(NULL);
+extern OBSEMessagingInterface*		msgInterface	(NULL);
+extern OBSESerializationInterface*	serInterface	(NULL);
+extern OBSEStringVarInterface*		strInterface	(NULL);
+
 // some utility functions because I got tired of writing the same stuff for all my debug code
 void PrintAndLog(string func) {
 	Console_Print("");
@@ -27,36 +37,33 @@ void dPrintAndLog(string func, string msg) {
 	_MESSAGE((func+" - "+msg).c_str());
 }
 
-// for easily switching between two versions of a mesh - modified and original
-string ToggleTag(string path, string element, string newVal) {
-	if ( path.find("NifSE") != string::npos ) { // already tagged with something
-		if ( path.find(element) != string::npos ) { // already tagged with THIS element
-			if ( path.find(element+newVal) != string::npos ) { // element has been changed to appropriate value, want to remove change
-				path.erase(path.find(element+newVal)-1,(element+newVal).length()+1); // 1's to account for the prefixed '.'
-				if ( !_stricmp(&(path.c_str()[(path.length()>=14?path.length()-14:0)]),".NifSE.nif") ) { // only tag in this path
-					dPrintAndLog("ToggleTag","Element \""+element+"\" already tagged correctly, only tag in path, removing all tags and returning original mesh!");
-					path.erase(path.find(".NifSE"),10);
-				}
-				else
-					dPrintAndLog("ToggleTag","Element \""+element+"\" already tagged correctly, removing this tag. Other tags remain.");
-			}
-			else { // already changed this element, but changing it to a new value
-				string::size_type oldValPos = path.find(element)+element.length();
-				string::size_type oldValLen = path.find(".",oldValPos)-oldValPos;
-				path.replace(oldValPos,oldValLen,newVal);
-				dPrintAndLog("ToggleTag","Element \""+element+"\" already tagged, value changed to \""+newVal+"\".");
-			}
-		}
-		else { // tagged, but this element's new
-			path.insert(path.length()-4,"."+element+newVal);
-			dPrintAndLog("ToggleTag","Element \""+element+"\" added to existing tags with value \""+newVal+"\".");
-		}
+// helper function for creating an OBSE StringMap from a std::map<std::string, OBSEElement>
+OBSEArray* StringMapFromStdMap(const map<string, OBSEElement>& data, Script* callingScript) {
+	// create empty string map
+	OBSEArray* arr = arrInterface->CreateStringMap(NULL, NULL, 0, callingScript);
+
+	// add each key-value pair
+	for (std::map<std::string, OBSEElement>::const_iterator iter = data.begin(); iter != data.end(); ++iter) {
+		arrInterface->SetElement(arr, iter->first.c_str(), iter->second);
 	}
-	else { // completely untagged
-		path.insert(path.length()-4,".NifSE."+element+newVal);
-		dPrintAndLog("ToggleTag","Element \""+element+"\" first tag in path. Set with value \""+newVal+"\".");
+
+	return arr;
+}
+
+// helper function for creating an OBSE Map from a std::map<double, OBSEElement>
+OBSEArray* MapFromStdMap(const map<double, OBSEElement>& data, Script* callingScript) {
+	OBSEArray* arr = arrInterface->CreateMap(NULL, NULL, 0, callingScript);
+	for (std::map<double, OBSEElement>::const_iterator iter = data.begin(); iter != data.end(); ++iter) {
+		arrInterface->SetElement(arr, iter->first, iter->second);
 	}
-	return path;
+
+	return arr;
+}
+
+// helper function for creating OBSE Array from std::vector<OBSEElement>
+OBSEArray* ArrayFromStdVector(const vector<OBSEElement>& data, Script* callingScript) {
+	OBSEArray* arr = arrInterface->CreateArray(&(data[0]), data.size(), callingScript);
+	return arr;
 }
 
 // internal version of FindFile that does some double-checking
@@ -87,10 +94,8 @@ void WriteNifToStream(string path, UInt32& loc, std::iostream* stream) {
 		file.close();
 	}
 	else if ( loc == 2 ) {
-		if ( BSAlist.size() == 0 )
-			BSAlist = GetBSAfiles();
-		UInt32 fileNum;
-		UInt32 size;
+		UInt32 fileNum = 0;
+		UInt32 size = 0;
 		TES4BSA_Archive * BSA = NULL;
 		char* buf = NULL;
 		for ( BSAit = BSAlist.begin(); BSAit != BSAlist.end(); ++BSAit ) {
@@ -105,17 +110,17 @@ void WriteNifToStream(string path, UInt32& loc, std::iostream* stream) {
 							try {
 								BSA->GetFileData(fileNum, buf);
 								stream->write(buf, size);
-								dPrintAndLog("GetNifStream","Successfully read nif data in BSA \""+(*BSAit)+"\". Buffer length is "+UIntToString(size)+".");
+								dPrintAndLog("WriteNifToStream","Successfully read nif data in BSA \""+(*BSAit)+"\". Buffer length is "+UIntToString(size)+".");
 							}
 							catch (exception& except) {
-								dPrintAndLog("GetNifStream","Failed to read nif data in BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
+								dPrintAndLog("WriteNifToStream","Failed to read nif data in BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
 								continue;
 							}
 							delete [] buf;
 							break;
 						}
 						catch (exception& except) {
-							dPrintAndLog("GetNifStream","Failed to determine nif file size in BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
+							dPrintAndLog("WriteNifToStream","Failed to determine nif file size in BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
 							continue;
 						}
 					}
@@ -128,7 +133,7 @@ void WriteNifToStream(string path, UInt32& loc, std::iostream* stream) {
 				delete BSA;
 			}
 			catch (exception& except) {
-				dPrintAndLog("GetNifStream","Failed to open BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
+				dPrintAndLog("WriteNifToStream","Failed to open BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
 				continue;
 			}
 		}
@@ -137,45 +142,6 @@ void WriteNifToStream(string path, UInt32& loc, std::iostream* stream) {
 	}
 	else
 		throw exception(string("Nif location unknown. CheckLocation return value is "+UIntToString(loc)+".").c_str());
-}
-
-// Copies the Nif-file to another file location.
-// nothing Nif-specific here, just uses standard
-// C++ file functions and BSA-reading code
-int CopyNif(string oriPath, string altPath) {
-	try {
-		std::fstream nifbuf;
-		unsigned int charIndex1 = 0;
-		unsigned int charIndex2 = altPath.find_first_of("\\");
-		string folder = GetOblivionDirectory()+"Data\\Meshes";
-		while ( charIndex2 != string::npos ) {
-			folder = folder+"\\"+altPath.substr(charIndex1,charIndex2-charIndex1);
-			CreateDirectory(folder.c_str(),NULL);
-			charIndex1 = charIndex2+1;
-			charIndex2 = altPath.find_first_of("\\",charIndex1);
-		}
-		folder = GetOblivionDirectory()+"Data\\Meshes\\";
-		nifbuf.open((folder+altPath).c_str(),std::ios::binary|std::ios::out);
-		if ( nifbuf.is_open() ) {
-			dPrintAndLog("CopyNif","Nif \""+folder+altPath+"\" created and opened.");
-			UInt32 loc;
-			WriteNifToStream(oriPath, loc, &nifbuf);
-			nifbuf.close();
-			return loc;
-		}
-		else {
-			dPrintAndLog("CopyNif","Failed to create new file.");
-			return -1;
-		}
-	}
-	catch (exception& except) {
-		dPrintAndLog("CopyNif","Failed to read Nif. Exception \""+string(except.what())+"\" thrown.");
-		return -1;
-	}
-}
-
-int CopyNif(string path) { // from BSA to folder, basically
-	return CopyNif(path,path);
 }
 
 string UIntToString(UInt32 uint) {
@@ -293,37 +259,23 @@ vector< vector<float> > StringToMatrix(string str) {
 	return mat;
 }
 
-// constructs list of BSA files
-std::list<string> GetBSAfiles() {
-	std::list<string> BSAfiles;
-	WIN32_FIND_DATA bsaSearch;
-	HANDLE h;
-
-	// build a list of BSA files
-	// code adapted from that by Hammer on CProgramming.com
-	// http://faq.cprogramming.com/cgi-bin/smartfaq.cgi?answer=1046380353&id=1044780608
-	h = FindFirstFile((GetOblivionDirectory()+"Data\\*.bsa").c_str(), &bsaSearch);
-	if (h != INVALID_HANDLE_VALUE)
-	{
-		do {
-			if ( !strncmp(bsaSearch.cFileName, "Oblivion", 8) ) {
-				if ( !strcmp(bsaSearch.cFileName, "Oblivion - Meshes.bsa") )
-					BSAfiles.push_back((GetOblivionDirectory()+"Data\\"+bsaSearch.cFileName));
-			}
-			else if ( !strncmp(bsaSearch.cFileName, "DLCShiveringIsles", 17) ) {
-				if ( !strcmp(bsaSearch.cFileName, "DLCShiveringIsles - Meshes.bsa") )
-					BSAfiles.push_back((GetOblivionDirectory()+"Data\\"+bsaSearch.cFileName));
-			}
-			else if ( strncmp(bsaSearch.cFileName, "ArchiveInvalidationInvalidated!.bsa", 34) )
-				BSAfiles.push_back((GetOblivionDirectory()+"Data\\"+bsaSearch.cFileName));
-		} while (FindNextFile(h, &bsaSearch));
-		if (GetLastError() != ERROR_NO_MORE_FILES)
-			PrintAndLog("GetBSAfiles","Unknown error during BSA search - some Nif files inside archives may be unaccessible.");
-	}
-	else
-	{
-		PrintAndLog("GetBSAfiles","No BSA files found!");
-	}
-	FindClose(h);
-	return BSAfiles;
+string changeLog(UInt32 Node, UInt32 Type, UInt32 Action, string Value) {
+	return changeLog(logNumber+UIntToString(Node),Type,Action,Value);
 }
+
+string changeLog(string Node, UInt32 Type, UInt32 Action, string Value) {
+	return Node+logNode+UIntToString(Type)+logType+UIntToString(Action)+logAction+Value+logValue;
+}
+
+void clearPrevChange(string &log, const UInt32 &Node, const UInt32 &Type, const UInt32 &Action) {
+	clearPrevChange(log, logNumber+UIntToString(Node), Type, Action);
+}
+
+void clearPrevChange(string &log, const string &Node, const UInt32 &Type, const UInt32 &Action) {
+	UInt32 changePos = log.find(Node+logNode+UIntToString(Type)+logType+UIntToString(Action)+logAction);
+	if ( changePos != log.npos )
+		log.erase(changePos, log.find(logValue,changePos)+1-changePos);
+}
+
+extern list<string> BSAlist = list<string>();
+extern list<string>::iterator BSAit = list<string>::iterator();

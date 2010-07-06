@@ -39,6 +39,73 @@ NifFile::~NifFile() {
 	dereg();
 }
 
+// registers a nif in the next available index for its modID
+SInt64 NifFile::reg() {
+	dPrintAndLog("NifFile.reg","Registering \""+filePath+"\" on RegList.");
+	if ( modID != 255 ) {
+		if ( RegList.find(modID) == RegList.end() )
+			RegList.insert( pair<UInt8,map<UInt32,NifFile*> >(modID,map<UInt32,NifFile*>()) );
+		UInt32 i = 0;
+		while ( !((RegList[modID].insert(pair<UInt32, NifFile*>(i, this))).second) )
+			++i;
+		nifID = i;
+		if ( editable ) {
+			basePath = filePath;
+			filePath = string("ni\\") + string((*g_dataHandler)->GetNthModName(modID)).substr(0,string((*g_dataHandler)->GetNthModName(modID)).length()-4) + string("_") + UIntToString(nifID) + ".nif";
+			RegListByFilename[filePath.substr(s_nifScriptPathLen,filePath.length()-s_nifScriptPathLen)] = new pair<UInt8, UInt32>(modID, nifID);
+		}
+		else
+			RegListByFilename[filePath] = new pair<UInt8, UInt32>(modID, nifID);
+		dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(i)+".");
+		return nifID;
+	}
+	return nifID = -1;
+}
+
+// registers nif in given modID and index; mostly for loading.
+SInt64 NifFile::reg(UInt8 modIndex, UInt32 nifIndex) {
+	dPrintAndLog("NifFile.reg","Registering \""+filePath+"\" on RegList as #"+UIntToString(modID)+"-"+UIntToString(nifID)+".");
+	if ( modIndex != modID )
+		return nifID = -1;
+	if ( modID != 255 ) {
+		if ( RegList.find(modID) == RegList.end() )
+			RegList.insert( pair<UInt8, map<UInt32, NifFile*> >(modID, map<UInt32, NifFile*>()));
+		if ( (RegList[modID].insert(pair<UInt32, NifFile*>(nifIndex, this))).second ) {
+			nifID = nifIndex;
+			if ( editable ) {
+				basePath = filePath;
+				filePath = string("ni\\") + string((*g_dataHandler)->GetNthModName(modID)).substr(0,string((*g_dataHandler)->GetNthModName(modID)).length()-4) + string("_") + UIntToString(nifID) + ".nif";
+				RegListByFilename[filePath.substr(s_nifScriptPathLen,filePath.length()-s_nifScriptPathLen)] = new pair<UInt8, UInt32>(modID, nifID);
+			}
+			else
+				RegListByFilename[filePath] = new pair<UInt8, UInt32>(modID, nifID);
+			dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+".");
+			return nifID;
+		}
+	}
+	return nifID = -1;
+}
+
+// returns true if the given NifFile is on RegList
+bool NifFile::isreg() {
+	if ( RegList.find(modID) != RegList.end() )
+		if ( RegList[modID].find(nifID) != RegList[modID].end() )
+			return true;
+	return false;
+}
+
+// removes given NifFile from RegList and does memory cleanup. Used in ~NifFile
+void NifFile::dereg() {
+	if ( isreg() ) {
+//		delete RegListByFilename[RegList[modID][nifID]->filePath];
+		RegListByFilename.erase(RegList[modID][nifID]->filePath);
+//		delete RegList[modID][nifID];
+		RegList[modID].erase(nifID);
+	}
+	if ( RegList[modID].empty() )
+		RegList.erase(modID);
+}
+
 string NifFile::getAbsPath() const {
 	return GetOblivionDirectory()+"Data\\Meshes\\"+filePath;
 }
@@ -168,6 +235,7 @@ void NifFile::setRoot() {
 	dPrintAndLog("NifFile.setRoot","Setting root to root of \""+filePath+"\"!");
 	try {
 		std::stringstream nifStream (std::ios::binary|std::ios::in|std::ios::out);
+		dPrintAndLog("NifFile.setRoot","nifStream initialized.");
 		WriteNifToStream(filePath, loc, &nifStream);
 		root = DynamicCast<Niflib::NiNode>(ReadNifTree(nifStream,&headerInfo));
 		if ( root ) {
@@ -264,20 +332,43 @@ string NifFile::getIDstring() const {
 	return "#"+UIntToString(modID)+"-"+UIntToString(nifID);
 }
 
-void clearPrevChange(string &log, const UInt32 &Node, const UInt32 &Type, const UInt32 &Action) {
-	clearPrevChange(log, logNumber+UIntToString(Node), Type, Action);
+std::map < UInt8, std::map < UInt32, NifFile* > > NifFile::RegList;
+std::map <string, pair<UInt8, UInt32>* > NifFile::RegListByFilename;
+
+// returns NifFile associated with given mod and index.
+bool NifFile::getRegNif(UInt8 modID, UInt32 nifID, NifFile* &nifPtr) {
+	dPrintAndLog("NifFile::getRegNif","Finding nif registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+".");
+	if ( RegList.find(modID) != RegList.end() ) {
+		if ( RegList[modID].find(nifID) != RegList[modID].end() ) {
+			dPrintAndLog("NifFile::getRegNif","Nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" found.");
+			if ( RegList[modID][nifID]->root ) {
+				dPrintAndLog("NifFile::getRegNif","Nif root is good.");
+				nifPtr = RegList[modID][nifID];
+				return true;
+			}
+			else {
+				dPrintAndLog("NifFile::getRegNif","Nif root is no good.");
+				return false;
+			}
+		}
+		else {
+			dPrintAndLog("NifFile::getRegNif","Nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" not found.");
+			return false;
+		}
+	}
+	else {
+		dPrintAndLog("NifFile::getRegNif","Mod #"+UIntToString(modID)+" not found.");
+		return false;
+	}
 }
 
-void clearPrevChange(string &log, const string &Node, const UInt32 &Type, const UInt32 &Action) {
-	UInt32 changePos = log.find(Node+logNode+UIntToString(Type)+logType+UIntToString(Action)+logAction);
-	if ( changePos != log.npos )
-		log.erase(changePos, log.find(logValue,changePos)+1-changePos);
-}
-
-string changeLog(UInt32 Node, UInt32 Type, UInt32 Action, string Value) {
-	return changeLog(logNumber+UIntToString(Node),Type,Action,Value);
-}
-
-string changeLog(string Node, UInt32 Type, UInt32 Action, string Value) {
-	return Node+logNode+UIntToString(Type)+logType+UIntToString(Action)+logAction+Value+logValue;
+// returns the modID and index of nif with given filename.
+bool NifFile::getRegNif(string filename, NifFile* &nifPtr) {
+	dPrintAndLog("getRefNif","Finding nif with filename \""+filename+"\".");
+	if ( RegListByFilename.find(filename) != RegListByFilename.end() ) {
+		pair<UInt8, UInt32> nifIDs = *(RegListByFilename[filename]);
+		return NifFile::getRegNif(nifIDs.first, nifIDs.second, nifPtr);
+	}
+	dPrintAndLog("NifFile::getRegNif","Filename not registered.");
+	return false;
 }

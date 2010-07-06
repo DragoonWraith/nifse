@@ -87,14 +87,14 @@ public:
 	NifFile(const string& file, UInt8 modIndex = 255, bool editable = false);
 	NifFile(const NifFile&);
 	~NifFile();
-	SInt64 reg();												// defined in main.cpp to use RegList
-	SInt64 reg(UInt8 modIndex, UInt32 nifIndex);				// defined in main.cpp to use RegList
-	bool isreg();												// defined in main.cpp to use RegList
-	void dereg();												// defined in main.cpp to use RegList
+	SInt64 reg();
+	SInt64 reg(UInt8 modIndex, UInt32 nifIndex);
+	bool isreg();
+	void dereg();
 	string getAbsPath() const;
 	string getAbsBasePath() const;
 	string getVersion() const;
-	NiExtraDataRef NifFile::findExtraData(std::list<Niflib::NiExtraDataRef>::size_type i) const;
+	NiExtraDataRef findExtraData(std::list<Niflib::NiExtraDataRef>::size_type i) const;
 	void setRoot(const string& newPath);
 	void setRoot();
 	Niflib::NiExtraDataRef getEDByName(string name);
@@ -105,19 +105,14 @@ public:
 	vector<Niflib::NiDynamicEffectRef>::size_type getEffectIndexByName(string name);
 	void commitChanges();
 	string getIDstring() const;
+
+	// directory of registered NifFiles.
+	static std::map < UInt8, std::map < UInt32, NifFile* > > RegList;
+	static std::map <string, pair<UInt8, UInt32>* > RegListByFilename;
+
+	static bool getRegNif(UInt8 modID, UInt32 nifID, NifFile* &nifPtr);
+	static bool getRegNif(string filename, NifFile* &nifPtr);
 };
-
-const char logNode = ':';
-const char logNumber = '#';
-const char logType = '-';
-const char logAction = '=';
-const char logValue = '\n';
-
-void clearPrevChange(string &log, const UInt32 &Node, const UInt32 &Type, const UInt32 &Action);
-void clearPrevChange(string &log, const string &Node, const UInt32 &Type, const UInt32 &Action);
-
-string changeLog(UInt32 Node, UInt32 Type, UInt32 Action, string Value = "");
-string changeLog(string Node, UInt32 Type, UInt32 Action, string Value = "");
 
 enum {
 	ED_ExtraData,
@@ -216,6 +211,3 @@ enum {
 	Act_AV_PropTex_SetDecal0Map,
 	Act_AV_PropTex_SetDecal1Map,
 };
-
-bool getRegNif(UInt8 modID, UInt32 nifID, NifFile* &nifPtr);	// defined in main.cpp to use RegList
-bool getRegNif(string filename, NifFile* &nifPtr);				// defined in main.cpp to use RegList
