@@ -65,7 +65,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib niflib_static_debug.lib Psapi.lib"
+				AdditionalDependencies="ws2_32.lib niflib_static_debug.lib Psapi.lib dzlib.lib"
 				LinkIncremental="0"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames=""
@@ -98,7 +98,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Installing DLL..."
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;D:\Bethesda Softworks\Oblivion\Data\obse\plugins\$(TargetFileName)&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\Data\obse\plugins\$(TargetFileName)&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -148,7 +148,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib niflib_static.lib Psapi.lib"
+				AdditionalDependencies="ws2_32.lib niflib_static.lib Psapi.lib zlib.lib"
 				LinkIncremental="0"
 				IgnoreDefaultLibraryNames="LIBCMTD;MSVCRT"
 				ModuleDefinitionFile="exports.def"
@@ -182,7 +182,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Installing DLL..."
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;F:\Bethesda Softworks\Oblivion\data\obse\plugins\$(TargetFileName)&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\data\obse\plugins\$(TargetFileName)&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -362,7 +362,6 @@
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{54A2F47D-D6E9-47F3-9082-7AA69C5569C3}"
-			RelativePathToProject="..\zlib\zlib.vcproj"
 		/>
 	</References>
 	<Files>
@@ -518,14 +517,6 @@
 				</File>
 				<File
 					RelativePath=".\BSA Browser\src\tes_bsa.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="zlib"
-				>
-				<File
-					RelativePath=".\BSA Browser\zlib\zlib.h"
 					>
 				</File>
 			</Filter>
