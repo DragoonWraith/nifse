@@ -1,6 +1,6 @@
 #include "../include/tes4_bsa.h"
 #include "string.h"
-#include "../../zlib/zlib.h"
+#include "zlib.h"
 #include <string>
 #include <exception>
 #include <sstream>

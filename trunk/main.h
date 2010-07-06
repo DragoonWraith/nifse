@@ -19,10 +19,11 @@
 static std::map < UInt8, std::map < UInt32, NifFile* > > RegList;
 static std::map <string, pair<UInt8, UInt32>* > RegListByFilename;
 
-static std::map<const char*, const char*> FunctionDocMap;
+// map of where documentation for functions can be found; used by shadeMe's CSE
+std::map<const char*, const char*>* FunctionDocMap;
 static string url ("http://cs.elderscrolls.com/constwiki/index.php/");
 static void doc(string func) {
-	FunctionDocMap.insert(pair<const char*,const char*>(func.c_str(), (url+func).c_str()));
+	FunctionDocMap->insert(pair<const char*,const char*>(func.c_str(), (url+func).c_str()));
 }
 
 static ParamInfo kParams_OneString_OneOptionalBool[2] = 

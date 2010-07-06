@@ -2316,12 +2316,65 @@ static void NifSE_NewCallback(void * reserved) {
 static void MessageHandler(OBSEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 		case OBSEMessagingInterface::kMessage_PostLoad:
-			msgInterface->RegisterListener(g_pluginHandle, "CSE", MessageHandler);
+			_MESSAGE("Game loaded: Creating ni\\ directory.\n");
+			CreateDirectory(string(GetOblivionDirectory()+"Data\\Meshes\\ni\\").c_str(), NULL);
+			break;
+
+		case OBSEMessagingInterface::kMessage_ExitGame:
+			_MESSAGE("Game quit: Deleting ni\\ directory.");
+			RemoveDirectory(string(GetOblivionDirectory()+"Data\\Meshes\\ni\\").c_str());
+			break;
+	}
+}
+
+static void EditorMessageHandler(OBSEMessagingInterface::Message* msg) {
+	switch (msg->type) {
+		case OBSEMessagingInterface::kMessage_PostLoad:
+			msgInterface->RegisterListener(g_pluginHandle, "CSE", EditorMessageHandler);
 			_MESSAGE("OBSE Plugins loaded. Listening for CSE dispatches.");
 			break;
 
 		case 'CSEL':
-			msgInterface->Dispatch(g_pluginHandle, g_pluginVersion, &FunctionDocMap, sizeof(&FunctionDocMap), "CSE");
+			_MESSAGE("\nDocumenting functions for CSE.");
+			FunctionDocMap = new std::map<const char*, const char*>;
+			doc("NifGetAltGrip");
+			doc("NifGetOffHand");
+			doc("NifGetBackShield");
+			doc("NifOpen");
+			doc("NifClose");
+			doc("NifGetPath");
+			doc("NifGetOriginalPath");
+			doc("NifGetNumExtraData");
+			doc("NifAddExtraData");
+			doc("NifDeleteNthExtraData");
+			doc("NifGetNthExtraDataName");
+			doc("NifSetNthExtraDataName");
+			doc("NifGetExtraDataIndexByName");
+			doc("NifGetNthExtraDataType");
+			doc("NifGetNthExtraDataString");
+			doc("NifSetNthExtraDataString");
+			doc("NifGetNumChildren");
+			doc("NifDeleteNthChild");
+			doc("NifGetNthChildName");
+			doc("NifSetNthChildName");
+			doc("NifGetChildIndexByName");
+			doc("NifGetNthChildType");
+			doc("NifGetNthChildLocalTransform");
+			doc("NifGetNthChildLocalTranslation");
+			doc("NifGetNthChildLocalRotation");
+			doc("NifGetNthChildLocalScale");
+			doc("NifSetNthChildLocalScale");
+			doc("NifSetNthChildLocalTransformTEMP");
+			doc("NifSetNthChildLocalTranslationTEMP");
+			doc("NifSetNthChildLocalRotationTEMP");
+			doc("NifNthChildHasMaterial");
+			doc("NifGetNthChildMaterial");
+			doc("NifSetNthChildMaterial");
+			doc("NifNthChildHasTexturingProp");
+			doc("NifNthChildHasBaseTexture");
+			doc("NifGetNthChildBaseTexture");
+			doc("NifSetNthChildBaseTexture");
+			msgInterface->Dispatch(g_pluginHandle, 'CSEL', FunctionDocMap, sizeof(&FunctionDocMap), "CSE");
 			_MESSAGE("CSE Documentation dispatched.");
 			break;
 	}
@@ -2386,20 +2439,17 @@ extern "C" {
 				return false;
 			}
 		}
-		else
+		msgInterface = (OBSEMessagingInterface*)obse->QueryInterface(kInterface_Messaging);
+		if(!msgInterface)
 		{
-			msgInterface = (OBSEMessagingInterface*)obse->QueryInterface(kInterface_Messaging);
-			if(!msgInterface)
-			{
-				_ERROR("Messaging Interface not found");
-				return false;
-			}
+			_ERROR("Messaging Interface not found");
+			return false;
+		}
 
-			if(msgInterface->version < OBSEMessagingInterface::kVersion)
-			{
-				_ERROR("Incorrect messaging version found (got %08X need %08X)", msgInterface->version, OBSEMessagingInterface::kVersion);
-				return false;
-			}
+		if(msgInterface->version < OBSEMessagingInterface::kVersion)
+		{
+			_ERROR("Incorrect messaging version found (got %08X need %08X)", msgInterface->version, OBSEMessagingInterface::kVersion);
+			return false;
 		}
 
 		// version checks pass
@@ -2505,6 +2555,9 @@ extern "C" {
 			}
 			_MESSAGE(("\t\t"+UIntToString(BSAlist.size())+" total.").c_str());
 
+			_MESSAGE("\nListening to OBSE dispatches.");
+			msgInterface->RegisterListener(g_pluginHandle, "OBSE", MessageHandler);
+
 			_MESSAGE("\nRegistering String Interface.");
 			strInterface->Register(strInterface);
 
@@ -2517,47 +2570,8 @@ extern "C" {
 			Hooks_NifSE_Init();
 		}
 		else {
-			_MESSAGE("Listening to OBSE dispatches.");
-			msgInterface->RegisterListener(g_pluginHandle, "OBSE", MessageHandler);
-
-			_MESSAGE("\nDocumenting functions for CSE.");
-			doc("NifGetAltGrip");
-			doc("NifGetOffHand");
-			doc("NifGetBackShield");
-			doc("NifOpen");
-			doc("NifClose");
-			doc("NifGetPath");
-			doc("NifGetOriginalPath");
-			doc("NifGetNumExtraData");
-			doc("NifAddExtraData");
-			doc("NifDeleteNthExtraData");
-			doc("NifGetNthExtraDataName");
-			doc("NifSetNthExtraDataName");
-			doc("NifGetExtraDataIndexByName");
-			doc("NifGetNthExtraDataType");
-			doc("NifGetNthExtraDataString");
-			doc("NifSetNthExtraDataString");
-			doc("NifGetNumChildren");
-			doc("NifDeleteNthChild");
-			doc("NifGetNthChildName");
-			doc("NifSetNthChildName");
-			doc("NifGetChildIndexByName");
-			doc("NifGetNthChildType");
-			doc("NifGetNthChildLocalTransform");
-			doc("NifGetNthChildLocalTranslation");
-			doc("NifGetNthChildLocalRotation");
-			doc("NifGetNthChildLocalScale");
-			doc("NifSetNthChildLocalScale");
-			doc("NifSetNthChildLocalTransformTEMP");
-			doc("NifSetNthChildLocalTranslationTEMP");
-			doc("NifSetNthChildLocalRotationTEMP");
-			doc("NifNthChildHasMaterial");
-			doc("NifGetNthChildMaterial");
-			doc("NifSetNthChildMaterial");
-			doc("NifNthChildHasTexturingProp");
-			doc("NifNthChildHasBaseTexture");
-			doc("NifGetNthChildBaseTexture");
-			doc("NifSetNthChildBaseTexture");
+			_MESSAGE("Listening to OBSE dispatches.!");
+			msgInterface->RegisterListener(g_pluginHandle, "OBSE", EditorMessageHandler);
 		}
 
 		_MESSAGE("\n\tInitialization complete.\n\n");
