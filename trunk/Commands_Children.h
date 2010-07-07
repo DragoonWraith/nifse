@@ -1,0 +1,25 @@
+#pragma once
+
+#include "NifFile.h"
+
+extern CommandInfo kCommandInfo_NifGetNumChildren;
+extern CommandInfo kCommandInfo_NifGetNthChildName;
+extern CommandInfo kCommandInfo_NifSetNthChildName;
+extern CommandInfo kCommandInfo_NifGetChildIndexByName;
+extern CommandInfo kCommandInfo_NifGetNthChildType;
+extern CommandInfo kCommandInfo_NifDeleteNthChild;
+extern CommandInfo kCommandInfo_NifGetNthChildLocalTransform;
+extern CommandInfo kCommandInfo_NifGetNthChildLocalTranslation;
+extern CommandInfo kCommandInfo_NifGetNthChildLocalRotation;
+extern CommandInfo kCommandInfo_NifGetNthChildLocalScale;
+extern CommandInfo kCommandInfo_NifSetNthChildLocalScale;
+extern CommandInfo kCommandInfo_NifSetNthChildLocalTransformTEMP;
+extern CommandInfo kCommandInfo_NifSetNthChildLocalTranslationTEMP;
+extern CommandInfo kCommandInfo_NifSetNthChildLocalRotationTEMP;
+extern CommandInfo kCommandInfo_NifNthChildHasMaterial;
+extern CommandInfo kCommandInfo_NifGetNthChildMaterial;
+extern CommandInfo kCommandInfo_NifSetNthChildMaterial;
+extern CommandInfo kCommandInfo_NifNthChildHasTexturingProp;
+extern CommandInfo kCommandInfo_NifNthChildHasBaseTexture;
+extern CommandInfo kCommandInfo_NifGetNthChildBaseTexture;
+extern CommandInfo kCommandInfo_NifSetNthChildBaseTexture;
