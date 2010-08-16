@@ -4,7 +4,17 @@ extern "C" {
 
 	bool OBSEPlugin_Query(const OBSEInterface * obse, PluginInfo * info)
 	{
-		_MESSAGE("query");
+#ifdef _DEBUG
+		_MESSAGE("NifSE v%u.%0*u b:%x a:%x", getMajorV(), 2, getMinorV(), getBetaV(), getAlphaV());
+#else
+		if ( isAlpha() )
+			_MESSAGE("NifSE v%u.%0*u a:%x", getMajorV(), 2, getMinorV(), getAlphaV());
+		else if ( isBeta() )
+			_MESSAGE("NifSE v%u.%0*u b:%x", getMajorV(), 2, getMinorV(), getBetaV());
+		else
+			_MESSAGE("NifSE v%u.%0*u", getMajorV(), 2, getMinorV());
+#endif
+		_MESSAGE("\n\tquery");
 
 		// fill out the info structure
 		info->name = g_pluginName.c_str();
@@ -79,7 +89,7 @@ extern "C" {
 
 	bool OBSEPlugin_Load(const OBSEInterface * obse)
 	{
-		_MESSAGE("load");
+		_MESSAGE("\tload\n");
 
 		g_pluginHandle = obse->GetPluginHandle();
 
@@ -90,9 +100,9 @@ extern "C" {
 #endif
 		obse->SetOpcodeBase(0x24F0); // to 0x24FF (inclusive)
 
-		obse->RegisterCommand(		&kCommandInfo_NifGetAltGrip										); //0x24F0 T
-		obse->RegisterCommand(		&kCommandInfo_NifGetOffHand										); //0x24F1 T
-		obse->RegisterCommand(		&kCommandInfo_NifGetBackShield									); //0x24F2 T
+		obse->RegisterTypedCommand(	&kCommandInfo_NifGetAltGrip,					kRetnType_String); //0x24F0 T
+		obse->RegisterTypedCommand(	&kCommandInfo_NifGetOffHand,					kRetnType_String); //0x24F1 T
+		obse->RegisterTypedCommand(	&kCommandInfo_NifGetBackShield,					kRetnType_String); //0x24F2 T
 		// ------------------------------------- End of Deprecated Functions ------------------------------------- //
 
 		obse->RegisterCommand(		&kCommandInfo_NifOpen											); //0x24F3 T S L
@@ -189,10 +199,10 @@ extern "C" {
 			_MESSAGE("\nInitializing NifSE Hooks.");
 			Hooks_NifSE_Init();
 		}
-		else {
-			_MESSAGE("Listening to OBSE dispatches.!");
+/*		else {
+			_MESSAGE("Listening to OBSE dispatches.");
 			msgInterface->RegisterListener(g_pluginHandle, "OBSE", EditorMessageHandler);
-		}
+		}*/
 
 		_MESSAGE("\n\tInitialization complete.\n\n");
 

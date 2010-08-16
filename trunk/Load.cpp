@@ -6,12 +6,12 @@ void MessageHandler(OBSEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 		case OBSEMessagingInterface::kMessage_PostLoad:
 			_MESSAGE("Game loaded: Creating ni\\ directory.\n");
-			CreateDirectory(string(GetOblivionDirectory()+"Data\\Meshes\\ni\\").c_str(), NULL);
+			CreateDirectory(string(GetOblivionDirectory()+"Data\\"+s_nifSEFullPath).c_str(), NULL);
 			break;
 
 		case OBSEMessagingInterface::kMessage_ExitGame:
 			_MESSAGE("Game quit: Deleting ni\\ directory.");
-			RemoveDirectory(string(GetOblivionDirectory()+"Data\\Meshes\\ni\\").c_str());
+			RemoveDirectory(string(GetOblivionDirectory()+"Data\\"+s_nifSEFullPath).c_str());
 			break;
 	}
 }
@@ -145,6 +145,8 @@ void NifSE_PreloadCallback(void * reserved) {
 	UInt32 type, version, length;
 
 	UInt32 modID;
+	bool modLoaded;
+	UInt32 nifSEv = getV(0x0001,0x00,0x0,0x3);
 	UInt8 testInt;
 	UInt32 nifID;
 	string nifPath;
@@ -187,41 +189,81 @@ void NifSE_PreloadCallback(void * reserved) {
 				dPrintAndLog("NifLoad","'MOD ' record - new mod's NifFiles.");
 				serInterface->ReadRecordData(&modID, sizeof(UInt8));
 				dPrintAndLog("NifLoad","Saved modID: "+UIntToString(modID)+".");
-				if ( !(serInterface->ResolveRefID(modID << 24, &modID)) )
-					modID = 255; // mod not loaded
-				else
+				if ( !(serInterface->ResolveRefID(modID << 24, &modID)) ) {
+					modLoaded = false;
+					dPrintAndLog("NifLoad","Mod no longer loaded.");
+				}
+				else {
+					modLoaded = true;
 					modID = modID >> 24;
-				dPrintAndLog("NifLoad","modID resolved: "+UIntToString(modID)+".");
+					dPrintAndLog("NifLoad","modID resolved: "+UIntToString(modID)+".");
+				}
 				break;
 
 			case 'niID':
 				dPrintAndLog("NifLoad","'niID' record - new NifFile.");
-				if ( modID != 255 )
+				if ( modLoaded )
 					serInterface->ReadRecordData(&nifID, sizeof(UInt32));
+				nifPath = "";
+				nifSEv = getV(0x0001,0x00,0x0,0x3); // defaults to v1.0 a"1.3", as this was the last version to not include version information
 				dPrintAndLog("NifLoad","New NifFile #"+UIntToString(modID)+"-"+UIntToString(nifID)+".");
+				break;
+
+			case 'nSEV':
+				dPrintAndLog("NifLoad","'nSEV' record - NifFile version.");
+				serInterface->ReadRecordData(&nifSEv, sizeof(UInt32));
+				dPrintAndLog("NifLoad","NifFile version #"+UIntToString(nifSEv)+".");
+				break;
+
+			case 'niRo': // deprecated "oriPath"
+				dPrintAndLog("NifLoad","'niRo' record - new oriPath.");
+				if ( modLoaded ) {
+					if ( nifPath == "" ) {
+						nifPath = ReadString(length);
+						dPrintAndLog("NifLoad","oriPath is \""+nifPath+"\".");
+					}
+					else {
+						nifPtr = new NifFile(ReadString(length), nifPath);
+						dPrintAndLog("NifLoad","New deprecated nif created.");
+					}
+				}
+				break;
+
+			case 'niRa': // deprecated "altPath"
+				dPrintAndLog("NifLoad","'niRa' record - new altPath.");
+				if ( modLoaded ) {
+					if ( nifPath == "" ) {
+						nifPath = ReadString(length);
+						dPrintAndLog("NifLoad","altPath is \""+nifPath+"\".");
+					}
+					else {
+						nifPtr = new NifFile(nifPath, ReadString(length));
+						dPrintAndLog("NifLoad","New deprecated nif created.");
+					}
+				}
 				break;
 
 			case 'niRe':
 				dPrintAndLog("NifLoad","'niRe' record - new filename, editable.");
-				if ( modID != 255 ) {
+				if ( modLoaded ) {
 					nifPath = ReadString(length);
-					nifPtr = new NifFile(nifPath, modID, nifID, true);
+					nifPtr = new NifFile(nifPath, modID, nifID, true, nifSEv);
 					dPrintAndLog("NifLoad","Filename is \""+nifPath+"\".");
 				}
 				break;
 
 			case 'niRc':
 				dPrintAndLog("NifLoad","'niRc' record - new filename, const.");
-				if ( modID != 255 ) {
+				if ( modLoaded ) {
 					nifPath = ReadString(length);
-					nifPtr = new NifFile(nifPath, modID, nifID, false);
+					nifPtr = new NifFile(nifPath, modID, nifID, false, nifSEv);
 					dPrintAndLog("NifLoad","Filename is \""+nifPath+"\".");
 				}
 				break;
 
 			case 'niED':
 				dPrintAndLog("NifLoad","'niED' record - new ExtraData changes.");
-				if ( modID != 255 ) {
+				if ( modLoaded ) {
 					changes = ReadString(length);
 					dPrintAndLog("NifLoad","ExtraData changelog loaded.");
 					edNode = NULL;
@@ -410,7 +452,7 @@ void NifSE_PreloadCallback(void * reserved) {
 
 			case 'niCh':
 				dPrintAndLog("NifLoad","'niCh' record - new Children changes.");
-				if ( modID != 255 ) {
+				if ( modLoaded ) {
 					changes = ReadString(length);
 					dPrintAndLog("NifLoad","Children changelog loaded.");
 					avNode = NULL;

@@ -2,13 +2,22 @@
 
 // for easily switching between two versions of a mesh - modified and original
 string ToggleTag(string path, string element, string newVal) {
-	if ( path.find("NifSE") != string::npos ) { // already tagged with something
+	if ( path.find("NifScript") != string::npos ) { // already tagged with something
 		if ( path.find(element) != string::npos ) { // already tagged with THIS element
 			if ( path.find(element+newVal) != string::npos ) { // element has been changed to appropriate value, want to remove change
 				path.erase(path.find(element+newVal)-1,(element+newVal).length()+1); // 1's to account for the prefixed '.'
-				if ( !_stricmp(&(path.c_str()[(path.length()>=14?path.length()-14:0)]),".NifSE.nif") ) { // only tag in this path
+				if ( !_stricmp(path.substr(path.length()-14,14).c_str(),".NifScript.nif") ) { // only tag in this path
 					dPrintAndLog("ToggleTag","Element \""+element+"\" already tagged correctly, only tag in path, removing all tags and returning original mesh!");
-					path.erase(path.find(".NifSE"),10);
+					if ( !_stricmp(path.substr(0, s_nifSEPathLen).c_str(), s_nifSEPath) ) {
+						NifFile* nifPtr = NULL;
+						NifFile::getRegNif(path.substr(s_nifSEPathLen), nifPtr);
+						if ( nifPtr )
+							path = nifPtr->basePath;
+						else
+							throw std::exception("Registered nif not found in registry.");
+					}
+					else
+						path.erase(path.find(".NifScript"),10);
 				}
 				else
 					dPrintAndLog("ToggleTag","Element \""+element+"\" already tagged correctly, removing this tag. Other tags remain.");
@@ -26,49 +35,10 @@ string ToggleTag(string path, string element, string newVal) {
 		}
 	}
 	else { // completely untagged
-		path.insert(path.length()-4,".NifSE."+element+newVal);
+		path.insert(path.length()-4,".NifScript."+element+newVal);
 		dPrintAndLog("ToggleTag","Element \""+element+"\" first tag in path. Set with value \""+newVal+"\".");
 	}
 	return path;
-}
-
-// Copies the Nif-file to another file location.
-// nothing Nif-specific here, just uses standard
-// C++ file functions and BSA-reading code
-int CopyNif(string oriPath, string altPath) {
-	try {
-		std::fstream nifbuf;
-		unsigned int charIndex1 = 0;
-		unsigned int charIndex2 = altPath.find_first_of("\\");
-		string folder = GetOblivionDirectory()+"Data\\Meshes";
-		while ( charIndex2 != string::npos ) {
-			folder = folder+"\\"+altPath.substr(charIndex1,charIndex2-charIndex1);
-			CreateDirectory(folder.c_str(),NULL);
-			charIndex1 = charIndex2+1;
-			charIndex2 = altPath.find_first_of("\\",charIndex1);
-		}
-		folder = GetOblivionDirectory()+"Data\\Meshes\\";
-		nifbuf.open((folder+altPath).c_str(),std::ios::binary|std::ios::out);
-		if ( nifbuf.is_open() ) {
-			dPrintAndLog("CopyNif","Nif \""+folder+altPath+"\" created and opened.");
-			UInt32 loc;
-			WriteNifToStream(oriPath, loc, &nifbuf);
-			nifbuf.close();
-			return loc;
-		}
-		else {
-			dPrintAndLog("CopyNif","Failed to create new file.");
-			return -1;
-		}
-	}
-	catch (exception& except) {
-		dPrintAndLog("CopyNif","Failed to read Nif. Exception \""+string(except.what())+"\" thrown.");
-		return -1;
-	}
-}
-
-int CopyNif(string path) { // from BSA to folder, basically
-	return CopyNif(path,path);
 }
 
 static bool Cmd_NifGetAltGrip_Execute(COMMAND_ARGS) { // returns path to model using opposite number of hands
@@ -90,25 +60,26 @@ static bool Cmd_NifGetAltGrip_Execute(COMMAND_ARGS) { // returns path to model u
 					string oriPath = model->nifPath.m_data;
 					string altPath = ToggleTag(oriPath,"Prn","AltWeapon");
 					if ( CheckFileLocation(altPath) == 0 ) {
-						CopyNif(oriPath,altPath);
-						NifFile alt (altPath);
-						if ( alt.root ) {
-							Niflib::NiStringExtraDataRef Prn = DynamicCast<Niflib::NiStringExtraData>(alt.getEDByName("Prn"));
+						NifFile* alt = new NifFile(oriPath, altPath);
+						if ( alt->root ) {
+							list<Niflib::NiExtraDataRef>::size_type edID = alt->getEDIndexByName("Prn");
+							Niflib::NiStringExtraDataRef Prn = DynamicCast<Niflib::NiStringExtraData>(alt->findExtraData(edID));
 							if ( Prn != NULL ) {
 								dPrintAndLog("NifGetAltGrip","Prn node found! Prn = "+Prn->GetData());
 								if ( Prn->GetData() == "SideWeapon" ) { // one-handed according to Nif
 									Prn->SetData("BackWeapon");
 									dPrintAndLog("NifGetAltGrip","Weapon switched from 1h to 2h! Prn = "+Prn->GetData());
+									alt->extraDataChanges += changeLog(edID, ED_Str, Act_ED_SetValue, "BackWeapon");
 								}
 								else if ( Prn->GetData() == "BackWeapon" ) { // two-handed according to Nif
 									Prn->SetData("SideWeapon");
 									dPrintAndLog("NifGetAltGrip","Weapon switched from 2h to 1h! Prn = "+Prn->GetData());
+									alt->extraDataChanges += changeLog(edID, ED_Str, Act_ED_SetValue, "SideWeapon");
 								}
 								else {
 									PrintAndLog("NifGetAltGrip","Unknown weapon type! Prn = "+Prn->GetData());
 									return true;
 								}
-								alt.commitChanges();
 								dPrintAndLog("NifGetAltGrip","New Alt-Grip Nif created!");
 							}
 							else { // Prn == NULL
@@ -124,19 +95,19 @@ static bool Cmd_NifGetAltGrip_Execute(COMMAND_ARGS) { // returns path to model u
 
 					// return the new mesh.
 					strInterface->Assign(PASS_COMMAND_ARGS, altPath.c_str());
-					dPrintAndLog("NifGetAltGrip","Alt grip model path returned to Oblivion! path = "+altPath);
+					dPrintAndLog("NifGetAltGrip","Alt grip model path returned to Oblivion! path = \""+altPath+"\".\n");
 				}
 				else // weapon->type > 3
-					PrintAndLog("NifGetAltGrip","Invalid weapon type!");
+					PrintAndLog("NifGetAltGrip","Invalid weapon type!\n");
 			}
 			else // !weapon
-				PrintAndLog("NifGetAltGrip","Argument not weapon!");
+				PrintAndLog("NifGetAltGrip","Argument not weapon!\n");
 		}
 		else // !form
-			PrintAndLog("NifGetAltGrip","Invalid argument!");
+			PrintAndLog("NifGetAltGrip","Invalid argument!\n");
 	}
 	else // !ExtractArgs
-		PrintAndLog("NifGetAltGrip","Failed to determine passed argument!");
+		PrintAndLog("NifGetAltGrip","Failed to determine passed argument!\n");
 
 	return true;
 }
@@ -162,28 +133,30 @@ static bool Cmd_NifGetOffHand_Execute(COMMAND_ARGS) {
 					string oriPath = model->nifPath.m_data;
 					string altPath = ToggleTag(oriPath,"Prn","Torch");
 					if ( CheckFileLocation(altPath) == 0 ) {
-						CopyNif(oriPath,altPath);
-						NifFile alt (altPath);
-						if ( alt.root ) {
-							Niflib::NiStringExtraDataRef Prn = DynamicCast<Niflib::NiStringExtraData>(alt.getEDByName("Prn"));
+						NifFile* alt = new NifFile(oriPath, altPath);
+						if ( alt->root ) {
+							list<Niflib::NiExtraDataRef>::size_type edID = alt->getEDIndexByName("Prn");
+							Niflib::NiStringExtraDataRef Prn = DynamicCast<Niflib::NiStringExtraData>(alt->findExtraData(edID));
 							if ( Prn != NULL ) {
 								dPrintAndLog("NifGetOffHand","Prn node found! Prn = "+Prn->GetData());
 								if ( Prn->GetData() == "SideWeapon" || Prn->GetData() == "BackWeapon" ) { // one of two weapon values
 									Prn->SetData("Torch");
 									dPrintAndLog("NifGetOffHand","Weapon switched to Shield! Prn = "+Prn->GetData());
+									alt->extraDataChanges += changeLog(edID, ED_Str, Act_ED_SetValue, "Torch");
 								}
 								else {
 									PrintAndLog("NifGetOffHand","Unknown weapon type! Prn = "+Prn->GetData());
 									return true;
 								}
-								NiAVObjectRef Scabbard = alt.getChildByName("Scb");
+								vector<Niflib::NiAVObjectRef>::size_type chID = alt->getChildIndexByName("Scb");
+								NiAVObjectRef Scabbard = alt->root->GetChildren()[chID];
 								if ( Scabbard != NULL ) {
 									dPrintAndLog("NifGetOffHand","Removing scabbard!");
-									alt.root->RemoveChild(Scabbard);
+									alt->root->RemoveChild(Scabbard);
+									alt->childrenChanges += changeLog(chID, Ch_AVObj, Act_Remove);
 								}
 								else
 									dPrintAndLog("NifGetOffHand","No scabbard to remove!");
-								alt.commitChanges();
 								dPrintAndLog("NifGetOffHand","New off-hand Nif created!");
 							}
 							else { // Prn == NULL
@@ -191,7 +164,7 @@ static bool Cmd_NifGetOffHand_Execute(COMMAND_ARGS) {
 								return true;
 							}
 						}
-						else { // !alt.root
+						else { // !alt->root
 							PrintAndLog("NifGetOffHand","Nif could not be read!");
 							return true;
 						}
@@ -199,19 +172,19 @@ static bool Cmd_NifGetOffHand_Execute(COMMAND_ARGS) {
 
 					// return the mesh.
 					strInterface->Assign(PASS_COMMAND_ARGS, altPath.c_str());
-					dPrintAndLog("NifGetOffHand","Off hand model path returned to Oblivion! path = "+altPath);
+					dPrintAndLog("NifGetOffHand","Off hand model path returned to Oblivion! path = \""+altPath+"\".\n");
 				}
 				else // weapon->type > 3
-					PrintAndLog("NifGetOffHand","Invalid weapon type!");
+					PrintAndLog("NifGetOffHand","Invalid weapon type!\n");
 			}
 			else // !weapon
-				PrintAndLog("NifGetOffHand","Argument not weapon!");
+				PrintAndLog("NifGetOffHand","Argument not weapon!\n");
 		}
 		else // !form
-			PrintAndLog("NifGetOffHand","Invalid argument!");
+			PrintAndLog("NifGetOffHand","Invalid argument!\n");
 	}
 	else // !ExtractArgs
-		PrintAndLog("NifGetOffHand","Failed to determine passed argument!");
+		PrintAndLog("NifGetOffHand","Failed to determine passed argument!\n");
 
 	return true;
 }
@@ -236,26 +209,31 @@ static bool Cmd_NifGetBackShield_Execute(COMMAND_ARGS) {
 					string oriPath = bip->bipedModel->nifPath.m_data;
 					string altPath = ToggleTag(oriPath,"Prn","Bip01 L Shoulder Helper");
 					if ( CheckFileLocation(altPath) == 0 ) {
-						CopyNif(oriPath,altPath);
-						NifFile alt (altPath);
-						if ( alt.root ) {
-							Niflib::NiStringExtraDataRef Prn = DynamicCast<Niflib::NiStringExtraData>(alt.getEDByName("Prn"));
+						NifFile* alt = new NifFile(oriPath, altPath);
+						if ( alt->root ) {
+							list<Niflib::NiExtraDataRef>::size_type edID = alt->getEDIndexByName("Prn");
+							Niflib::NiStringExtraDataRef Prn = DynamicCast<Niflib::NiStringExtraData>(alt->findExtraData(edID));
 							if ( Prn != NULL ) {
 								dPrintAndLog("NifGetBackShield","Prn node found! Prn = "+Prn->GetData());
 								if ( Prn->GetData() == "Bip01 L ForearmTwist" ) { // is a shield
 									Prn->SetData("Bip01 L Shoulder Helper");
 									dPrintAndLog("NifGetBackShield","Shield switched to shoulder! Prn = "+Prn->GetData());
+									alt->extraDataChanges += changeLog(edID, ED_Str, Act_ED_SetValue, "Bip01 L ForearmTwist");
 								}
 								else {
 									PrintAndLog("NifGetBackShield","Unknown shield type! Prn = "+Prn->GetData());
 									return true;
 								}
-								for ( alt.childIt = alt.root->GetChildren().begin() ; alt.childIt != alt.root->GetChildren().end() ; ++(alt.childIt) ) {
-									dPrintAndLog("NifGetBackShield",string("Shield \"")+form->GetFullName()->name.m_data+"\" Child \""+(*(alt.childIt))->GetName()+"\" translated and rotated!");
-									(*(alt.childIt))->SetLocalTranslation((*(alt.childIt))->GetLocalTranslation()+Niflib::Vector3(25,-11,-20));
-									(*(alt.childIt))->SetLocalRotation((*(alt.childIt))->GetLocalRotation()*Niflib::Matrix33(-0.9249,-0.1247,0.3593,-0.4966,0.9655,-0.1710,-0.3256,-0.2287,-0.9174));
+								vector<Niflib::NiAVObjectRef>::size_type chID = 0;
+								for ( alt->childIt = alt->root->GetChildren().begin() ; alt->childIt != alt->root->GetChildren().end() ; ++(alt->childIt), ++chID ) {
+									dPrintAndLog("NifGetBackShield",string("Shield \"")+form->GetFullName()->name.m_data+"\" Child \""+(*(alt->childIt))->GetName()+"\" translated and rotated!");
+									Niflib::Vector3 nuTranslation = (*(alt->childIt))->GetLocalTranslation()+Niflib::Vector3(25,-11,-20);
+									(*(alt->childIt))->SetLocalTranslation(nuTranslation);
+									alt->childrenChanges += changeLog(chID,Ch_AVObj,Act_AV_SetLocTranslation,VectorToString(nuTranslation));
+									Niflib::Matrix33 nuRotation = (*(alt->childIt))->GetLocalRotation()*Niflib::Matrix33(-0.9249,-0.1247,0.3593,-0.4966,0.9655,-0.1710,-0.3256,-0.2287,-0.9174);
+									(*(alt->childIt))->SetLocalRotation(nuRotation);
+									alt->childrenChanges += changeLog(chID,Ch_AVObj,Act_AV_SetLocRotation,MatrixToString(nuRotation));
 								}
-								alt.commitChanges();
 								dPrintAndLog("NifGetBackShield","New back shield Nif created!");
 							}
 							else { // Prn == NULL
@@ -263,7 +241,7 @@ static bool Cmd_NifGetBackShield_Execute(COMMAND_ARGS) {
 								return true;
 							}
 						}
-						else { // !alt.root
+						else { // !alt->root
 							PrintAndLog("NifGetBackShield","Nif could not be read!");
 							return true;
 						}
@@ -271,19 +249,19 @@ static bool Cmd_NifGetBackShield_Execute(COMMAND_ARGS) {
 
 					// return the mesh.
 					strInterface->Assign(PASS_COMMAND_ARGS, altPath.c_str());
-					dPrintAndLog("NifGetBackShield","Back shield model path returned to Oblivion! path = "+altPath);
+					dPrintAndLog("NifGetBackShield","Back shield model path returned to Oblivion! path = \""+altPath+"\".\n");
 				}
 				else // shield->BipedModel.getSlot() != kPart_Shield
-					PrintAndLog("NifGetBackShield","Invalid armor type (needs shield)!");
+					PrintAndLog("NifGetBackShield","Invalid armor type (needs shield)!\n");
 			}
 			else // !shield
-				PrintAndLog("NifGetBackShield","Argument not armor!");
+				PrintAndLog("NifGetBackShield","Argument not armor!\n");
 		}
 		else // !form
-			PrintAndLog("NifGetBackShield","Invalid argument!");
+			PrintAndLog("NifGetBackShield","Invalid argument!\n");
 	}
 	else // !ExtractArgs
-		PrintAndLog("NifGetBackShield","Failed to determine passed argument!");
+		PrintAndLog("NifGetBackShield","Failed to determine passed argument!\n");
 
 	return true;
 }

@@ -5,8 +5,8 @@ static bool IsNifSEFilePath(const char* path, bool bUseFullPath) {
 	if (!path)
 		return false;
 	
-	const char* nsPath = bUseFullPath ? s_nifScriptFullPath : s_nifScriptPath;
-	UInt32 nsPathLen = bUseFullPath ? s_nifScriptFullPathLen : s_nifScriptPathLen;
+	const char* nsPath = bUseFullPath ? s_nifSEFullPath : s_nifSEPath;
+	UInt32 nsPathLen = bUseFullPath ? s_nifSEFullPathLen : s_nifSEPathLen;
 
 	UInt32 i = 0;
 	while (path[i] && i < nsPathLen)
@@ -35,7 +35,7 @@ static bool __stdcall CreateNifFile(const char* nifPath) {
 	
 	// Create the .nif and save to disk
 	NifFile* nifPtr = NULL;
-	if ( NifFile::getRegNif(string(&(nifPath[s_nifScriptFullPathLen])), nifPtr) ) {
+	if ( NifFile::getRegNif(string(&(nifPath[s_nifSEFullPathLen])), nifPtr) ) {
 		if ( nifPtr->editable ) {
 			nifPtr->loc = 1;
 			ofstream newNif (nifPtr->getAbsPath().c_str(), ios::out);
@@ -103,10 +103,15 @@ static void __stdcall DeleteNifFile(const char* nifPath) {
 
 	// delete the file
 	NifFile* nifPtr = NULL;
-	if ( NifFile::getRegNif(string(&(nifPath[s_nifScriptPathLen])), nifPtr) ) {
+	if ( NifFile::getRegNif(string(&(nifPath[s_nifSEPathLen])), nifPtr) ) {
 		if ( nifPtr->editable ) {
 			nifPtr->loc = 0;
 			std::remove(nifPtr->getAbsPath().c_str());
+			if ( nifPtr->nifSEversion == 0x0000001F ) {
+				string::size_type i = nifPtr->filePath.length()-4;
+				while ( (i = nifPtr->filePath.find_last_of("\\", i-1)) != string::npos )
+					RemoveDirectory(nifPtr->filePath.substr(0,i).c_str());
+			}
 			dPrintAndLog("DeleteNifFile","Nif deleted.\n");
 		}
 		else

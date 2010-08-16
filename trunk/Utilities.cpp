@@ -2,13 +2,31 @@
 
 extern string						g_pluginName	("NifSE");
 extern IDebugLog					g_Log			((g_pluginName+".log").c_str());
-extern UInt32						g_pluginVersion (999);
+extern UInt32						g_pluginVersion	(getV(0x0001,0x00,0x0,0x4));
 extern PluginHandle					g_pluginHandle	(kPluginHandle_Invalid);
 
 extern OBSEArrayVarInterface*		arrInterface	(NULL);
 extern OBSEMessagingInterface*		msgInterface	(NULL);
 extern OBSESerializationInterface*	serInterface	(NULL);
 extern OBSEStringVarInterface*		strInterface	(NULL);
+
+UInt8  getAlphaV(const UInt32 ver) { return (ver & 0x0000000F) >> alpha; }
+void setAlphaV(UInt8 a, UInt32 ver) { ver = (ver & 0xFFFFFFF0) | ((a & 0xF) << alpha); }
+bool isAlpha(const UInt32 ver) { return !(getAlphaV(ver) == 0xF); }
+
+UInt8   getBetaV(const UInt32 ver) { return (ver & 0x000000F0) >> beta; }
+void setBetaV(UInt8 b, UInt32 ver) { ver = (ver & 0xFFFFFF0F) | ((b & 0xF) << beta); }
+bool isBeta(const UInt32 ver) { return !(getBetaV(ver) == 0xF); }
+
+UInt8  getMinorV(const UInt32 ver) { return (ver & 0x0000FF00) >> minor; }
+void setMinorV(UInt8 m, UInt32 ver) { ver = (ver & 0xFFFF00FF) | (m << minor); }
+
+UInt16 getMajorV(const UInt32 ver) { return (ver & 0xFFFF0000) >> major; }
+void setMajorV(UInt16 M, UInt32 ver) { ver = (ver & 0x0000FFFF) | (M << major); }
+
+UInt32 getV(const UInt16 majorV, const UInt8 minorV, const UInt8 betaV, const UInt8 alphaV) {
+	return majorV<<major | minorV<<minor | betaV<<beta | alphaV<<alpha;
+}
 
 // some utility functions because I got tired of writing the same stuff for all my debug code
 void PrintAndLog(string func) {
@@ -66,25 +84,29 @@ OBSEArray* ArrayFromStdVector(const vector<OBSEElement>& data, Script* callingSc
 	return arr;
 }
 
-// internal version of FindFile that does some double-checking
-// not sure if this is still necessary
-UInt32 CheckFileLocation(string path) {
+// Extended version of FindFile that also checks RegList.
+// Also does some double-checking that may be unnecessary.
+// To avoid going through RegList twice, can store the nif
+// in a pointer, if passed.
+UInt32 CheckFileLocation(string path, NifFile* nifPtr) {
 	UInt32 loc = (*g_FileFinder)->FindFile(("Data\\Meshes\\"+path).c_str(),0,0,-1);
 	if ( loc == 0 ) {
-		std::ofstream file;
-		file.open((GetOblivionDirectory()+"Data\\Meshes\\"+path).c_str(),std::ios::binary|std::ios::in);
-		if ( file.is_open() )
-			loc = 1;
-		file.close();
+		if ( !_stricmp(path.substr(0, s_nifSEPathLen).c_str(), s_nifSEPath) )
+			if ( NifFile::getRegNif(path, nifPtr) )
+				if ( nifPtr->root )
+					loc = 3;
+				else
+					dPrintAndLog("CheckFileLocation","Nif root bad!");
 	}
-	dPrintAndLog("CheckFileLocation","File \""+path+"\" "+(loc==0?("not found!"):(loc==1?("found in folders!"):(loc==2?("found in BSA!"):("returned unknown location!")))));
+	dPrintAndLog("CheckFileLocation","File \""+path+"\" "+(loc==0?("not found!"):(loc==1?("found in folders!"):(loc==2?("found in BSA!"):(loc==3?("found in RegList!"):("returned unknown location!"))))));
 	return loc;
 }
 
 void WriteNifToStream(string path, UInt32& loc, std::iostream* stream) {
 	loc = CheckFileLocation(path);
-	if ( loc == 0 )
+	if ( loc == 0 ) {
 		throw exception(string("Nif \""+path+"\" not found.").c_str());
+	}
 	else if ( loc == 1 ) {
 		std::ifstream file ((GetOblivionDirectory()+"Data\\Meshes\\"+path).c_str(), std::ios::in|std::ios::out|std::ios::binary);
 		if ( file.is_open() )
@@ -139,6 +161,18 @@ void WriteNifToStream(string path, UInt32& loc, std::iostream* stream) {
 		}
 		if ( size == 0 )
 			throw exception("Nif not found in BSAs.");
+	}
+	else if ( loc == 3 ) {
+		NifFile* nifPtr = NULL;
+		NifFile::getRegNif(path, nifPtr);
+		if ( nifPtr->root ) {
+			std::stringstream ostr (std::ios::binary|std::ios::in|std::ios::out);
+			try { Niflib::WriteNifTree(ostr, nifPtr->root, nifPtr->headerInfo); } catch (std::exception except) { throw except; }
+			std::ofstream newFile ((GetOblivionDirectory()+"Data\\Meshes\\DW\\NifSE\\"+path).c_str(), std::ios::binary|std::ios::out);
+			*stream << ostr.str();
+		}
+		else
+			throw exception("Nif root bad!");
 	}
 	else
 		throw exception(string("Nif location unknown. CheckLocation return value is "+UIntToString(loc)+".").c_str());
@@ -218,6 +252,10 @@ string VectorToString(vector<float> vec) {
 	return str;
 }
 
+string VectorToString(Niflib::Vector3 vec) {
+	return "["+FloatToString(vec.x)+"|"+FloatToString(vec.y)+"|"+FloatToString(vec.z)+"|";
+}
+
 vector<float> StringToVector(string str) {
 	vector<float> vec = vector<float>();
 	string::size_type posS = 1;
@@ -238,6 +276,23 @@ string MatrixToString(vector< vector <float> > mat) {
 			str += FloatToString(mat[i][j])+"|";
 	}
 	return str;
+}
+
+string MatrixToString(Niflib::Matrix33 mat) {
+	float matArr[3][3];
+	mat.AsFloatArr(matArr);
+	return   "["+FloatToString(matArr[0][0])+"|"+FloatToString(matArr[0][1])+"|"+FloatToString(matArr[0][2])+
+			"|["+FloatToString(matArr[1][0])+"|"+FloatToString(matArr[1][1])+"|"+FloatToString(matArr[1][2])+
+			"|["+FloatToString(matArr[2][0])+"|"+FloatToString(matArr[2][1])+"|"+FloatToString(matArr[2][2])+"|";
+}
+
+string MatrixToString(Niflib::Matrix44 mat) {
+	float matArr[4][4];
+	mat.AsFloatArr(matArr);
+	return   "["+FloatToString(matArr[0][0])+"|"+FloatToString(matArr[0][1])+"|"+FloatToString(matArr[0][2])+"|"+FloatToString(matArr[0][3])+
+			"|["+FloatToString(matArr[1][0])+"|"+FloatToString(matArr[1][1])+"|"+FloatToString(matArr[1][2])+"|"+FloatToString(matArr[1][3])+
+			"|["+FloatToString(matArr[2][0])+"|"+FloatToString(matArr[2][1])+"|"+FloatToString(matArr[2][2])+"|"+FloatToString(matArr[2][3])+
+			"|["+FloatToString(matArr[3][0])+"|"+FloatToString(matArr[3][1])+"|"+FloatToString(matArr[3][2])+"|"+FloatToString(matArr[3][3])+"|";
 }
 
 vector< vector<float> > StringToMatrix(string str) {

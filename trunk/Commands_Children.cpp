@@ -176,7 +176,6 @@ static bool Cmd_NifDeleteNthChild_Execute(COMMAND_ARGS) {
 				NiAVObjectRef child = nifPtr->root->GetChildren()[chID];
 				if ( child ) {
 					nifPtr->root->RemoveChild(child);
-					nifPtr->root->GetChildren() = nifPtr->root->GetChildren();
 					nifPtr->childrenChanges += changeLog(chID, Ch_AVObj, Act_Remove);
 					*result = 1;
 					dPrintAndLog("NifDeleteNthChild","Deletion successful.\n");
@@ -247,14 +246,14 @@ DEFINE_COMMAND_PLUGIN(
 // sets the local transform of the
 // specified Child of the given NifFile
 static bool Cmd_NifSetNthChildLocalTransform_Execute(COMMAND_ARGS) {
-	PrintAndLog("NifSetNthChildLocalTransform","This function will not be supported until OBSE v0019 and NifSE v1.1. Please use NifSetNthChildLocalTransformTEMP, instead.");
+	PrintAndLog("NifSetNthChildLocalTransform","This function will not be supported until OBSE v0020 and NifSE v1.1. Please use NifSetNthChildLocalTransformTEMP, instead.");
 	*result = 0;
 	return true;
 }
 
 DEFINE_COMMAND_PLUGIN(
 	NifSetNthChildLocalTransform,
-	"Unsupported until OBSE v0019.",
+	"Unsupported until OBSE v0020.",
 	0,
 	3,
 	kParams_OneMatrix44_TwoInts
@@ -305,14 +304,14 @@ DEFINE_COMMAND_PLUGIN(
 // sets the local translation of the
 // specified Child of the given NifFile
 static bool Cmd_NifSetNthChildLocalTranslation_Execute(COMMAND_ARGS) {
-	PrintAndLog("NifSetNthChildLocalTranslation","This function will not be supported until OBSE v0019 and NifSE v1.1. Please use NifSetNthChildLocalTranslationTEMP, instead.\n");
+	PrintAndLog("NifSetNthChildLocalTranslation","This function will not be supported until OBSE v0020 and NifSE v1.1. Please use NifSetNthChildLocalTranslationTEMP, instead.\n");
 	*result = 0;
 	return true;
 }
 
 DEFINE_COMMAND_PLUGIN(
 	NifSetNthChildLocalTranslation,
-	"Unsupported until OBSE v0019.",
+	"Unsupported until OBSE v0020.",
 	0,
 	3,
 	kParams_OneVector3_TwoInts
@@ -370,14 +369,14 @@ DEFINE_COMMAND_PLUGIN(
 // sets the local rotation of the
 // specified Child of the given NifFile
 static bool Cmd_NifSetNthChildLocalRotation_Execute(COMMAND_ARGS) {
-	PrintAndLog("NifSetNthChildLocalRotation","This function will not be supported until OBSE v0019 and NifSE v1.1. Please use NifSetNthChildLocalRotationTEMP, instead.\n");
+	PrintAndLog("NifSetNthChildLocalRotation","This function will not be supported until OBSE v0020 and NifSE v1.1. Please use NifSetNthChildLocalRotationTEMP, instead.\n");
 	*result = 0;
 	return true;
 }
 
 DEFINE_COMMAND_PLUGIN(
 	NifSetNthChildLocalRotation,
-	"Unsupported until OBSE v0019.",
+	"Unsupported until OBSE v0020.",
 	0,
 	3,
 	kParams_OneMatrix33_TwoInts
