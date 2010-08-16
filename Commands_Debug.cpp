@@ -12,7 +12,7 @@ static bool Cmd_NifWriteToDisk_Execute(COMMAND_ARGS) {
 		NifFile* nifPtr = NULL;
 		NifFile::getRegNif(modID,nifID,nifPtr);
 		if ( nifPtr->root ) {
-			Niflib::WriteNifTree(GetOblivionDirectory()+"Data\\Meshes\\ni\\"+filename,DynamicCast<Niflib::NiObject>(nifPtr->root),nifPtr->headerInfo);
+			Niflib::WriteNifTree(GetOblivionDirectory()+"Data\\"+s_nifSEFullPath+filename,DynamicCast<Niflib::NiObject>(nifPtr->root),nifPtr->headerInfo);
 			*result = 1;
 			dPrintAndLog("NifWriteToDisk","Nif written to disk.\n");
 		}

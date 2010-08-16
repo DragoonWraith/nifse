@@ -2,64 +2,12 @@
 
 #include "Utilities.h"
 
-#include "niflib.h"
-#include "obj\NiObject.h"
-#include "obj\NiNode.h"
-#include "obj\NiExtraData.h"
-#include "obj\BSBound.h"
-#include "obj\BSFurnitureMarker.h"
-#include "obj\NiBinaryExtraData.h"
-#include "obj\NiBinaryVoxelData.h"
-#include "obj\NiBooleanExtraData.h"
-#include "obj\NiColorExtraData.h"
-#include "obj\NiFloatExtraData.h"
-#include "obj\NiFloatsExtraData.h"
-#include "obj\NiIntegerExtraData.h"
-#include "obj\BSXFlags.h"
-#include "obj\NiIntegersExtraData.h"
-#include "obj\NiStringExtraData.h"
-#include "obj\NiStringsExtraData.h"
-#include "obj\NiTextKeyExtraData.h"
-#include "obj\NiVectorExtraData.h"
-#include "obj\NiVertWeightsExtraData.h"
-#include "obj\NiAVObject.h"
-#include "obj\NiMaterialProperty.h"
-#include "obj\NiTextureProperty.h"
-#include "obj\NiTexturingProperty.h"
-#include "obj\NiSourceTexture.h"
-#include "obj\NiImage.h"
-#include "obj\NiCollisionObject.h"
-#include "obj\bhkNiCollisionObject.h"
-#include "obj\bhkRigidBodyT.h"
-#include "obj\NiDynamicEffect.h"
-//using Niflib::NiObject;
-//using Niflib::NiNode;
-//using Niflib::NiAVObject;
-
-using Niflib::GetNifVersion;
-using Niflib::Ref;
-using Niflib::NiObjectRef;
-using Niflib::NiNodeRef;
-using Niflib::NifInfo;
-//using Niflib::NiExtraData;
-using Niflib::NiExtraDataRef;
-using Niflib::NiStringExtraData;
-using Niflib::NiStringExtraDataRef;
-using Niflib::NiAVObjectRef;
-using Niflib::NiCollisionObject;
-using Niflib::bhkNiCollisionObject;
-using Niflib::bhkNiCollisionObjectRef;
-using Niflib::bhkRigidBodyT;
-using Niflib::NiDynamicEffect;
-using Niflib::DynamicCast;
-using Niflib::StaticCast;
-using Niflib::ReadNifTree;
-
 class NifFile{
 public:
 	string filePath; // actual file for this modified Nif relative to Oblivion\Data\Meshes
 	UInt32 loc;
 	unsigned int nifVersion;
+	UInt32 nifSEversion;
 
 	bool editable;	 // whether or not the Nif is to be edited (and therefore needs a unique copy)
 	string basePath; // file it is based on, also relative to Oblivion\Data\Meshes
@@ -83,19 +31,32 @@ public:
 	vector<Niflib::NiDynamicEffectRef>::iterator effectIt;
 
 	NifFile();
-	NifFile(const string& file, UInt8 modIndex, UInt32 nifIndex, bool editable);
 	NifFile(const string& file, UInt8 modIndex = 255, bool editable = false);
+	NifFile(const string& oriPath, const string& altPath);
+	NifFile(const string& file, UInt8 modIndex, UInt32 nifIndex, bool editable, UInt32 nifSEv = 0x00010003);
+	NifFile(const string& oriPath, const string& altPath, UInt32 nifIndex);
 	NifFile(const NifFile&);
 	~NifFile();
+
+	// directory of registered NifFiles.
+	static std::map < UInt8, std::map < UInt32, NifFile* > > RegList;
+	static std::map <string, pair<UInt8, UInt32>* > RegListByFilename;
+
+	static bool getRegNif(UInt8 modID, UInt32 nifID, NifFile* &nifPtr);
+	static bool getRegNif(string filename, NifFile* &nifPtr);
+
 	SInt64 reg();
+	SInt64 reg(const string& oriPath, const string& altPath);
 	SInt64 reg(UInt8 modIndex, UInt32 nifIndex);
+	SInt64 reg(const string& oriPath, const string& altPath, UInt32 nifIndex);
+
 	bool isreg();
 	void dereg();
+
 	string getAbsPath() const;
 	string getAbsBasePath() const;
 	string getVersion() const;
 	NiExtraDataRef findExtraData(std::list<Niflib::NiExtraDataRef>::size_type i) const;
-	void setRoot(const string& newPath);
 	void setRoot();
 	Niflib::NiExtraDataRef getEDByName(string name);
 	list<Niflib::NiExtraDataRef>::size_type getEDIndexByName(string name);
@@ -105,13 +66,6 @@ public:
 	vector<Niflib::NiDynamicEffectRef>::size_type getEffectIndexByName(string name);
 	void commitChanges();
 	string getIDstring() const;
-
-	// directory of registered NifFiles.
-	static std::map < UInt8, std::map < UInt32, NifFile* > > RegList;
-	static std::map <string, pair<UInt8, UInt32>* > RegListByFilename;
-
-	static bool getRegNif(UInt8 modID, UInt32 nifID, NifFile* &nifPtr);
-	static bool getRegNif(string filename, NifFile* &nifPtr);
 };
 
 enum {

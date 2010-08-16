@@ -14,9 +14,25 @@ void NifSE_SaveCallback(void * reserved) {
 			if ( NifListIter->second->root ) {
 				dPrintAndLog("NifSave","Saving Nif #"+UIntToString(RegListIter->first)+"-"+UIntToString(NifListIter->first)+".");
 				serInterface->WriteRecord('niID', g_pluginVersion, (void *)(&nifIndex), sizeof(UInt32));
+
+				dPrintAndLog("NifSave","Saving NifSE version.");
+				serInterface->WriteRecord('nSEV', g_pluginVersion, (void *)(&(NifListIter->second->nifSEversion)), sizeof(UInt32));
+
 				if ( NifListIter->second->editable ) {
-					dPrintAndLog("NifSave","Saving filepath \""+NifListIter->second->basePath+"\" ("+UIntToString(NifListIter->second->filePath.length())+"); editable nif.");
-					serInterface->WriteRecord('niRe', g_pluginVersion, (void *)(NifListIter->second->basePath.c_str()), NifListIter->second->basePath.length());
+					switch (NifListIter->second->nifSEversion) {
+						case 0x0000001F: // NifScript beta
+							dPrintAndLog("NifSave","Saving deprecated nif! Original filepath \""+NifListIter->second->basePath+"\" and new filepath \""+NifListIter->second->filePath+"\".");
+							serInterface->WriteRecord('niRo', g_pluginVersion, (void *)(NifListIter->second->basePath.c_str()), NifListIter->second->basePath.length());
+							serInterface->WriteRecord('niRa', g_pluginVersion, (void *)(NifListIter->second->filePath.substr(s_nifSEPathLen).c_str()), NifListIter->second->filePath.length()-s_nifSEPathLen);
+							break;
+
+						case 0x00010003: // NifSE v1.0 a"1.3"
+						case 0x0001001F: // NifSE v1.0 b1
+						default:
+							dPrintAndLog("NifSave","Saving filepath \""+NifListIter->second->basePath+"\" ("+UIntToString(NifListIter->second->filePath.length())+"); editable nif.");
+							serInterface->WriteRecord('niRe', g_pluginVersion, (void *)(NifListIter->second->basePath.c_str()), NifListIter->second->basePath.length());
+							break;
+					}
 				}
 				else { // constant
 					dPrintAndLog("NifSave","Saving filepath \""+NifListIter->second->filePath+"\" ("+UIntToString(NifListIter->second->filePath.length())+"); constant nif.");
