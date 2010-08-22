@@ -12,9 +12,13 @@ static bool Cmd_NifOpen_Execute(COMMAND_ARGS) {
 
 	try {
 		NifFile* nifPtr = new NifFile(string(oriPath), scriptObj->GetModIndex(), (forEdit!=0));
-		if ( nifPtr->nifID >= 0 ) {
-			*result = nifPtr->nifID;
-			dPrintAndLog("NifOpen", "\""+string(oriPath)+"\" registered as #"+UIntToString(nifPtr->modID)+"-"+UIntToString(*result)+".\n");
+		if ( nifPtr ) {
+			if ( nifPtr->nifID >= 0 ) {
+				*result = nifPtr->nifID;
+				dPrintAndLog("NifOpen", "\""+string(oriPath)+"\" registered as #"+UIntToString(nifPtr->modID)+"-"+UIntToString(*result)+".\n");
+			}
+			else
+				dPrintAndLog("NifOpen", "\""+string(oriPath)+"\" failed to register!\n");
 		}
 		else
 			dPrintAndLog("NifOpen", "\""+string(oriPath)+"\" failed to register!\n");
@@ -77,7 +81,7 @@ static bool Cmd_NifGetPath_Execute(COMMAND_ARGS) {
 				dPrintAndLog("NifGetPath","Returning \""+pathStr+"\".\n");
 			}
 			else
-				dPrintAndLog("NifGetPath","Nif file not deleted.\n");
+				dPrintAndLog("NifGetPath","Root bad.\n");
 		}
 		else
 			dPrintAndLog("NifGetPath","Nif not found.\n");
@@ -111,7 +115,7 @@ static bool Cmd_NifGetOriginalPath_Execute(COMMAND_ARGS) {
 				dPrintAndLog("NifGetOriginalPath","Returning \""+pathStr+"\".\n");
 			}
 			else
-				dPrintAndLog("NifGetOriginalPath","Nif file not deleted.\n");
+				dPrintAndLog("NifGetOriginalPath","Root bad.\n");
 		}
 		else
 			dPrintAndLog("NifGetOriginalPath","Nif not found.\n");
@@ -126,4 +130,55 @@ DEFINE_COMMAND_PLUGIN(
 	0,
 	1,
 	kParams_OneInt
+);
+
+// returns the total number of blocks in a nif.
+static bool Cmd_NifGetNumBlocks_Execute(COMMAND_ARGS) {
+	*result = 0;
+
+	int nifID = 0;
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifID)) {
+		UInt8 modID = scriptObj->GetModIndex();
+		dPrintAndLog("NifGetNumBlocks","Getting the number of blocks in nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
+		NifFile* nifPtr = NULL;
+		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+			if ( nifPtr->root ) {
+				*result = nifPtr->nifList.size();
+				dPrintAndLog("NifGetNumBlocks","Returning "+UIntToString(nifPtr->nifList.size())+".\n");
+			}
+			else
+				dPrintAndLog("NifGetNumBlocks","Root bad.\n");
+		}
+		else
+			dPrintAndLog("NifGetNumBlocks","Nif not found.\n");
+	}
+	return true;
+}
+
+DEFINE_COMMAND_PLUGIN(
+	NifGetNumBlocks,
+	"Returns the number of blocks in a given registered Nif",
+	0,
+	1,
+	kParams_OneInt
+);
+
+static bool Cmd_GetNifTypeIndex_Execute(COMMAND_ARGS) {
+	*result = -1;
+
+	char typeName[kMaxMessageLength];
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &typeName)) {
+		dPrintAndLog("GetNifTypeIndex","Getting the code for Nif block type \""+string(typeName)+"\".");
+		*result = getNiflibTypeIndex(typeName);
+		dPrintAndLog("GetNifTypeIndex","Returning "+UIntToString(*result)+".");
+	}
+	return true;
+}
+
+DEFINE_COMMAND_PLUGIN(
+	GetNifTypeIndex,
+	"Returns code for the passed type name",
+	0,
+	1,
+	kParams_OneString
 );

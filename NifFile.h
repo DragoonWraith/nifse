@@ -2,166 +2,83 @@
 
 #include "Utilities.h"
 
+#include "NiflibTypes.h"
+
+#include "niflib.h"
+#include "obj/NiObject.h"
+#include "obj/NiNode.h"
+
 class NifFile{
 public:
 	string filePath; // actual file for this modified Nif relative to Oblivion\Data\Meshes
-	UInt32 loc;
-	unsigned int nifVersion;
-	UInt32 nifSEversion;
+	UInt32 loc;		 // 1 = in folder ; 2 = in BSA ; 3 = in RegList
 
 	bool editable;	 // whether or not the Nif is to be edited (and therefore needs a unique copy)
 	string basePath; // file it is based on, also relative to Oblivion\Data\Meshes
-	UInt32 baseLoc;
+	UInt32 baseLoc;	 // 1 = in folder ; 2 = in BSA ; 3 = in RegList
+
+	UInt32 nifVersion;
+	UInt32 nifSEversion;
 
 	UInt8 modID;
 	SInt64 nifID;
 
-	NiNodeRef root;  // in-memory understanding of the mesh
-	NifInfo headerInfo;
-	
-	string extraDataChanges;
-	string collisionChanges;
-	string childrenChanges;
-	string effectChanges;
+	Niflib::NiNodeRef root;  // in-memory understanding of the mesh
+	vector<Niflib::NiObjectRef> nifList;
+	vector<Niflib::NiObjectRef>::size_type nifSize;
+	Niflib::NifInfo* headerInfo;
 
-	bhkNiCollisionObjectRef collision;
 
-	std::list<Niflib::NiExtraDataRef>::iterator extraDataIt;
-	vector<Niflib::NiAVObjectRef>::iterator childIt;
-	vector<Niflib::NiDynamicEffectRef>::iterator effectIt;
 
 	NifFile();
 	NifFile(const string& file, UInt8 modIndex = 255, bool editable = false);
 	NifFile(const string& oriPath, const string& altPath);
 	NifFile(const string& file, UInt8 modIndex, UInt32 nifIndex, bool editable, UInt32 nifSEv = 0x00010003);
 	NifFile(const string& oriPath, const string& altPath, UInt32 nifIndex);
-	NifFile(const NifFile&);
 	~NifFile();
 
+	void loadNif();
+	Niflib::NiNodeRef findRoot();
+
+	string getAbsPath() const;
+	string getAbsPath(const string& path) const;
+	string getAbsBasePath() const;
+	string getVersion() const;
+
+	void write(string path = "");
+
 	// directory of registered NifFiles.
-	static std::map < UInt8, std::map < UInt32, NifFile* > > RegList;
-	static std::map <string, pair<UInt8, UInt32>* > RegListByFilename;
+	static map < UInt8, map < UInt32, NifFile* > > RegList;
+	static map <string, pair<UInt8, UInt32>* > RegListByFilename;
 
 	static bool getRegNif(UInt8 modID, UInt32 nifID, NifFile* &nifPtr);
 	static bool getRegNif(string filename, NifFile* &nifPtr);
 
-	SInt64 reg();
-	SInt64 reg(const string& oriPath, const string& altPath);
-	SInt64 reg(UInt8 modIndex, UInt32 nifIndex);
-	SInt64 reg(const string& oriPath, const string& altPath, UInt32 nifIndex);
 
-	bool isreg();
-	void dereg();
+	// save/load data
+	string delta;
 
-	string getAbsPath() const;
-	string getAbsBasePath() const;
-	string getVersion() const;
-	NiExtraDataRef findExtraData(std::list<Niflib::NiExtraDataRef>::size_type i) const;
-	void setRoot();
-	Niflib::NiExtraDataRef getEDByName(string name);
-	list<Niflib::NiExtraDataRef>::size_type getEDIndexByName(string name);
-	Niflib::NiAVObjectRef getChildByName(string name);
-	vector<Niflib::NiAVObjectRef>::size_type getChildIndexByName(string name);
-	Niflib::NiDynamicEffectRef getEffectByName(string name);
-	vector<Niflib::NiDynamicEffectRef>::size_type getEffectIndexByName(string name);
-	void commitChanges();
-	string getIDstring() const;
+	// save functions
+	void logChange(const UInt32 &block, const UInt32 &type, const UInt32 &action, const string &value = "", const bool &clrPrev = false);
+	void clrChange(const UInt32 &block, const UInt32 &type, const UInt32 &action);
+
+	// load functions
+	void loadChNiExtraDataObject(UInt32 block, UInt32 type, string& val);
+	void loadChNiObjectNET(UInt32 block, UInt32 act, string& val);
+	void loadChNiAVObject(UInt32 block, UInt32 act, string& val);
+	void loadChNiNode(UInt32 block, UInt32 act, string& val);
+	void loadChNiProperty(UInt32 block, UInt32 act, string& val);
 };
 
-enum {
-	ED_ExtraData,
-	ED_Bound,
-	ED_Furniture,
-	ED_Binary,
-	ED_BinaryVoxel,
-	ED_Boolean,
-	ED_Color,
-	ED_Float,
-	ED_Floats,
-	ED_Int,
-	ED_BSXFlags,
-	ED_Ints,
-	ED_Str,
-	ED_Strs,
-	ED_TextKey,
-	ED_Vector,
-	ED_VertWeights,
+const char logNode = ':';
+const char logNumber = '#';
+const char logType = '-';
+const char logAction = '=';
+const char logValType = '|';
+const char logValue = '\n';
 
-	Co_bhkNiColObj = 100,
-	Co_ColData,
-	Co_bhkColObj,
-	Co_bhkBlendColObj,
-	Co_bhkPColObj,
-	Co_bhkSPColObj,
+// Utility function, determines if Nif is (0) missing, (1) in a folder, (2) in an archive, or (3) in RegList
+UInt32 CheckFileLocation(string path, NifFile* nifPtr = NULL);
 
-	Ch_AVObj = 200,
-	Ch_NiCam,
-	Ch_NiGeom,
-	Ch_NiParticles,
-	Ch_NiAutoNormParticles,
-	Ch_NiParticleMeshes,
-	Ch_NiParticleSystem,
-	Ch_NiMeshParticleSystem,
-	Ch_NiRotParticles,
-	Ch_NiTriBasedGeom,
-	Ch_NiClod,
-	Ch_NiTriShape,
-	Ch_NiTriStrips,
-	Ch_NiNode,
-	Ch_AvoidNode,
-	Ch_FxWidget,
-	Ch_FxButton,
-	Ch_FxRadioButton,
-	Ch_NiBillboard,
-	Ch_NiBone,
-	Ch_NiBSAnim,
-	Ch_NiBSParticle,
-	Ch_NiSwitch,
-	Ch_NiLOD,
-	Ch_RootCol,
-
-	Ef_Effect = 300,
-	Ef_Light,
-	Ef_AmbLight,
-	Ef_DirLight,
-	Ef_PntLight,
-	Ef_SpotLight,
-	Ef_TexEff,
-	Ef_Remove,
-};
-
-enum {
-	Act_Add = 1,
-	Act_Remove,
-	Act_SetName,
-
-	Act_ED_SetValue = 50,
-
-	Act_AV_ClearBoundingBox = 150,
-	Act_AV_SetBoundingBox,
-	Act_AV_ClearProps,
-	Act_AV_SetFlags,
-	Act_AV_SetLocTransform,
-	Act_AV_SetLocTranslation,
-	Act_AV_SetLocRotation,
-	Act_AV_SetLocScale,
-	Act_AV_SetVelocity,
-	Act_AV_SetVisibility,
-	Act_AV_SetColObj,
-	Act_AV_SetColMode,
-
-	Act_AV_PropMat_Add = 200,
-	Act_AV_PropMat_Remove,
-	Act_AV_PropMat_SetName,
-
-	Act_AV_PropTex_Add = 250,
-	Act_AV_PropTex_Remove,
-	Act_AV_PropTex_SetBaseMap,
-	Act_AV_PropTex_SetDarkMap,
-	Act_AV_PropTex_SetDetailMap,
-	Act_AV_PropTex_SetGlossMap,
-	Act_AV_PropTex_SetGlowMap,
-	Act_AV_PropTex_SetBumpMap,
-	Act_AV_PropTex_SetDecal0Map,
-	Act_AV_PropTex_SetDecal1Map,
-};
+// Utility function for reading nif out of a file, a BSA archive, or the RegList
+void WriteNifToStream(string path, UInt32& loc, std::iostream* stream);

@@ -98,7 +98,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Installing DLL..."
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\Data\obse\plugins\$(TargetFileName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\Plug-Ins\NifSE\obse\plugins\$(TargetFileName)&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\Data\obse\plugins\$(TargetFileName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\Plug-Ins\NifSE\obse\plugins\$(TargetFileName)&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -558,22 +558,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Commands_Children.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Commands_Children.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Commands_Collision.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Commands_Collision.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Commands_Debug.cpp"
 				>
 			</File>
@@ -590,11 +574,51 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Commands_ExtraData.cpp"
+				RelativePath=".\Commands_NiAVObject.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Commands_ExtraData.h"
+				RelativePath=".\Commands_NiAVObject.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiExtraData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiExtraData.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiNode.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiNode.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiObject.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiObject.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiObjectNET.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiObjectNET.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiProperty.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiProperty.h"
 				>
 			</File>
 		</Filter>
@@ -665,6 +689,26 @@
 				RelativePath=".\Utilities.h"
 				>
 			</File>
+			<Filter
+				Name="Niflib_Includes"
+				>
+				<File
+					RelativePath=".\NiExtraData.h"
+					>
+				</File>
+				<File
+					RelativePath=".\NiflibTypes.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\NiflibTypes.h"
+					>
+				</File>
+				<File
+					RelativePath=".\NiProperties.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Callbacks"

@@ -39,14 +39,15 @@ static bool __stdcall CreateNifFile(const char* nifPath) {
 		if ( nifPtr->editable ) {
 			nifPtr->loc = 1;
 			ofstream newNif (nifPtr->getAbsPath().c_str(), ios::out);
-			if ( newNif.is_open() ) {
-				newNif.close();
-				nifPtr->commitChanges();
+			try {
+				nifPtr->write();
 				dPrintAndLog("CreateNifFile","Nif created.\n");
+				return true;
 			}
-			else
-				dPrintAndLog("CreateNifFile","Nif not created.\n");
-			return true;
+			catch (std::exception e) {
+				dPrintAndLog("CreateNifFile","Nif not created: "+string(e.what())+"\n");
+				return false;
+			}
 		}
 		else {
 			dPrintAndLog("CreateNifFile","Nif not editable.\n");
@@ -103,14 +104,17 @@ static void __stdcall DeleteNifFile(const char* nifPath) {
 
 	// delete the file
 	NifFile* nifPtr = NULL;
-	if ( NifFile::getRegNif(string(&(nifPath[s_nifSEPathLen])), nifPtr) ) {
+	string filePath = nifPath;
+	if ( NifFile::getRegNif(filePath.substr(s_nifSEPathLen), nifPtr) ) {
 		if ( nifPtr->editable ) {
-			nifPtr->loc = 0;
 			std::remove(nifPtr->getAbsPath().c_str());
 			if ( nifPtr->nifSEversion == 0x0000001F ) {
 				string::size_type i = nifPtr->filePath.length()-4;
-				while ( (i = nifPtr->filePath.find_last_of("\\", i-1)) != string::npos )
-					RemoveDirectory(nifPtr->filePath.substr(0,i).c_str());
+				UInt32 nifSEoff = (filePath.substr(0,s_nifSEPathLen).compare(s_nifSEPath)==0?s_nifSEPathLen:0);
+				while ( (i = nifPtr->filePath.substr(nifSEoff).find_last_of("\\", i-1)) != string::npos ) {
+					string folderPath = GetOblivionDirectory()+"Data\\"+s_nifSEFullPath+filePath.substr(nifSEoff,i);
+					RemoveDirectory(folderPath.c_str());
+				}
 			}
 			dPrintAndLog("DeleteNifFile","Nif deleted.\n");
 		}

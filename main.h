@@ -4,8 +4,12 @@
 #include "Hooks_NifSE.h"
 
 #include "Commands_Basic.h"
-#include "Commands_ExtraData.h"
-#include "Commands_Children.h"
+#include "Commands_NiObject.h"
+#include "Commands_NiObjectNET.h"
+#include "Commands_NiExtraData.h"
+#include "Commands_NiAVObject.h"
+#include "Commands_NiNode.h"
+#include "Commands_NiProperty.h"
 #include "Commands_Deprecated.h"
 
 #ifdef _DEBUG
