@@ -27,36 +27,22 @@ void NifSE_SaveCallback(void * reserved) {
 							break;
 
 						case 0x00010003: // NifSE v1.0 a"1.3"
-						case 0x0001001F: // NifSE v1.0 b1
+						case 0x00010004: // NifSE v1.0 a:4
+						case 0x00010005: // NifSE v1.0 a:5
+						case 0x0001001F: // NifSE v1.0 b:1
 						default:
 							dPrintAndLog("NifSave","Saving filepath \""+NifListIter->second->basePath+"\" ("+UIntToString(NifListIter->second->filePath.length())+"); editable nif.");
 							serInterface->WriteRecord('niRe', g_pluginVersion, (void *)(NifListIter->second->basePath.c_str()), NifListIter->second->basePath.length());
 							break;
 					}
+					if ( NifListIter->second->delta.length() > 0 ) {
+						dPrintAndLog("NifSave","Saving changes.");
+						serInterface->WriteRecord('niCh', g_pluginVersion, (void *)(NifListIter->second->delta.c_str()), NifListIter->second->delta.length());
+					}
 				}
 				else { // constant
 					dPrintAndLog("NifSave","Saving filepath \""+NifListIter->second->filePath+"\" ("+UIntToString(NifListIter->second->filePath.length())+"); constant nif.");
 					serInterface->WriteRecord('niRc', g_pluginVersion, (void *)(NifListIter->second->filePath.c_str()), NifListIter->second->filePath.length());
-				}
-
-				if ( NifListIter->second->extraDataChanges.length() > 0 ) {
-					dPrintAndLog("NifSave","Saving ExtraData changes.");
-					serInterface->WriteRecord('niED', g_pluginVersion, (void *)(NifListIter->second->extraDataChanges.c_str()), NifListIter->second->extraDataChanges.length());
-				}
-
-				if ( NifListIter->second->collisionChanges.length() > 0 ) {
-					dPrintAndLog("NifSave","Saving Collision changes.");
-					serInterface->WriteRecord('niCo', g_pluginVersion, (void *)(NifListIter->second->collisionChanges.c_str()), NifListIter->second->collisionChanges.length());
-				}
-
-				if ( NifListIter->second->childrenChanges.length() > 0 ) {
-					dPrintAndLog("NifSave","Saving Children changes.");
-					serInterface->WriteRecord('niCh', g_pluginVersion, (void *)(NifListIter->second->childrenChanges.c_str()), NifListIter->second->childrenChanges.length());
-				}
-
-				if ( NifListIter->second->effectChanges.length() > 0 ) {
-					dPrintAndLog("NifSave","Saving Effect changes.");
-					serInterface->WriteRecord('niEf', g_pluginVersion, (void *)(NifListIter->second->effectChanges.c_str()), NifListIter->second->effectChanges.length());
 				}
 			}
 		}

@@ -1,69 +1,18 @@
 #include "NifFile.h"
 
-NifFile::NifFile() : filePath(""), basePath(""), root(NULL), modID(255), nifID(-1) {
+map < UInt8, map < UInt32, NifFile* > > NifFile::RegList = map < UInt8, map < UInt32, NifFile* > >();
+map <string, pair<UInt8, UInt32>* > NifFile::RegListByFilename = map <string, pair<UInt8, UInt32>* >();
+
+NifFile::NifFile() : filePath(""), basePath(""), root(NULL), modID(255), nifID(-1), delta("") {
 	dPrintAndLog("NifFile c'tor","Default constructor");
 }
 
-NifFile::NifFile(const string& file, UInt8 modIndex, bool forEdit) : filePath(file), basePath(""), nifSEversion(g_pluginVersion), editable(forEdit), modID(modIndex), nifID(0) {
+NifFile::NifFile(const string& file, UInt8 modIndex, bool forEdit) : filePath(file), basePath(""), nifSEversion(g_pluginVersion), editable(forEdit), modID(modIndex), nifID(0), delta("") {
 	dPrintAndLog("NifFile c'tor","NifFile created"+string(editable?" for editing.":" without editing."));
-	setRoot();
-	if ( root )
-		reg();
-	else
-		throw exception("Nif root not set; construction failed.");
-}
-
-NifFile::NifFile(const string& oriPath, const string& altPath) : filePath(oriPath), nifSEversion(0x0000001F), editable(true), modID(0xFF), nifID(0) {
-	dPrintAndLog("NifFile c'tor","NifFile created from deprecated function.");
-	setRoot();
-	if ( root )
-		reg(oriPath, altPath);
-	else
-		throw exception("Nif root not set; construction failed.");
-}
-
-NifFile::NifFile(const string& file, UInt8 modIndex, UInt32 nifIndex, bool forEdit, UInt32 nifSEv) : filePath(file), nifSEversion(nifSEv), editable(forEdit), modID(modIndex), nifID(nifIndex) {
-	dPrintAndLog("NifFile c'tor","Load constructor");
-	setRoot();
-	if ( root )
-		reg(modID,nifID);
-	else
-		throw exception("Nif root not set; construction failed.");
-}
-
-NifFile::NifFile(const string& oriPath, const string& altPath, UInt32 nifIndex) : filePath(oriPath), nifSEversion(0x0000001F), editable(true), modID(0xFF), nifID(0) {
-	dPrintAndLog("NifFile c'tor","NifFile created from deprecated function.");
-	setRoot();
-	if ( root )
-		reg(oriPath, altPath, nifIndex);
-	else
-		throw exception("Nif root not set; construction failed.");
-}
-
-NifFile::NifFile(const NifFile& copied) {
-	if ( copied.root ) {
-		filePath = copied.filePath;
-		dPrintAndLog("NifFile c'tor","Copying \""+copied.filePath+"\".");
-		basePath = copied.basePath;
-		loc = copied.loc;
-		baseLoc = copied.baseLoc;
-		modID = copied.modID;
-		nifID = copied.nifID;
-	}
-}
-
-NifFile::~NifFile() {
-	dPrintAndLog("NifFile d'tor","Nif "+UIntToString(modID)+"-"+UIntToString(nifID)+" deleted.");
-	dereg();
-}
-
-std::map < UInt8, std::map < UInt32, NifFile* > > NifFile::RegList;
-std::map <string, pair<UInt8, UInt32>* > NifFile::RegListByFilename;
-
-// registers a nif in the next available index for its modID
-SInt64 NifFile::reg() {
-	dPrintAndLog("NifFile.reg","Registering \""+filePath+"\" on RegList.");
-	if ( modID != 0xFF ) {
+	headerInfo = new Niflib::NifInfo();
+	loadNif();
+	if ( root ) {
+		dPrintAndLog("NifFile.reg","Registering \""+filePath+"\" on RegList.");
 		if ( RegList.find(modID) == RegList.end() )
 			RegList.insert( pair<UInt8,map<UInt32,NifFile*> >(modID,map<UInt32,NifFile*>()) );
 		UInt32 i = 0;
@@ -74,44 +23,53 @@ SInt64 NifFile::reg() {
 			basePath = filePath;
 			filePath = string(s_nifSEPath) + string((*g_dataHandler)->GetNthModName(modID)).substr(0,string((*g_dataHandler)->GetNthModName(modID)).length()-4) + string("_") + UIntToString(nifID) + ".nif";
 			RegListByFilename[filePath.substr(s_nifSEPathLen,filePath.length()-s_nifSEPathLen)] = new pair<UInt8, UInt32>(modID, nifID);
+
+			string firstTest = filePath.substr(s_nifSEPathLen);
+			firstTest.insert(firstTest.length()-4,"_first");
+			Niflib::WriteNifTree(getAbsPath(firstTest),root,*headerInfo);
 		}
 		else
 			RegListByFilename[filePath] = new pair<UInt8, UInt32>(modID, nifID);
 		dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(i)+".");
-		return nifID;
 	}
-	return nifID = -1;
+	else
+		throw exception("Nif root not set; construction failed.");
 }
 
-// registers nif for use with deprecated functions; associated with game save (0xFF).
-SInt64 NifFile::reg(const string& oriPath, const string& altPath) {
-	dPrintAndLog("NifFile.reg","Registering \""+altPath+"\" on RegList.");
-	if ( RegList.find(0xFF) == RegList.end() )
-		RegList.insert( pair<UInt8, map<UInt32, NifFile*> >(0xFF, map<UInt32, NifFile*>()) );
-	UInt32 i = 0;
-	while ( !((RegList[modID].insert(pair<UInt32, NifFile*>(i, this))).second) )
-		++i;
-	nifID = i;
-	basePath = oriPath;
-	filePath = altPath;
-	if ( !_stricmp(filePath.substr(0, s_nifSEPathLen).c_str(), s_nifSEPath) ) {
-		dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+" and \""+filePath.substr(s_nifSEPathLen)+"\".");
-		RegListByFilename[filePath.substr(s_nifSEPathLen)] = new pair<UInt8, UInt32>(modID, nifID);
+NifFile::NifFile(const string& oriPath, const string& altPath) : filePath(oriPath), nifSEversion(0x0000001F), editable(true), modID(0xFF), nifID(0), delta("") {
+	dPrintAndLog("NifFile c'tor","NifFile created from deprecated function.");
+	headerInfo = new Niflib::NifInfo();
+	loadNif();
+	if ( root ) {
+		dPrintAndLog("NifFile.reg","Registering \""+altPath+"\" on RegList.");
+		if ( RegList.find(0xFF) == RegList.end() )
+			RegList.insert( pair<UInt8, map<UInt32, NifFile*> >(0xFF, map<UInt32, NifFile*>()) );
+		UInt32 i = 0;
+		while ( !((RegList[modID].insert(pair<UInt32, NifFile*>(i, this))).second) )
+			++i;
+		nifID = i;
+		basePath = oriPath;
+		filePath = altPath;
+		if ( !_stricmp(filePath.substr(0, s_nifSEPathLen).c_str(), s_nifSEPath) ) {
+			dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+" and \""+filePath.substr(s_nifSEPathLen)+"\".");
+			RegListByFilename[filePath.substr(s_nifSEPathLen)] = new pair<UInt8, UInt32>(modID, nifID);
+		}
+		else {
+			dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+" and \""+filePath+"\".");
+			RegListByFilename[filePath] = new pair<UInt8, UInt32>(modID, nifID);
+			filePath.insert(0,s_nifSEPath);
+		}
 	}
-	else {
-		dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+" and \""+filePath+"\".");
-		RegListByFilename[filePath] = new pair<UInt8, UInt32>(modID, nifID);
-		filePath.insert(0,s_nifSEPath);
-	}
-	return nifID;
+	else
+		throw exception("Nif root not set; construction failed.");
 }
 
-// registers nif in given modID and index; mostly for loading.
-SInt64 NifFile::reg(UInt8 modIndex, UInt32 nifIndex) {
-	dPrintAndLog("NifFile.reg","Registering \""+filePath+"\" on RegList as #"+UIntToString(modID)+"-"+UIntToString(nifID)+".");
-	if ( modIndex != modID )
-		return nifID = -1;
-	if ( modID != 0xFF ) {
+NifFile::NifFile(const string& file, UInt8 modIndex, UInt32 nifIndex, bool forEdit, UInt32 nifSEv) : filePath(file), nifSEversion(nifSEv), editable(forEdit), modID(modIndex), nifID(nifIndex), delta("") {
+	dPrintAndLog("NifFile c'tor","Load constructor");
+	headerInfo = new Niflib::NifInfo();
+	loadNif();
+	if ( root ) {
+		dPrintAndLog("NifFile.reg","Registering \""+filePath+"\" on RegList as #"+UIntToString(modID)+"-"+UIntToString(nifID)+".");
 		if ( RegList.find(modID) == RegList.end() )
 			RegList.insert( pair<UInt8, map<UInt32, NifFile*> >(modID, map<UInt32, NifFile*>()) );
 		if ( (RegList[modID].insert(pair<UInt32, NifFile*>(nifIndex, this))).second ) {
@@ -124,61 +82,82 @@ SInt64 NifFile::reg(UInt8 modIndex, UInt32 nifIndex) {
 			else
 				RegListByFilename[filePath] = new pair<UInt8, UInt32>(modID, nifID);
 			dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+".");
-			return nifID;
 		}
 	}
-	return nifID = -1;
+	else
+		throw exception("Nif root not set; construction failed.");
 }
 
-// registers nif for use with deprecated functions; associated with game save (0xFF).
-// loading version.
-SInt64 NifFile::reg(const string& oriPath, const string& altPath, UInt32 nifIndex) {
-	dPrintAndLog("NifFile.reg","Registering \""+altPath+"\" on RegList.");
-	if ( RegList.find(0xFF) == RegList.end() )
-		RegList.insert( pair<UInt8, map<UInt32, NifFile*> >(0xFF, map<UInt32, NifFile*>()) );
-	nifID = nifIndex;
-	basePath = oriPath;
-	filePath = altPath;
-	if ( !_stricmp(filePath.substr(0, s_nifSEPathLen).c_str(), s_nifSEPath) ) {
-		dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+" and \""+filePath.substr(s_nifSEPathLen)+"\".");
-		RegListByFilename[filePath.substr(s_nifSEPathLen)] = new pair<UInt8, UInt32>(modID, nifID);
+NifFile::NifFile(const string& oriPath, const string& altPath, UInt32 nifIndex) : filePath(oriPath), nifSEversion(0x0000001F), editable(true), modID(0xFF), nifID(0), delta("") {
+	dPrintAndLog("NifFile c'tor","NifFile created from deprecated function.");
+	headerInfo = new Niflib::NifInfo();
+	loadNif();
+	if ( root ) {
+		dPrintAndLog("NifFile.reg","Registering \""+altPath+"\" on RegList.");
+		if ( RegList.find(0xFF) == RegList.end() )
+			RegList.insert( pair<UInt8, map<UInt32, NifFile*> >(0xFF, map<UInt32, NifFile*>()) );
+		nifID = nifIndex;
+		basePath = oriPath;
+		filePath = altPath;
+		if ( !_stricmp(filePath.substr(0, s_nifSEPathLen).c_str(), s_nifSEPath) ) {
+			dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+" and \""+filePath.substr(s_nifSEPathLen)+"\".");
+			RegListByFilename[filePath.substr(s_nifSEPathLen)] = new pair<UInt8, UInt32>(modID, nifID);
+		}
+		else {
+			dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+" and \""+filePath+"\".");
+			RegListByFilename[filePath] = new pair<UInt8, UInt32>(modID, nifID);
+			filePath.insert(0,s_nifSEPath);
+		}
 	}
-	else {
-		dPrintAndLog("NifFile.reg","Registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+" and \""+filePath+"\".");
-		RegListByFilename[filePath] = new pair<UInt8, UInt32>(modID, nifID);
-		filePath.insert(0,s_nifSEPath);
-	}
-	return nifID;
+	else
+		throw exception("Nif root not set; construction failed.");
 }
 
-// returns true if the given NifFile is on RegList
-bool NifFile::isreg() {
-	if ( RegList.find(modID) != RegList.end() )
-		if ( RegList[modID].find(nifID) != RegList[modID].end() )
-			return true;
-	return false;
+NifFile::~NifFile() {
+	dPrintAndLog("NifFile d'tor","Nif "+UIntToString(modID)+"-"+UIntToString(nifID)+" deleted.");
+	if ( RegList.find(modID) != RegList.end() ) {
+		if ( RegList[modID].find(nifID) != RegList[modID].end() ) {
+			RegListByFilename.erase(RegList[modID][nifID]->filePath);
+			RegList[modID].erase(nifID);
+		}
+		if ( RegList[modID].empty() )
+			RegList.erase(modID);
+	}
+	if ( headerInfo )
+		delete headerInfo;
 }
 
-// removes given NifFile from RegList and does memory cleanup. Used in ~NifFile
-void NifFile::dereg() {
-	if ( isreg() ) {
-//		delete RegListByFilename[RegList[modID][nifID]->filePath];
-		RegListByFilename.erase(RegList[modID][nifID]->filePath);
-//		delete RegList[modID][nifID];
-		RegList[modID].erase(nifID);
+// this actually reads the Nif in.
+void NifFile::loadNif() {
+	dPrintAndLog("NifFile.loadNif","Loading \""+filePath+"\"!");
+	std::stringstream* nifStream = new std::stringstream(std::ios::binary|std::ios::in|std::ios::out);
+	try {
+		WriteNifToStream(filePath, loc, nifStream);
+		nifList = Niflib::ReadNifList(*nifStream,headerInfo);
+		nifSize = nifList.size();
+		try {
+			findRoot();
+			nifVersion = headerInfo->version;
+			dPrintAndLog("NifFile.loadNif","Nif is good; "+getVersion()+". Loaded "+UIntToString(nifSize)+" blocks.");
+		}
+		catch (exception e) {
+			dPrintAndLog("NifFile.loadNif","Could not find root, exception \""+string(e.what())+"\" thrown.");
+			loc = 0;
+		}
 	}
-	if ( RegList[modID].empty() )
-		RegList.erase(modID);
+	catch (exception& except) {
+		dPrintAndLog("NifFile.loadNif","Nif cannot be read. Exception \""+string(except.what())+"\" thrown.");
+		nifID = -1;
+	}
+	delete nifStream;
 }
 
 // returns NifFile associated with given mod and index.
 bool NifFile::getRegNif(UInt8 modID, UInt32 nifID, NifFile* &nifPtr) {
-	dPrintAndLog("NifFile::getRegNif","Finding nif registered as #"+UIntToString(modID)+"-"+UIntToString(nifID)+".");
 	if ( RegList.find(modID) != RegList.end() ) {
 		if ( RegList[modID].find(nifID) != RegList[modID].end() ) {
-			dPrintAndLog("NifFile::getRegNif","Nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" found.");
 			if ( RegList[modID][nifID]->root ) {
-				dPrintAndLog("NifFile::getRegNif","Nif root is good.");
+				dPrintAndLog("NifFile::getRegNif","Nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" found.");
 				nifPtr = RegList[modID][nifID];
 				return true;
 			}
@@ -201,18 +180,46 @@ bool NifFile::getRegNif(UInt8 modID, UInt32 nifID, NifFile* &nifPtr) {
 // returns the modID and index of nif with given filename.
 bool NifFile::getRegNif(string filename, NifFile* &nifPtr) {
 	dPrintAndLog("NifFile::getRefNif","Finding nif with filename \""+filename+"\".");
-	if ( !_stricmp(filename.substr(0, s_nifSEPathLen).c_str(), s_nifSEPath) )
+	if ( filename.substr(0, s_nifSEPathLen).compare(s_nifSEPath) == 0 )
 		filename = filename.substr(s_nifSEPathLen);
 	if ( RegListByFilename.find(filename) != RegListByFilename.end() ) {
 		pair<UInt8, UInt32> nifIDs = *(RegListByFilename[filename]);
 		return NifFile::getRegNif(nifIDs.first, nifIDs.second, nifPtr);
 	}
-	dPrintAndLog("NifFile::getRegNif","Filename not registered.");
-	return false;
+	else {
+		dPrintAndLog("NifFile::getRegNif","Filename not registered.");
+		return false;
+	}
+}
+
+// from niflib.cpp
+Niflib::NiNodeRef NifFile::findRoot() {
+	//--Look for a NiNode that has no parents--//
+	for (unsigned int i = 0; i < nifList.size(); ++i) {
+		root = Niflib::DynamicCast<Niflib::NiNode>(nifList[i]);
+		if ( root != NULL ) {
+			break;
+		}
+	}
+
+	//Make sure a node was found, if not return first node
+	if ( root == NULL )
+		throw std::exception("No nodes found.");
+
+	//Move up the chain to the root node
+	while ( root->GetParent() != NULL ) {
+		root = root->GetParent();
+	}
+
+	return root;
 }
 
 string NifFile::getAbsPath() const {
 	return GetOblivionDirectory()+"Data\\Meshes\\"+filePath;
+}
+
+string NifFile::getAbsPath(const string& path) const {
+	return GetOblivionDirectory()+"Data\\Meshes\\"+path;
 }
 
 string NifFile::getAbsBasePath() const {
@@ -320,120 +327,129 @@ string NifFile::getVersion() const {
 	}
 }
 
-NiExtraDataRef NifFile::findExtraData(std::list<Niflib::NiExtraDataRef>::size_type i) const {
-	list<Niflib::NiExtraDataRef>::iterator iter;
-	list<Niflib::NiExtraDataRef>::size_type j = 0;
-	list<Niflib::NiExtraDataRef> edlist = root->GetExtraData();
-	for ( iter = edlist.begin(); (j < i) && (iter != edlist.end()); ++iter, ++j);
-	if ( iter == edlist.end() )
-		dPrintAndLog("NifFile.findExtraData","Index out of range.");
-	return *iter;
-}
-
-// this actually reads the Nif in.
-void NifFile::setRoot() {
-	dPrintAndLog("NifFile.setRoot","Setting root to root of \""+filePath+"\"!");
-	std::stringstream* nifStream = new std::stringstream(std::ios::binary|std::ios::in|std::ios::out);
-	try {
-		dPrintAndLog("NifFile.setRoot","nifStream initialized.");
-		WriteNifToStream(filePath, loc, nifStream);
-		root = DynamicCast<Niflib::NiNode>(ReadNifTree(*nifStream,&headerInfo));
-		if ( root ) {
-			dPrintAndLog("NifFile.setRoot","Nif read from stream of file \""+filePath+"\".");
-			nifVersion = GetNifVersion(getAbsPath());
-			collision = DynamicCast<Niflib::bhkNiCollisionObject>((DynamicCast<Niflib::NiAVObject>(root))->GetCollisionObject());
-			dPrintAndLog("NifFile.setRoot","Nif is good; "+getVersion()+". Loaded "+UIntToString(root->GetExtraData().size())+" ExtraData nodes, "+(collision?string("collision, "):(""))+UIntToString(root->GetChildren().size())+" Children nodes, and "+UIntToString(root->GetEffects().size())+" Effects nodes.");
-		}
-		else {
-			dPrintAndLog("NifFile.setRoot","Nif could not be read from stream of file \""+filePath+"\".");
-			loc = 0;
-		}
-	}
-	catch (exception& except) {
-		dPrintAndLog("NifFile.setRoot","Nif cannot be read. Exception \""+string(except.what())+"\" thrown.");
-		nifID = -1;
-	}
-	delete nifStream;
-}
-
-// getExtraData
-Niflib::NiExtraDataRef NifFile::getEDByName(string name) {
-	dPrintAndLog("NifFile.getEDByName","Getting NiExtraData Node \""+name+"\".");
-	list<NiExtraDataRef> edlist = root->GetExtraData();
-	for ( extraDataIt = edlist.begin(); extraDataIt != edlist.end(); ++extraDataIt )
-		if ( (*extraDataIt)->GetName() == name )
-			return *extraDataIt;
-	return NULL;
-}
-
-// getExtraData index
-list<Niflib::NiExtraDataRef>::size_type NifFile::getEDIndexByName(string name) {
-	dPrintAndLog("NifFile.getEDIndexByName","Getting NiExtraData Node \""+name+"\".");
-	list<NiExtraDataRef> edlist = root->GetExtraData();
-	list<NiExtraDataRef>::size_type i = 0;
-	for ( extraDataIt = edlist.begin(); extraDataIt != edlist.end(); ++extraDataIt, ++i )
-		if ( (*extraDataIt)->GetName() == name )
-			return i;
-	return edlist.size();
-}
-
-// getChild
-Niflib::NiAVObjectRef NifFile::getChildByName(string name) {
-	dPrintAndLog("NifFile.getChildByName","Getting NiAVObject Node \""+name+"\".");
-	vector<Niflib::NiAVObjectRef> chvec = root->GetChildren();
-	for ( childIt = chvec.begin(); childIt != chvec.end(); ++childIt )
-		if ( (*childIt)->GetName() == name )
-			return *childIt;
-	return NULL;
-}
-
-// getChild index
-vector<Niflib::NiAVObjectRef>::size_type NifFile::getChildIndexByName(string name) {
-	dPrintAndLog("NifFile.getChildIndexByName","Getting NiAVObject Node \""+name+"\".");
-	vector<Niflib::NiAVObjectRef>::size_type i = 0;
-	vector<Niflib::NiAVObjectRef> chvec = root->GetChildren();
-	for ( childIt = chvec.begin(); childIt != chvec.end(); ++childIt, ++i )
-		if ( (*childIt)->GetName() == name )
-			return i;
-	return chvec.size();
-}
-
-// getEffect
-Niflib::NiDynamicEffectRef NifFile::getEffectByName(string name) {
-	dPrintAndLog("NifFile.getEffectByName","Getting NiDynamicEffects Node \""+name+"\".");
-	vector<Niflib::NiDynamicEffectRef> efvec = root->GetEffects();
-	for ( effectIt = efvec.begin(); effectIt != efvec.end(); ++effectIt )
-		if ( (*effectIt)->GetName() == name )
-			return *effectIt;
-	return NULL;
-}
-
-// getEffect index
-vector<Niflib::NiDynamicEffectRef>::size_type NifFile::getEffectIndexByName(string name) {
-	dPrintAndLog("NifFile.getEffectIndexByName","Getting NiDynamicEffects Node \""+name+"\".");
-	vector<Niflib::NiDynamicEffectRef>::size_type i = 0;
-	vector<Niflib::NiDynamicEffectRef> efvec = root->GetEffects();
-	for ( effectIt = efvec.begin(); effectIt != efvec.end(); ++effectIt, ++i )
-		if ( (*effectIt)->GetName() == name )
-			return i;
-	return efvec.size();
-}
-
 // writes to the new Nif file
-void NifFile::commitChanges() {
+void NifFile::write(string path) {
+	if ( path.compare("") == 0 )
+		path = filePath;
 	if ( root ) {
-		dPrintAndLog("NifFile.commitChanges","Writing to \""+filePath+"\".");
-		if ( nifSEversion == 0x0000001F ) {
-			string::size_type i = 0;
-			while ( (i = filePath.find_first_of("\\", i+1)) != string::npos )
-				CreateDirectory(filePath.substr(0,i).c_str(), NULL);
+		dPrintAndLog("NifFile.write","Writing to \""+path+"\".");
+		string::size_type i = 0;
+		UInt32 nifSEoff = (path.substr(0,s_nifSEPathLen).compare(s_nifSEPath)==0?s_nifSEPathLen:0);
+		while ( (i = path.substr(nifSEoff).find_first_of("\\", i+1)) != string::npos ) {
+			string folderPath = GetOblivionDirectory()+"Data\\"+path.substr(0,i);
+			CreateDirectory(folderPath.c_str(), NULL);
 		}
-		WriteNifTree(getAbsPath(),root,headerInfo);
+		try {
+			Niflib::WriteNifTree(getAbsPath(path),root,*headerInfo);
+		}
+		catch (...) {
+			throw;
+		}
 	}
 	else
-		dPrintAndLog("NifFile.commitChanges","Failed to commit changes to Nif \""+filePath+"\".");
+		throw std::exception("Nif root is bad.");
 }
 
-string NifFile::getIDstring() const {
-	return "#"+UIntToString(modID)+"-"+UIntToString(nifID);
+void NifFile::logChange(const UInt32 &block, const UInt32 &type, const UInt32 &action, const string &value, const bool &clrPrev) {
+	if ( clrPrev )
+		clrChange(block, type, action);
+	delta += UIntToString(block)+logNode+UIntToString(type)+logType+UIntToString(action)+logAction+value+logValue;
+}
+
+void NifFile::clrChange(const UInt32 &block, const UInt32 &type, const UInt32 &action) {
+	UInt32 changePos = delta.find(UIntToString(block)+logNode+UIntToString(type)+logType+UIntToString(action)+logAction);
+	if ( changePos != delta.npos )
+		delta.erase(changePos, delta.find(logValue,changePos)+1-changePos);
+}
+
+// Extended version of FindFile that also checks RegList.
+// To avoid going through RegList twice, can store the nif
+// in a pointer, if passed.
+UInt32 CheckFileLocation(string path, NifFile* nifPtr) {
+	UInt32 loc = (*g_FileFinder)->FindFile(("Data\\Meshes\\"+path).c_str(),0,0,-1);
+	if ( loc == 0 ) {
+		if ( NifFile::getRegNif(path, nifPtr) )
+			if ( nifPtr->root )
+				loc = 3;
+			else
+				dPrintAndLog("CheckFileLocation","Nif root bad!");
+	}
+	dPrintAndLog("CheckFileLocation","File \""+path+"\" "+(loc==0?("not found!"):(loc==1?("found in folders!"):(loc==2?("found in BSA!"):(loc==3?("found in RegList!"):("returned unknown location!"))))));
+	return loc;
+}
+
+void WriteNifToStream(string path, UInt32& loc, std::iostream* stream) {
+	loc = CheckFileLocation(path);
+	if ( loc == 0 ) {
+		throw exception(string("Nif \""+path+"\" not found.").c_str());
+	}
+	else if ( loc == 1 ) {
+		std::ifstream file ((GetOblivionDirectory()+"Data\\Meshes\\"+path).c_str(), std::ios::in|std::ios::out|std::ios::binary);
+		if ( file.is_open() )
+			*stream << file.rdbuf();
+		else
+			dPrintAndLog("WriteNifToStream","File \""+path+"\" could not be read.");
+		file.close();
+	}
+	else if ( loc == 2 ) {
+		UInt32 fileNum = 0;
+		UInt32 size = 0;
+		TES4BSA_Archive * BSA = NULL;
+		char* buf = NULL;
+		for ( BSAit = BSAlist.begin(); BSAit != BSAlist.end(); ++BSAit ) {
+			try {
+				BSA = new TES4BSA_Archive((*BSAit).c_str());
+				if ( BSA->GetFileCount() > 0 ) {
+					try {
+						fileNum = BSA->FindFileNumber(("Meshes\\"+path).c_str());
+						try {
+							size = BSA->GetFileSize(fileNum);
+							buf = new char[size];
+							try {
+								BSA->GetFileData(fileNum, buf);
+								stream->write(buf, size);
+								dPrintAndLog("WriteNifToStream","Successfully read nif data in BSA \""+(*BSAit)+"\". Buffer length is "+UIntToString(size)+".");
+							}
+							catch (exception& except) {
+								dPrintAndLog("WriteNifToStream","Failed to read nif data in BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
+								continue;
+							}
+							delete [] buf;
+							break;
+						}
+						catch (exception& except) {
+							dPrintAndLog("WriteNifToStream","Failed to determine nif file size in BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
+							continue;
+						}
+					}
+					catch (...) {
+						continue;
+					}
+				}
+				else
+					continue;
+				delete BSA;
+			}
+			catch (exception& except) {
+				dPrintAndLog("WriteNifToStream","Failed to open BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
+				continue;
+			}
+		}
+		if ( size == 0 )
+			throw exception("Nif not found in BSAs.");
+	}
+	else if ( loc == 3 ) {
+		NifFile* nifPtr = NULL;
+		NifFile::getRegNif(path, nifPtr);
+		if ( nifPtr->root ) {
+			std::stringstream ostr (std::ios::binary|std::ios::in|std::ios::out);
+			try { Niflib::WriteNifTree(ostr, nifPtr->root, *(nifPtr->headerInfo)); } catch (std::exception except) { throw except; }
+			std::ofstream newFile ((GetOblivionDirectory()+"Data\\Meshes\\DW\\NifSE\\"+path).c_str(), std::ios::binary|std::ios::out);
+			*stream << ostr.str();
+		}
+		else
+			throw exception("Nif root bad!");
+	}
+	else
+		throw exception(string("Nif location unknown. CheckLocation return value is "+UIntToString(loc)+".").c_str());
 }

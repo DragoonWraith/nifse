@@ -2,7 +2,7 @@
 
 extern string						g_pluginName	("NifSE");
 extern IDebugLog					g_Log			((g_pluginName+".log").c_str());
-extern UInt32						g_pluginVersion	(getV(0x0001,0x00,0x0,0x4));
+extern UInt32						g_pluginVersion	(getV(0x0001,0x00,0x0,0x5));
 extern PluginHandle					g_pluginHandle	(kPluginHandle_Invalid);
 
 extern OBSEArrayVarInterface*		arrInterface	(NULL);
@@ -12,11 +12,11 @@ extern OBSEStringVarInterface*		strInterface	(NULL);
 
 UInt8  getAlphaV(const UInt32 ver) { return (ver & 0x0000000F) >> alpha; }
 void setAlphaV(UInt8 a, UInt32 ver) { ver = (ver & 0xFFFFFFF0) | ((a & 0xF) << alpha); }
-bool isAlpha(const UInt32 ver) { return !(getAlphaV(ver) == 0xF); }
+bool isAlpha(const UInt32 ver) { return (getAlphaV(ver) != 0xF); }
 
 UInt8   getBetaV(const UInt32 ver) { return (ver & 0x000000F0) >> beta; }
 void setBetaV(UInt8 b, UInt32 ver) { ver = (ver & 0xFFFFFF0F) | ((b & 0xF) << beta); }
-bool isBeta(const UInt32 ver) { return !(getBetaV(ver) == 0xF); }
+bool isBeta(const UInt32 ver) { return (getBetaV(ver) != 0xF) && !isAlpha(); }
 
 UInt8  getMinorV(const UInt32 ver) { return (ver & 0x0000FF00) >> minor; }
 void setMinorV(UInt8 m, UInt32 ver) { ver = (ver & 0xFFFF00FF) | (m << minor); }
@@ -84,100 +84,6 @@ OBSEArray* ArrayFromStdVector(const vector<OBSEElement>& data, Script* callingSc
 	return arr;
 }
 
-// Extended version of FindFile that also checks RegList.
-// Also does some double-checking that may be unnecessary.
-// To avoid going through RegList twice, can store the nif
-// in a pointer, if passed.
-UInt32 CheckFileLocation(string path, NifFile* nifPtr) {
-	UInt32 loc = (*g_FileFinder)->FindFile(("Data\\Meshes\\"+path).c_str(),0,0,-1);
-	if ( loc == 0 ) {
-		if ( !_stricmp(path.substr(0, s_nifSEPathLen).c_str(), s_nifSEPath) )
-			if ( NifFile::getRegNif(path, nifPtr) )
-				if ( nifPtr->root )
-					loc = 3;
-				else
-					dPrintAndLog("CheckFileLocation","Nif root bad!");
-	}
-	dPrintAndLog("CheckFileLocation","File \""+path+"\" "+(loc==0?("not found!"):(loc==1?("found in folders!"):(loc==2?("found in BSA!"):(loc==3?("found in RegList!"):("returned unknown location!"))))));
-	return loc;
-}
-
-void WriteNifToStream(string path, UInt32& loc, std::iostream* stream) {
-	loc = CheckFileLocation(path);
-	if ( loc == 0 ) {
-		throw exception(string("Nif \""+path+"\" not found.").c_str());
-	}
-	else if ( loc == 1 ) {
-		std::ifstream file ((GetOblivionDirectory()+"Data\\Meshes\\"+path).c_str(), std::ios::in|std::ios::out|std::ios::binary);
-		if ( file.is_open() )
-			*stream << file.rdbuf();
-		else
-			dPrintAndLog("WriteNifToStream","File \""+path+"\" could not be read.");
-		file.close();
-	}
-	else if ( loc == 2 ) {
-		UInt32 fileNum = 0;
-		UInt32 size = 0;
-		TES4BSA_Archive * BSA = NULL;
-		char* buf = NULL;
-		for ( BSAit = BSAlist.begin(); BSAit != BSAlist.end(); ++BSAit ) {
-			try {
-				BSA = new TES4BSA_Archive((*BSAit).c_str());
-				if ( BSA->GetFileCount() > 0 ) {
-					try {
-						fileNum = BSA->FindFileNumber(("Meshes\\"+path).c_str());
-						try {
-							size = BSA->GetFileSize(fileNum);
-							buf = new char[size];
-							try {
-								BSA->GetFileData(fileNum, buf);
-								stream->write(buf, size);
-								dPrintAndLog("WriteNifToStream","Successfully read nif data in BSA \""+(*BSAit)+"\". Buffer length is "+UIntToString(size)+".");
-							}
-							catch (exception& except) {
-								dPrintAndLog("WriteNifToStream","Failed to read nif data in BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
-								continue;
-							}
-							delete [] buf;
-							break;
-						}
-						catch (exception& except) {
-							dPrintAndLog("WriteNifToStream","Failed to determine nif file size in BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
-							continue;
-						}
-					}
-					catch (...) {
-						continue;
-					}
-				}
-				else
-					continue;
-				delete BSA;
-			}
-			catch (exception& except) {
-				dPrintAndLog("WriteNifToStream","Failed to open BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
-				continue;
-			}
-		}
-		if ( size == 0 )
-			throw exception("Nif not found in BSAs.");
-	}
-	else if ( loc == 3 ) {
-		NifFile* nifPtr = NULL;
-		NifFile::getRegNif(path, nifPtr);
-		if ( nifPtr->root ) {
-			std::stringstream ostr (std::ios::binary|std::ios::in|std::ios::out);
-			try { Niflib::WriteNifTree(ostr, nifPtr->root, nifPtr->headerInfo); } catch (std::exception except) { throw except; }
-			std::ofstream newFile ((GetOblivionDirectory()+"Data\\Meshes\\DW\\NifSE\\"+path).c_str(), std::ios::binary|std::ios::out);
-			*stream << ostr.str();
-		}
-		else
-			throw exception("Nif root bad!");
-	}
-	else
-		throw exception(string("Nif location unknown. CheckLocation return value is "+UIntToString(loc)+".").c_str());
-}
-
 string UIntToString(UInt32 uint) {
 	std::stringstream buf;
 	buf << uint;
@@ -185,51 +91,23 @@ string UIntToString(UInt32 uint) {
 }
 
 UInt32 StringToUInt(string str) {
-	UInt32 uint = 0;
-	for (int i = 0; i < str.length(); ++i ) {
-		switch (str[i]) {
-			case '0':
-				uint = uint * 10;
-				break;
-
-			case '1':
-				uint = uint * 10 + 1;
-				break;
-
-			case '2':
-				uint = uint * 10 + 2;
-				break;
-
-			case '3':
-				uint = uint * 10 + 3;
-				break;
-
-			case '4':
-				uint = uint * 10 + 4;
-				break;
-
-			case '5':
-				uint = uint * 10 + 5;
-				break;
-
-			case '6':
-				uint = uint * 10 + 6;
-				break;
-
-			case '7':
-				uint = uint * 10 + 7;
-				break;
-
-			case '8':
-				uint = uint * 10 + 8;
-				break;
-
-			case '9':
-				uint = uint * 10 + 9;
-				break;
-		}
-	}
+	UInt32 uint;
+	std::stringstream buf (str);
+	buf >> uint;
 	return uint;
+}
+
+string SIntToString(SInt32 sint) {
+	std::stringstream buf;
+	buf << sint;
+	return buf.str();
+}
+
+SInt32 StringToSInt(string str) {
+	SInt32 sint;
+	std::stringstream buf (str);
+	buf >> sint;
+	return sint;
 }
 
 string FloatToString(float flt) {
@@ -312,24 +190,6 @@ vector< vector<float> > StringToMatrix(string str) {
 		posS = posF + 1;
 	}
 	return mat;
-}
-
-string changeLog(UInt32 Node, UInt32 Type, UInt32 Action, string Value) {
-	return changeLog(logNumber+UIntToString(Node),Type,Action,Value);
-}
-
-string changeLog(string Node, UInt32 Type, UInt32 Action, string Value) {
-	return Node+logNode+UIntToString(Type)+logType+UIntToString(Action)+logAction+Value+logValue;
-}
-
-void clearPrevChange(string &log, const UInt32 &Node, const UInt32 &Type, const UInt32 &Action) {
-	clearPrevChange(log, logNumber+UIntToString(Node), Type, Action);
-}
-
-void clearPrevChange(string &log, const string &Node, const UInt32 &Type, const UInt32 &Action) {
-	UInt32 changePos = log.find(Node+logNode+UIntToString(Type)+logType+UIntToString(Action)+logAction);
-	if ( changePos != log.npos )
-		log.erase(changePos, log.find(logValue,changePos)+1-changePos);
 }
 
 extern list<string> BSAlist = list<string>();

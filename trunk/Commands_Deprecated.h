@@ -1,6 +1,11 @@
 #pragma once
 
 #include "NifFile.h"
+#include "Param_Infos.h"
+
+#include "Commands_NiExtraData.h"
+#include "Commands_NiAVObject.h"
+#include "Commands_NiNode.h"
 
 // Legacy code for old tag system.
 string ToggleTag(string path, string element, string newVal);

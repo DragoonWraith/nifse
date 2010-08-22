@@ -1,5 +1,13 @@
 #include "Commands_Deprecated.h"
 
+#include "obj/NiObject.h"
+#include "obj/NiObjectNET.h"
+#include "obj/NiAVObject.h"
+#include "obj/NiNode.h"
+
+#include "obj/NiExtraData.h"
+#include "obj/NiStringExtraData.h"
+
 // for easily switching between two versions of a mesh - modified and original
 string ToggleTag(string path, string element, string newVal) {
 	if ( path.find("NifScript") != string::npos ) { // already tagged with something
@@ -35,6 +43,8 @@ string ToggleTag(string path, string element, string newVal) {
 		}
 	}
 	else { // completely untagged
+		if ( path.substr(0, s_nifSEPathLen).compare(s_nifSEPath) != 0 )
+			path = path.insert(0, s_nifSEPath);
 		path.insert(path.length()-4,".NifScript."+element+newVal);
 		dPrintAndLog("ToggleTag","Element \""+element+"\" first tag in path. Set with value \""+newVal+"\".");
 	}
@@ -44,6 +54,7 @@ string ToggleTag(string path, string element, string newVal) {
 static bool Cmd_NifGetAltGrip_Execute(COMMAND_ARGS) { // returns path to model using opposite number of hands
 	dPrintAndLog("NifGetAltGrip");
 	TESForm* form = NULL;
+	string altPath = " ";
 
 	if (ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form))
 	{
@@ -58,43 +69,48 @@ static bool Cmd_NifGetAltGrip_Execute(COMMAND_ARGS) { // returns path to model u
 				if ( weapon->type <= 3 ) { // only works on blades/blunt weapons
 					TESModel* model = (TESModel*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESModel, 0);
 					string oriPath = model->nifPath.m_data;
-					string altPath = ToggleTag(oriPath,"Prn","AltWeapon");
+					altPath = ToggleTag(oriPath,"Prn","AltWeapon");
 					if ( CheckFileLocation(altPath) == 0 ) {
 						NifFile* alt = new NifFile(oriPath, altPath);
 						if ( alt->root ) {
-							list<Niflib::NiExtraDataRef>::size_type edID = alt->getEDIndexByName("Prn");
-							Niflib::NiStringExtraDataRef Prn = DynamicCast<Niflib::NiStringExtraData>(alt->findExtraData(edID));
-							if ( Prn != NULL ) {
+							Niflib::NiStringExtraDataRef Prn;
+							list<Niflib::NiExtraDataRef> eds = alt->root->GetExtraData();
+							for ( list<Niflib::NiExtraDataRef>::iterator i = eds.begin(); i != eds.end(); ++i ) {
+								if ( (*i)->GetName().compare("Prn") == 0 ) {
+									Prn = Niflib::DynamicCast<Niflib::NiStringExtraData>(*i);
+									break;
+								}
+							}
+							if ( Prn ) {
 								dPrintAndLog("NifGetAltGrip","Prn node found! Prn = "+Prn->GetData());
 								if ( Prn->GetData() == "SideWeapon" ) { // one-handed according to Nif
 									Prn->SetData("BackWeapon");
+									alt->logChange(Prn->internal_block_number, kNiflibType_NiStringExtraData, kNiEDAct_SetStr, "BackWeapon", true);
 									dPrintAndLog("NifGetAltGrip","Weapon switched from 1h to 2h! Prn = "+Prn->GetData());
-									alt->extraDataChanges += changeLog(edID, ED_Str, Act_ED_SetValue, "BackWeapon");
 								}
 								else if ( Prn->GetData() == "BackWeapon" ) { // two-handed according to Nif
 									Prn->SetData("SideWeapon");
+									alt->logChange(Prn->internal_block_number, kNiflibType_NiStringExtraData, kNiEDAct_SetStr, "SideWeapon", true);
 									dPrintAndLog("NifGetAltGrip","Weapon switched from 2h to 1h! Prn = "+Prn->GetData());
-									alt->extraDataChanges += changeLog(edID, ED_Str, Act_ED_SetValue, "SideWeapon");
 								}
 								else {
 									PrintAndLog("NifGetAltGrip","Unknown weapon type! Prn = "+Prn->GetData());
-									return true;
+									altPath = " ";
 								}
 								dPrintAndLog("NifGetAltGrip","New Alt-Grip Nif created!");
 							}
 							else { // Prn == NULL
 								PrintAndLog("NifGetAltGrip","NiStringExtraData \"Prn\" node not found!");
-								return true;
+								altPath = " ";
 							}
 						}
 						else {
 							PrintAndLog("NifGetAltGrip","Nif could not be read!");
-							return true;
+							altPath = " ";
 						}
 					}
 
 					// return the new mesh.
-					strInterface->Assign(PASS_COMMAND_ARGS, altPath.c_str());
 					dPrintAndLog("NifGetAltGrip","Alt grip model path returned to Oblivion! path = \""+altPath+"\".\n");
 				}
 				else // weapon->type > 3
@@ -109,6 +125,7 @@ static bool Cmd_NifGetAltGrip_Execute(COMMAND_ARGS) { // returns path to model u
 	else // !ExtractArgs
 		PrintAndLog("NifGetAltGrip","Failed to determine passed argument!\n");
 
+	strInterface->Assign(PASS_COMMAND_ARGS, altPath.c_str());
 	return true;
 }
 
@@ -116,6 +133,7 @@ DEFINE_COMMAND_PLUGIN(NifGetAltGrip,"Returns the opposite handed version of a we
 
 static bool Cmd_NifGetOffHand_Execute(COMMAND_ARGS) {
 	dPrintAndLog("NifGetOffHand");
+	string altPath = " ";
 
 	TESForm* form = NULL;
 	if (ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form))
@@ -131,47 +149,52 @@ static bool Cmd_NifGetOffHand_Execute(COMMAND_ARGS) {
 				if ( weapon->type <= 3 ) { // only works on blades/blunt weapons
 					TESModel* model = (TESModel*)Oblivion_DynamicCast(form, 0, RTTI_TESForm, RTTI_TESModel, 0);
 					string oriPath = model->nifPath.m_data;
-					string altPath = ToggleTag(oriPath,"Prn","Torch");
+					altPath = ToggleTag(oriPath,"Prn","Torch");
 					if ( CheckFileLocation(altPath) == 0 ) {
 						NifFile* alt = new NifFile(oriPath, altPath);
 						if ( alt->root ) {
-							list<Niflib::NiExtraDataRef>::size_type edID = alt->getEDIndexByName("Prn");
-							Niflib::NiStringExtraDataRef Prn = DynamicCast<Niflib::NiStringExtraData>(alt->findExtraData(edID));
-							if ( Prn != NULL ) {
-								dPrintAndLog("NifGetOffHand","Prn node found! Prn = "+Prn->GetData());
+							list<Niflib::NiExtraDataRef> eds = alt->root->GetExtraData();
+							Niflib::NiStringExtraDataRef Prn;
+							for ( list<Niflib::NiExtraDataRef>::iterator i = eds.begin(); i != eds.end(); ++i ) {
+								if ( (*i)->GetName().compare("Prn") == 0 ) {
+									Prn = Niflib::DynamicCast<Niflib::NiStringExtraData>(*i);
+									dPrintAndLog("NifGetOffHand","Prn node found! Prn = "+Prn->GetData());
+								}
+							}
+							if ( Prn ) {
 								if ( Prn->GetData() == "SideWeapon" || Prn->GetData() == "BackWeapon" ) { // one of two weapon values
 									Prn->SetData("Torch");
+									alt->logChange(Prn->internal_block_number, kNiflibType_NiStringExtraData, kNiEDAct_SetStr, "Torch", true);
 									dPrintAndLog("NifGetOffHand","Weapon switched to Shield! Prn = "+Prn->GetData());
-									alt->extraDataChanges += changeLog(edID, ED_Str, Act_ED_SetValue, "Torch");
+
+									vector<Niflib::NiAVObjectRef> chs = alt->root->GetChildren();
+									for ( vector<Niflib::NiAVObjectRef>::iterator j = chs.begin(); j != chs.end(); ++j ) {
+										if ( (*j)->GetName().compare("Scb") == 0 ) {
+											dPrintAndLog("NifGetOffHand","Removing scabbard!");
+											alt->root->RemoveChild(*j);
+											alt->logChange(alt->root->internal_block_number, kNiflibType_NiNode, kNiNodeAct_DelChild, UIntToString((*j)->internal_block_number));
+											break;
+										}
+									}
+									dPrintAndLog("NifGetOffHand","New off-hand Nif created!");
 								}
 								else {
 									PrintAndLog("NifGetOffHand","Unknown weapon type! Prn = "+Prn->GetData());
-									return true;
+									string altPath = " ";
 								}
-								vector<Niflib::NiAVObjectRef>::size_type chID = alt->getChildIndexByName("Scb");
-								NiAVObjectRef Scabbard = alt->root->GetChildren()[chID];
-								if ( Scabbard != NULL ) {
-									dPrintAndLog("NifGetOffHand","Removing scabbard!");
-									alt->root->RemoveChild(Scabbard);
-									alt->childrenChanges += changeLog(chID, Ch_AVObj, Act_Remove);
-								}
-								else
-									dPrintAndLog("NifGetOffHand","No scabbard to remove!");
-								dPrintAndLog("NifGetOffHand","New off-hand Nif created!");
 							}
-							else { // Prn == NULL
-								PrintAndLog("NifGetOffHand","NiStringExtraData \"Prn\" node not found!");
-								return true;
+							else {
+								PrintAndLog("NifGetAltGrip","NiStringExtraData \"Prn\" node not found!");
+								altPath = " ";
 							}
 						}
 						else { // !alt->root
 							PrintAndLog("NifGetOffHand","Nif could not be read!");
-							return true;
+							altPath = " ";
 						}
 					}
 
 					// return the mesh.
-					strInterface->Assign(PASS_COMMAND_ARGS, altPath.c_str());
 					dPrintAndLog("NifGetOffHand","Off hand model path returned to Oblivion! path = \""+altPath+"\".\n");
 				}
 				else // weapon->type > 3
@@ -186,6 +209,7 @@ static bool Cmd_NifGetOffHand_Execute(COMMAND_ARGS) {
 	else // !ExtractArgs
 		PrintAndLog("NifGetOffHand","Failed to determine passed argument!\n");
 
+	strInterface->Assign(PASS_COMMAND_ARGS, altPath.c_str());
 	return true;
 }
 
@@ -194,6 +218,7 @@ DEFINE_COMMAND_PLUGIN(NifGetOffHand,"Returns the off-hand version of a weapon me
 // this function is not tested
 static bool Cmd_NifGetBackShield_Execute(COMMAND_ARGS) {
 	dPrintAndLog("NifGetBackShield");
+	string altPath = " ";
 
 	TESForm * form = NULL;
 	if ( ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form) ) {
@@ -211,44 +236,50 @@ static bool Cmd_NifGetBackShield_Execute(COMMAND_ARGS) {
 					if ( CheckFileLocation(altPath) == 0 ) {
 						NifFile* alt = new NifFile(oriPath, altPath);
 						if ( alt->root ) {
-							list<Niflib::NiExtraDataRef>::size_type edID = alt->getEDIndexByName("Prn");
-							Niflib::NiStringExtraDataRef Prn = DynamicCast<Niflib::NiStringExtraData>(alt->findExtraData(edID));
-							if ( Prn != NULL ) {
+							Niflib::NiStringExtraDataRef Prn;
+							list<Niflib::NiExtraDataRef> eds = alt->root->GetExtraData();
+							for ( list<Niflib::NiExtraDataRef>::iterator i = eds.begin(); i != eds.end(); ++i ) {
+								if ( (*i)->GetName().compare("Prn") == 0 ) {
+									Prn = Niflib::DynamicCast<Niflib::NiStringExtraData>(*i);
+									dPrintAndLog("NifGetBackShield","Prn node found! Prn = "+Prn->GetData());
+								}
+							}
+							if ( Prn ) {
 								dPrintAndLog("NifGetBackShield","Prn node found! Prn = "+Prn->GetData());
 								if ( Prn->GetData() == "Bip01 L ForearmTwist" ) { // is a shield
 									Prn->SetData("Bip01 L Shoulder Helper");
+									alt->logChange(Prn->internal_block_number, kNiflibType_NiStringExtraData, kNiEDAct_SetStr, "Bip01 L ForearmTwist", true);
 									dPrintAndLog("NifGetBackShield","Shield switched to shoulder! Prn = "+Prn->GetData());
-									alt->extraDataChanges += changeLog(edID, ED_Str, Act_ED_SetValue, "Bip01 L ForearmTwist");
+									
+									vector<Niflib::NiAVObjectRef> chs = alt->root->GetChildren();
+									for ( vector<Niflib::NiAVObjectRef>::iterator j = chs.begin() ; j != chs.end() ; ++j ) {
+										dPrintAndLog("NifGetBackShield",string("Shield \"")+form->GetFullName()->name.m_data+"\" Child \""+(*j)->GetName()+"\" translated and rotated!");
+										Niflib::Vector3 nuTranslation = (*j)->GetLocalTranslation()+Niflib::Vector3(25,-11,-20);
+										(*j)->SetLocalTranslation(nuTranslation);
+										alt->logChange((*j)->internal_block_number, kNiflibType_NiAVObject, kNiAVObjAct_SetLocTransl, VectorToString(nuTranslation), true);
+										Niflib::Matrix33 nuRotation = (*j)->GetLocalRotation()*Niflib::Matrix33(-0.9249,-0.1247,0.3593,-0.4966,0.9655,-0.1710,-0.3256,-0.2287,-0.9174);
+										(*j)->SetLocalRotation(nuRotation);
+										alt->logChange((*j)->internal_block_number, kNiflibType_NiAVObject, kNiAVObjAct_SetLocRot, MatrixToString(nuRotation), true);
+									}
+									dPrintAndLog("NifGetBackShield","New back shield Nif created!");
 								}
 								else {
 									PrintAndLog("NifGetBackShield","Unknown shield type! Prn = "+Prn->GetData());
-									return true;
+									string altPath = " ";
 								}
-								vector<Niflib::NiAVObjectRef>::size_type chID = 0;
-								for ( alt->childIt = alt->root->GetChildren().begin() ; alt->childIt != alt->root->GetChildren().end() ; ++(alt->childIt), ++chID ) {
-									dPrintAndLog("NifGetBackShield",string("Shield \"")+form->GetFullName()->name.m_data+"\" Child \""+(*(alt->childIt))->GetName()+"\" translated and rotated!");
-									Niflib::Vector3 nuTranslation = (*(alt->childIt))->GetLocalTranslation()+Niflib::Vector3(25,-11,-20);
-									(*(alt->childIt))->SetLocalTranslation(nuTranslation);
-									alt->childrenChanges += changeLog(chID,Ch_AVObj,Act_AV_SetLocTranslation,VectorToString(nuTranslation));
-									Niflib::Matrix33 nuRotation = (*(alt->childIt))->GetLocalRotation()*Niflib::Matrix33(-0.9249,-0.1247,0.3593,-0.4966,0.9655,-0.1710,-0.3256,-0.2287,-0.9174);
-									(*(alt->childIt))->SetLocalRotation(nuRotation);
-									alt->childrenChanges += changeLog(chID,Ch_AVObj,Act_AV_SetLocRotation,MatrixToString(nuRotation));
-								}
-								dPrintAndLog("NifGetBackShield","New back shield Nif created!");
 							}
-							else { // Prn == NULL
-								PrintAndLog("NifGetBackShield","NiStringExtraData \"Prn\" node not found!");
-								return true;
+							else {
+								PrintAndLog("NifGetAltGrip","NiStringExtraData \"Prn\" node not found!");
+								altPath = " ";
 							}
 						}
 						else { // !alt->root
 							PrintAndLog("NifGetBackShield","Nif could not be read!");
-							return true;
+							altPath = " ";
 						}
 					}
 
 					// return the mesh.
-					strInterface->Assign(PASS_COMMAND_ARGS, altPath.c_str());
 					dPrintAndLog("NifGetBackShield","Back shield model path returned to Oblivion! path = \""+altPath+"\".\n");
 				}
 				else // shield->BipedModel.getSlot() != kPart_Shield
@@ -263,6 +294,7 @@ static bool Cmd_NifGetBackShield_Execute(COMMAND_ARGS) {
 	else // !ExtractArgs
 		PrintAndLog("NifGetBackShield","Failed to determine passed argument!\n");
 
+	strInterface->Assign(PASS_COMMAND_ARGS, altPath.c_str());
 	return true;
 }
 

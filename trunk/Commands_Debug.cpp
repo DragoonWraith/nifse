@@ -10,11 +10,14 @@ static bool Cmd_NifWriteToDisk_Execute(COMMAND_ARGS) {
 		UInt8 modID = scriptObj->GetModIndex();
 		dPrintAndLog("NifWriteToDisk","Writing nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" to disk as \""+string(filename)+"\".");
 		NifFile* nifPtr = NULL;
-		NifFile::getRegNif(modID,nifID,nifPtr);
-		if ( nifPtr->root ) {
-			Niflib::WriteNifTree(GetOblivionDirectory()+"Data\\"+s_nifSEFullPath+filename,DynamicCast<Niflib::NiObject>(nifPtr->root),nifPtr->headerInfo);
-			*result = 1;
-			dPrintAndLog("NifWriteToDisk","Nif written to disk.\n");
+		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+			if ( nifPtr->root ) {
+				nifPtr->write(filename);
+				*result = 1;
+				dPrintAndLog("NifWriteToDisk","Nif written to disk.\n");
+			}
+			else
+				dPrintAndLog("NifWriteToDisk","Nif root bad.\n");
 		}
 		else
 			dPrintAndLog("NifWriteToDisk","Nif not found.\n");
