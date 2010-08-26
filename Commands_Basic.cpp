@@ -49,6 +49,7 @@ static bool Cmd_NifClose_Execute(COMMAND_ARGS) {
 	NifFile* nifPtr = NULL;
 	if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
 		delete nifPtr;
+		dPrintAndLog("NifClose","NifFile successfully closed.\n");
 	}
 	else
 		dPrintAndLog("NifClose","Nif not found.\n");
@@ -170,7 +171,7 @@ static bool Cmd_GetNifTypeIndex_Execute(COMMAND_ARGS) {
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &typeName)) {
 		dPrintAndLog("GetNifTypeIndex","Getting the code for Nif block type \""+string(typeName)+"\".");
 		*result = getNiflibTypeIndex(typeName);
-		dPrintAndLog("GetNifTypeIndex","Returning "+UIntToString(*result)+".");
+		dPrintAndLog("GetNifTypeIndex","Returning "+UIntToString(*result)+".\n");
 	}
 	return true;
 }

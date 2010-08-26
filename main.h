@@ -10,6 +10,7 @@
 #include "Commands_NiAVObject.h"
 #include "Commands_NiNode.h"
 #include "Commands_NiProperty.h"
+#include "Commands_NiSourceTexture.h"
 #include "Commands_Deprecated.h"
 
 #ifdef _DEBUG

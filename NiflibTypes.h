@@ -356,4 +356,4 @@ enum {
 
 UInt32 getNiflibTypeIndex(const Niflib::Type& type);
 UInt32 getNiflibTypeIndex(const string& typeStr);
-Niflib::Type getNiflibType(UInt32 typeIndex);
+const Niflib::Type* getNiflibType(UInt32 typeIndex);

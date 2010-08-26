@@ -621,6 +621,14 @@
 				RelativePath=".\Commands_NiProperty.h"
 				>
 			</File>
+			<File
+				RelativePath=".\Commands_NiSourceTexture.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiSourceTexture.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Backbone"

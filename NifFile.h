@@ -63,11 +63,12 @@ public:
 	void clrChange(const UInt32 &block, const UInt32 &type, const UInt32 &action);
 
 	// load functions
-	void loadChNiExtraDataObject(UInt32 block, UInt32 type, string& val);
+	void loadChNiExtraData(UInt32 block, UInt32 act, UInt32 type, string& val);
 	void loadChNiObjectNET(UInt32 block, UInt32 act, string& val);
 	void loadChNiAVObject(UInt32 block, UInt32 act, string& val);
 	void loadChNiNode(UInt32 block, UInt32 act, string& val);
 	void loadChNiProperty(UInt32 block, UInt32 act, string& val);
+	void loadChNiSourceTexture(UInt32 block, UInt32 act, string& val);
 };
 
 const char logNode = ':';
