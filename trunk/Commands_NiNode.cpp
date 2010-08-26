@@ -106,7 +106,7 @@ static bool Cmd_NiNodeGetChildByName_Execute(COMMAND_ARGS) {
 						if ( *result == -1 )
 							dPrintAndLog("NiNodeGetChildByName","Child not found.\n");
 						else
-							dPrintAndLog("NiNodeGetChildByName","Child found.\n");
+							dPrintAndLog("NiNodeGetChildByName","Child found; returning "+UIntToString(*result)+".\n");
 					}
 				}
 			}
@@ -131,7 +131,7 @@ static bool Cmd_NiNodeDeleteChild_Execute(COMMAND_ARGS) {
 	UInt32 blockID = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &chID, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiNodeDeleteChild","Deleting Child (block #"+UIntToString(chID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+".");
+		dPrintAndLog("NiNodeDeleteChild","Deleting Child (block #"+UIntToString(chID)+") of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+".");
 		NifFile* nifPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
 			if ( nifPtr->root ) {
@@ -166,7 +166,7 @@ DEFINE_CMD_PLUGIN_ALT(
 	NiNodeDelChild,
 	"Deletes the NiNode's Child of the specified Nif.",
 	0,
-	kParams_OneString_OneInt_OneOptionalInt
+	kParams_TwoInts_OneOptionalInt
 );
 
 void NifFile::loadChNiNode(UInt32 block, UInt32 act, string& val) {
@@ -175,10 +175,18 @@ void NifFile::loadChNiNode(UInt32 block, UInt32 act, string& val) {
 		if ( node ) {
 			switch (act) {
 				case kNiNodeAct_DelChild:
-					for ( vector<Niflib::NiAVObjectRef>::iterator i = node->GetChildren().begin(); i != node->GetChildren().end(); ++i )
-						if ( *i == Niflib::DynamicCast<Niflib::NiAVObject>(nifList[StringToUInt(val)]) )
-							node->RemoveChild(*i);
-					dPrintAndLog("NifLoad - NiNode","Child (block #"+val+") deleted.");
+					{
+						UInt32 chID = StringToUInt(val);
+						if ( chID < nifList.size() ) {
+							vector<Niflib::NiAVObjectRef> chs = node->GetChildren();
+							for ( vector<Niflib::NiAVObjectRef>::iterator i = chs.begin(); i != chs.end(); ++i )
+								if ( *i == Niflib::DynamicCast<Niflib::NiAVObject>(nifList[StringToUInt(val)]) )
+									node->RemoveChild(*i);
+							dPrintAndLog("NifLoad - NiNode","Child (block #"+val+") deleted.");
+						}
+						else
+							dPrintAndLog("NifLoad - NiNode","\n\n\t\tBlock #"+val+" out of range! Loaded nif will be incorrect!\n");
+					}
 					break;
 
 				case kNiNodeAct_AddChild:

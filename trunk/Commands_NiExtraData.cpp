@@ -2,6 +2,105 @@
 
 #include "NiExtraData.h"
 
+// returns the string stored in the specified StringExtraData
+// in the NifFile associated with the given nifID.
+static bool Cmd_NiExtraDataGetName_Execute(COMMAND_ARGS) {
+	*result = 0;
+	string edName = " ";
+
+	int nifID = -1;
+	UInt32 blockID = 0;
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifID, &blockID)) {
+		UInt8 modID = scriptObj->GetModIndex();
+		dPrintAndLog("NiExtraDataGetName","Getting the name of ExtraData (block #"+UIntToString(blockID)+") of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
+		NifFile* nifPtr = NULL;
+		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+			if ( nifPtr->root ) {
+				if ( blockID < nifPtr->nifList.size() ) {
+					Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifPtr->nifList[blockID]);
+					if ( ed ) {
+						edName = ed->GetName();
+						dPrintAndLog("NiExtraDataGetName","Returning \""+edName+"\".\n");
+					}
+					else
+						dPrintAndLog("NiExtraDataGetName","Block #"+UIntToString(blockID)+" is not NiExtraData; block type is \""+nifPtr->nifList[blockID]->GetType().GetTypeName()+"\".\n");
+				}
+				else
+					dPrintAndLog("NiExtraDataGetName","Block #"+UIntToString(blockID)+" is out of range.\n");
+			}
+			else
+				dPrintAndLog("NiExtraDataGetName","Nif root is bad.\n");
+		}
+		else
+			dPrintAndLog("NiExtraDataGetName","Nif not found.\n");
+	}
+	else
+		dPrintAndLog("NiExtraDataGetName","Failed to extract arguments.\n");
+
+	strInterface->Assign(PASS_COMMAND_ARGS, edName.c_str());
+	return true;
+}
+
+DEFINE_CMD_PLUGIN_ALT(
+	NiExtraDataGetName,
+	NiEDGetName,
+	"If the Nth block of the given Nif is a NiStringExtraData, gets the value of the string.",
+	0,
+	kParams_OneInt_OneOptionalInt
+);
+
+// sets the name of the specified StringExtraData
+// in the NifFile associated with the given nifID.
+static bool Cmd_NiExtraDataSetName_Execute(COMMAND_ARGS) {
+	*result = 0;
+
+	char newName[kMaxMessageLength] = " ";
+	int nifID = -1;
+	UInt32 blockID = -1;
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &newName, &nifID, &blockID)) {
+		UInt8 modID = scriptObj->GetModIndex();
+		dPrintAndLog("NiExtraDataSetName","Setting the name of ExtraData (block #"+UIntToString(blockID)+") of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" to \""+string(newName)+"\".");
+		NifFile* nifPtr = NULL;
+		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+			if ( nifPtr->root ) {
+				if ( nifPtr->editable ) {
+					if ( blockID < nifPtr->nifList.size() ) {
+						Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifPtr->nifList[blockID]);
+						if ( ed ) {
+							*result = 1;
+							ed->SetName(newName);
+							dPrintAndLog("NiExtraDataSetName","ExtraData value set successfully.\n");
+							nifPtr->logChange(blockID, kNiflibType_NiStringExtraData, kNiEDAct_SetName, newName, true);
+						}
+						else
+							dPrintAndLog("NiExtraDataSetName","Block #"+UIntToString(blockID)+" is not NiExtraData; block type is \""+nifPtr->nifList[blockID]->GetType().GetTypeName()+"\".\n");
+					}
+					else
+						dPrintAndLog("NiExtraDataSetName","Block #"+UIntToString(blockID)+" is out of range.\n");
+				}
+				else
+					dPrintAndLog("NiExtraDataSetName","Nif is not editable.\n");
+			}
+			else
+				dPrintAndLog("NiExtraDataSetName","Nif root is bad.\n");
+		}
+		else
+			dPrintAndLog("NiExtraDataSetName","Nif not found.\n");
+	}
+	else
+		dPrintAndLog("NiExtraDataSetName","Failed to extract arguments.\n");
+
+	return true;
+}
+
+DEFINE_CMD_PLUGIN_ALT(
+	NiExtraDataSetName,
+	NiEDSetName,
+	"Sets the name of the Nth ExtraData of the given Nif.",
+	0,
+	kParams_OneString_OneInt_OneOptionalInt
+);
+
 // returns the number stored in the specified ExtraData
 // in the NifFile associated with the given nifID.
 static bool Cmd_NiExtraDataGetNumber_Execute(COMMAND_ARGS) {
@@ -11,7 +110,7 @@ static bool Cmd_NiExtraDataGetNumber_Execute(COMMAND_ARGS) {
 	UInt32 blockID = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiExtraDataGetString","Getting string value of ExtraData #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
+		dPrintAndLog("NiExtraDataGetNumber","Getting numerical value of ExtraData (block #"+UIntToString(blockID)+") of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
 		NifFile* nifPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
 			if ( nifPtr->root ) {
@@ -41,14 +140,25 @@ static bool Cmd_NiExtraDataGetNumber_Execute(COMMAND_ARGS) {
 								break;
 
 							default:
-								dPrintAndLog("NiExtraDataSetNumber","ExtraData is not a numerical type!\n");
+								dPrintAndLog("NiExtraDataGetNumber","ExtraData is not a numerical type!\n");
 								break;
 						}
 					}
+					else
+						dPrintAndLog("NiExtraDataGetNumber","Block is not NiExtraData.\n");
 				}
+				else
+					dPrintAndLog("NiExtraDataGetNumber","Block is out of range.\n");
 			}
+			else
+				dPrintAndLog("NiExtraDataGetNumber","Nif root is bad.\n");
 		}
+		else
+			dPrintAndLog("NiExtraDataGetNumber","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NiExtraDataGetNumber","Failed to extract arguments.\n");
+
 	return true;
 }
 
@@ -70,7 +180,7 @@ static bool Cmd_NiExtraDataSetNumber_Execute(COMMAND_ARGS) {
 	UInt32 blockID = -1;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &newVal, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiExtraDataSetNumber","Setting the numerical value of ExtraData #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" to "+FloatToString(newVal)+".");
+		dPrintAndLog("NiExtraDataSetNumber","Setting the numerical value of ExtraData (block #"+UIntToString(blockID)+") of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" to "+FloatToString(newVal)+".");
 		NifFile* nifPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
 			if ( nifPtr->root ) {
@@ -78,7 +188,7 @@ static bool Cmd_NiExtraDataSetNumber_Execute(COMMAND_ARGS) {
 					if ( blockID < nifPtr->nifList.size() ) {
 						Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifPtr->nifList[blockID]);
 						if ( ed ) {
-							UInt32 edType = getNiflibTypeIndex(ed->TYPE);
+							UInt32 edType = getNiflibTypeIndex(ed->GetType());
 							switch (edType) {
 								case kNiflibType_NiBooleanExtraData:
 									Niflib::DynamicCast<Niflib::NiBooleanExtraData>(ed)->SetData(newVal!=0);
@@ -113,11 +223,24 @@ static bool Cmd_NiExtraDataSetNumber_Execute(COMMAND_ARGS) {
 									break;
 							}
 						}
+						else
+							dPrintAndLog("NiExtraDataSetNumber","Block is not NiExtraData.\n");
 					}
+					else
+						dPrintAndLog("NiExtraDataSetNumber","Block is out of range.\n");
 				}
+				else
+					dPrintAndLog("NiExtraDataSetNumber","Nif is not editable.\n");
 			}
+			else
+				dPrintAndLog("NiExtraDataSetNumber","Nif root is bad.\n");
 		}
+		else
+			dPrintAndLog("NiExtraDataSetNumber","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NiExtraDataSetNumber","Failed to extract arguments.\n");
+
 	return true;
 }
 
@@ -139,7 +262,7 @@ static bool Cmd_NiExtraDataGetString_Execute(COMMAND_ARGS) {
 	UInt32 blockID = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiExtraDataGetString","Getting string value of ExtraData #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
+		dPrintAndLog("NiExtraDataGetString","Getting string value of ExtraData (block #"+UIntToString(blockID)+") of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
 		NifFile* nifPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
 			if ( nifPtr->root ) {
@@ -149,10 +272,21 @@ static bool Cmd_NiExtraDataGetString_Execute(COMMAND_ARGS) {
 						edStr = ed->GetData();
 						dPrintAndLog("NiExtraDataGetString","Returning \""+edStr+"\".\n");
 					}
+					else
+						dPrintAndLog("NiExtraDataGetString","Block is not NiStringExtraData.\n");
 				}
+				else
+					dPrintAndLog("NiExtraDataGetString","Block is out of range.\n");
 			}
+			else
+				dPrintAndLog("NiExtraDataGetString","Nif root is bad.\n");
 		}
+		else
+			dPrintAndLog("NiExtraDataGetString","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NiExtraDataGetString","Failed to extract arguments.\n");
+
 	strInterface->Assign(PASS_COMMAND_ARGS, edStr.c_str());
 	return true;
 }
@@ -175,7 +309,7 @@ static bool Cmd_NiExtraDataSetString_Execute(COMMAND_ARGS) {
 	UInt32 blockID = -1;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &newStr, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NifSetNthExtraDataString","Setting the string value of ExtraData #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" to \""+string(newStr)+"\".");
+		dPrintAndLog("NiExtraDataSetString","Setting the string value of ExtraData (block #"+UIntToString(blockID)+") of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" to \""+string(newStr)+"\".");
 		NifFile* nifPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
 			if ( nifPtr->root ) {
@@ -185,14 +319,27 @@ static bool Cmd_NiExtraDataSetString_Execute(COMMAND_ARGS) {
 						if ( ed ) {
 							*result = 1;
 							ed->SetData(newStr);
-							dPrintAndLog("NifSetNthExtraDataString","ExtraData value set successfully.\n");
+							dPrintAndLog("NiExtraDataSetString","ExtraData value set successfully.\n");
 							nifPtr->logChange(blockID, kNiflibType_NiStringExtraData, kNiEDAct_SetStr, newStr, true);
 						}
+						else
+							dPrintAndLog("NiExtraDataSetString","Block is not NiStringExtraData.\n");
 					}
+					else
+						dPrintAndLog("NiExtraDataSetString","Block is out of range.\n");
 				}
+				else
+					dPrintAndLog("NiExtraDataSetString","Nif is not editable.\n");
 			}
+			else
+				dPrintAndLog("NiExtraDataSetString","Nif root is bad.\n");
 		}
+		else
+			dPrintAndLog("NiExtraDataSetString","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NiExtraDataSetString","Failed to extract arguments.\n");
+
 	return true;
 }
 
@@ -214,14 +361,15 @@ static bool Cmd_NiExtraDataGetArray_Execute(COMMAND_ARGS) {
 	UInt32 blockID = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiExtraDataGetArray","Getting array of ExtraData #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
+		dPrintAndLog("NiExtraDataGetArray","Getting array of ExtraData (block #"+UIntToString(blockID)+") of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
 		NifFile* nifPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
 			if ( nifPtr->root ) {
 				if ( blockID < nifPtr->nifList.size() ) {
-					Niflib::NiStringExtraDataRef ed = Niflib::DynamicCast<Niflib::NiStringExtraData>(nifPtr->nifList[blockID]);
+					Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifPtr->nifList[blockID]);
 					if ( ed ) {
-						UInt32 edType = getNiflibTypeIndex(ed->TYPE);
+						UInt32 edType = getNiflibTypeIndex(ed->GetType());
+						dPrintAndLog("NiExtraDataGetArray","ExtraData type: \""+ed->GetType().GetTypeName()+"\" (#"+UIntToString(edType)+").");
 						vector<Niflib::byte> binData;
 						Niflib::Color4 colorData;
 						vector<float> floatData;
@@ -280,10 +428,21 @@ static bool Cmd_NiExtraDataGetArray_Execute(COMMAND_ARGS) {
 						else if ( !(omap.empty()) )
 							arr = StringMapFromStdMap(omap, scriptObj);
 					}
+					else
+						dPrintAndLog("NiExtraDataGetArray","Block is not NiExtraData.");
 				}
+				else
+					dPrintAndLog("NiExtraDataGetArray","Block is out of range.");
 			}
+			else
+				dPrintAndLog("NiExtraDataGetArray","Nif root is bad.");
 		}
+		else
+			dPrintAndLog("NiExtraDataGetArray","Nif not found.");
 	}
+	else
+		dPrintAndLog("NiExtraDataGetArray","Failed to extract arguments.");
+
 	if ( arrInterface->AssignCommandResult(arr, result) )
 		dPrintAndLog("NiExtraDataGetArray","Returning ExtraData's array.\n");
 	else
@@ -299,66 +458,72 @@ DEFINE_CMD_PLUGIN_ALT(
 	kParams_OneInt_OneOptionalInt
 );
 
-void NifFile::loadChNiExtraDataObject(UInt32 block, UInt32 type, string& val) {
+void NifFile::loadChNiExtraData(UInt32 block, UInt32 act, UInt32 type, string& val) {
 	if ( block < nifList.size() ) {
 		Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifList[block]);
 		if ( ed ) {
-			switch (type) {
-				case kNiflibType_NiBooleanExtraData:
-					{
-						Niflib::NiBooleanExtraDataRef boolED = Niflib::DynamicCast<Niflib::NiBooleanExtraData>(ed);
-						boolED->SetData(val.compare("1")==0?true:false);
-					}
-					dPrintAndLog("NifLoad - NiExtraData","Loaded NiBooleanExtraData change.");
+			switch (act) {
+				case kNiEDAct_SetName:
+					ed->SetName(val);
+					dPrintAndLog("NifLoad - NiExtraData","Loaded NiExtraData name change.");
 					break;
 
-				case kNiflibType_NiFloatExtraData:
-					{
-						Niflib::NiFloatExtraDataRef floatED = Niflib::DynamicCast<Niflib::NiFloatExtraData>(ed);
-						floatED->SetData(StringToFloat(val));
+				case kNiEDAct_SetNum:
+					switch (type) {
+						case kNiflibType_NiBooleanExtraData:
+							{
+								Niflib::NiBooleanExtraDataRef boolED = Niflib::DynamicCast<Niflib::NiBooleanExtraData>(ed);
+								boolED->SetData(val.compare("1")==0?true:false);
+							}
+							dPrintAndLog("NifLoad - NiExtraData","Loaded NiBooleanExtraData change.");
+							break;
+
+						case kNiflibType_NiFloatExtraData:
+							{
+								Niflib::NiFloatExtraDataRef floatED = Niflib::DynamicCast<Niflib::NiFloatExtraData>(ed);
+								floatED->SetData(StringToFloat(val));
+							}
+							dPrintAndLog("NifLoad - NiExtraData","Loaded NiFloatExtraData change.");
+							break;
+
+						case kNiflibType_NiIntegerExtraData:
+						case kNiflibType_BSXFlags:
+							{
+								Niflib::NiIntegerExtraDataRef intED = Niflib::DynamicCast<Niflib::NiIntegerExtraData>(ed);
+								intED->SetData(StringToSInt(val));
+							}
+							dPrintAndLog("NifLoad - NiExtraData","Loaded NiIntegerExtraData change.");
+							break;
+
+						default:
+							dPrintAndLog("NifLoad - NiExtraData","\n\n\t\tCannot set the number of a non-numerical ExtraData! Loaded nif will be incorrect!\n");
 					}
-					dPrintAndLog("NifLoad - NiExtraData","Loaded NiFloatExtraData change.");
 					break;
 
-				case kNiflibType_NiIntegerExtraData:
-				case kNiflibType_BSXFlags:
-					{
-						Niflib::NiIntegerExtraDataRef intED = Niflib::DynamicCast<Niflib::NiIntegerExtraData>(ed);
-						intED->SetData(StringToSInt(val));
-					}
-					dPrintAndLog("NifLoad - NiExtraData","Loaded NiIntegerExtraData change.");
-					break;
-
-				case kNiflibType_NiStringExtraData:
-					{
+				case kNiEDAct_SetStr:
+					if ( type == kNiflibType_NiStringExtraData ) {
 						Niflib::NiStringExtraDataRef strED = Niflib::DynamicCast<Niflib::NiStringExtraData>(ed);
-						strED->SetData(val);
+						if ( strED ) {
+							strED->SetData(val);
+							dPrintAndLog("NifLoad - NiExtraData","Loaded NiStringExtraData change.");
+						}
+						else
+							dPrintAndLog("NifLoad - NiExtraData","\n\n\t\tCannot set the string of a non-string ExtraData! Loaded nif will be incorrect!\n");
 					}
-					dPrintAndLog("NifLoad - NiExtraData","Loaded NiStringExtraData change.");
+					else
+						dPrintAndLog("NifLoad - NiExtraData","\n\n\t\tCannot set the string of a non-string ExtraData! Loaded nif will be incorrect!\n");
 					break;
 
-					case kNiflibType_BSBound:
-					case kNiflibType_BSDecalPlacementVectorExtraData:
-					case kNiflibType_BSFurnitureMarker:
-					case kNiflibType_BSWArray:
-					case kNiflibType_NiArkAnimationExtraData:
-					case kNiflibType_NiArkImporterExtraData:
-					case kNiflibType_NiArkShaderExtraData:
-					case kNiflibType_NiArkTextureExtraData:
-					case kNiflibType_NiArkViewportInfoExtraData:
-					case kNiflibType_NiBinaryExtraData:
-					case kNiflibType_NiBinaryVoxelExtraData:
-					case kNiflibType_NiColorExtraData:
-					case kNiflibType_NiFloatsExtraData:
-					case kNiflibType_NiIntegersExtraData:
-					case kNiflibType_NiStringsExtraData:
-					case kNiflibType_NiTextKeyExtraData:
-					case kNiflibType_NiVectorExtraData:
-					case kNiflibType_NiVertWeightsExtraData:
-						dPrintAndLog("NifLoad - NiExtraData","\n\n\t\tChanges to that type of ExtraData are not supported! Loaded nif will be incorrect!\n");
+				case kNiEDAct_SetArr:
+					dPrintAndLog("NifLoad - NiExtraData","\n\n\t\tChanges to array-type ExtraData are not supported in this version of NifSE! Loaded nif will be incorrect!\n");
+					break;
 
-					default:
-						dPrintAndLog("NifLoad - NiExtraData","\n\n\t\tUnknown ExtraData type!\n");
+				case kNiEDAct_SetBSBound:
+					dPrintAndLog("NifLoad - NiExtraData","\n\n\t\tChanges to BSBound ExtraData are not supported in this version of NifSE! Loaded nif will be incorrect!\n");
+					break;
+
+				default:
+					dPrintAndLog("NifLoad - NiExtraData","\n\n\t\tUnknown ExtraData action! Loaded nif will be incorrect!\n");
 			}
 		}
 		else

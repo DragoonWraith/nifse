@@ -355,7 +355,7 @@ static bool Cmd_NiTexturingPropertyGetTextureTranslation_Execute(COMMAND_ARGS) {
 		}
 	}
 	if ( arrInterface->AssignCommandResult(arr, result) )
-		dPrintAndLog("NiTexturingPropertyGetTextureTranslation","Returning ExtraData's array.\n");
+		dPrintAndLog("NiTexturingPropertyGetTextureTranslation","Returning TexturingProperty's translation.\n");
 	else
 		dPrintAndLog("NiTexturingPropertyGetTextureTranslation","Failed to create and return array.\n");
 	return true;
@@ -378,7 +378,7 @@ static bool Cmd_NiTexturingPropertyGetTextureTiling_Execute(COMMAND_ARGS) {
 	UInt32 blockID = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &texSlot, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiTexturingPropertyGetTextureTiling","Getting the center offset of texture #"+UIntToString(texSlot)+" of the NiTexturingProperty (nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+").");
+		dPrintAndLog("NiTexturingPropertyGetTextureTiling","Getting the tiling of texture #"+UIntToString(texSlot)+" of the NiTexturingProperty (nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+").");
 		NifFile* nifPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
 			if ( nifPtr->root ) {
@@ -397,7 +397,7 @@ static bool Cmd_NiTexturingPropertyGetTextureTiling_Execute(COMMAND_ARGS) {
 		}
 	}
 	if ( arrInterface->AssignCommandResult(arr, result) )
-		dPrintAndLog("NiTexturingPropertyGetTextureTiling","Returning ExtraData's array.\n");
+		dPrintAndLog("NiTexturingPropertyGetTextureTiling","Returning TexturingProperty's tiling.\n");
 	else
 		dPrintAndLog("NiTexturingPropertyGetTextureTiling","Failed to create and return array.\n");
 	return true;
@@ -474,7 +474,7 @@ static bool Cmd_NiTexturingPropertyGetTextureCenterOffset_Execute(COMMAND_ARGS) 
 		}
 	}
 	if ( arrInterface->AssignCommandResult(arr, result) )
-		dPrintAndLog("NiExtraDataGetArray","Returning ExtraData's array.\n");
+		dPrintAndLog("NiExtraDataGetArray","Returning TexturingProperty's center offset.\n");
 	else
 		dPrintAndLog("NiExtraDataGetArray","Failed to create and return array.\n");
 	return true;
@@ -495,8 +495,9 @@ void NifFile::loadChNiProperty(UInt32 block, UInt32 act, string& val) {
 			switch (act) {
 				case kNiTexingPropAct_SetTexCount:
 					{
-						Niflib::NiTexturingPropertyRef texingPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(texingPr);
-						texingPr->SetTextureCount(StringToUInt(val));
+						UInt32 texCount = StringToUInt(val);
+						Niflib::NiTexturingPropertyRef texingPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(pr);
+						texingPr->SetTextureCount(texCount);
 					}
 					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture count change loaded.");
 					break;

@@ -1246,706 +1246,706 @@ UInt32 getNiflibTypeIndex(const string& typeStr) {
 	else if ( offset == limit )
 		return offset;
 
-	Niflib::Type type = getNiflibType(offset);
+	const Niflib::Type* type = getNiflibType(offset);
 	for ( UInt32 i = offset; i < limit; ++i ) {
 		if ( i != offset )
 			type = getNiflibType(i);
-		if ( type.GetTypeName().compare(typeStr) == 0 )
+		if ( type->GetTypeName().compare(typeStr) == 0 )
 			return i;
 	}
 	return kNiflibType_UNKNOWN;
 }
 
-Niflib::Type getNiflibType(UInt32 typeID) {
+const Niflib::Type* getNiflibType(UInt32 typeID) {
 	switch (typeID) {
 		case kNiflibType_ATextureRenderData:
-			return Niflib::ATextureRenderData::TYPE;
+			return &(Niflib::ATextureRenderData::TYPE);
 		case kNiflibType_AvoidNode:
-			return Niflib::AvoidNode::TYPE;
+			return &(Niflib::AvoidNode::TYPE);
 		case kNiflibType_bhkAabbPhantom:
-			return Niflib::bhkAabbPhantom::TYPE;
+			return &(Niflib::bhkAabbPhantom::TYPE);
 		case kNiflibType_bhkBlendCollisionObject:
-			return Niflib::bhkBlendCollisionObject::TYPE;
+			return &(Niflib::bhkBlendCollisionObject::TYPE);
 		case kNiflibType_bhkBlendController:
-			return Niflib::bhkBlendController::TYPE;
+			return &(Niflib::bhkBlendController::TYPE);
 		case kNiflibType_bhkBoxShape:
-			return Niflib::bhkBoxShape::TYPE;
+			return &(Niflib::bhkBoxShape::TYPE);
 		case kNiflibType_bhkBreakableConstraint:
-			return Niflib::bhkBreakableConstraint::TYPE;
+			return &(Niflib::bhkBreakableConstraint::TYPE);
 		case kNiflibType_bhkBvTreeShape:
-			return Niflib::bhkBvTreeShape::TYPE;
+			return &(Niflib::bhkBvTreeShape::TYPE);
 		case kNiflibType_bhkCapsuleShape:
-			return Niflib::bhkCapsuleShape::TYPE;
+			return &(Niflib::bhkCapsuleShape::TYPE);
 		case kNiflibType_bhkCollisionObject:
-			return Niflib::bhkCollisionObject::TYPE;
+			return &(Niflib::bhkCollisionObject::TYPE);
 		case kNiflibType_bhkConstraint:
-			return Niflib::bhkConstraint::TYPE;
+			return &(Niflib::bhkConstraint::TYPE);
 		case kNiflibType_bhkConvexListShape:
-			return Niflib::bhkConvexListShape::TYPE;
+			return &(Niflib::bhkConvexListShape::TYPE);
 		case kNiflibType_bhkConvexShape:
-			return Niflib::bhkConvexShape::TYPE;
+			return &(Niflib::bhkConvexShape::TYPE);
 		case kNiflibType_bhkConvexTransformShape:
-			return Niflib::bhkConvexTransformShape::TYPE;
+			return &(Niflib::bhkConvexTransformShape::TYPE);
 		case kNiflibType_bhkConvexVerticesShape:
-			return Niflib::bhkConvexVerticesShape::TYPE;
+			return &(Niflib::bhkConvexVerticesShape::TYPE);
 		case kNiflibType_bhkEntity:
-			return Niflib::bhkEntity::TYPE;
+			return &(Niflib::bhkEntity::TYPE);
 		case kNiflibType_bhkHingeConstraint:
-			return Niflib::bhkHingeConstraint::TYPE;
+			return &(Niflib::bhkHingeConstraint::TYPE);
 		case kNiflibType_bhkLimitedHingeConstraint:
-			return Niflib::bhkLimitedHingeConstraint::TYPE;
+			return &(Niflib::bhkLimitedHingeConstraint::TYPE);
 		case kNiflibType_bhkLiquidAction:
-			return Niflib::bhkLiquidAction::TYPE;
+			return &(Niflib::bhkLiquidAction::TYPE);
 		case kNiflibType_bhkListShape:
-			return Niflib::bhkListShape::TYPE;
+			return &(Niflib::bhkListShape::TYPE);
 		case kNiflibType_bhkMalleableConstraint:
-			return Niflib::bhkMalleableConstraint::TYPE;
+			return &(Niflib::bhkMalleableConstraint::TYPE);
 		case kNiflibType_bhkMoppBvTreeShape:
-			return Niflib::bhkMoppBvTreeShape::TYPE;
+			return &(Niflib::bhkMoppBvTreeShape::TYPE);
 		case kNiflibType_bhkMultiSphereShape:
-			return Niflib::bhkMultiSphereShape::TYPE;
+			return &(Niflib::bhkMultiSphereShape::TYPE);
 		case kNiflibType_bhkNiCollisionObject:
-			return Niflib::bhkNiCollisionObject::TYPE;
+			return &(Niflib::bhkNiCollisionObject::TYPE);
 		case kNiflibType_bhkNiTriStripsShape:
-			return Niflib::bhkNiTriStripsShape::TYPE;
+			return &(Niflib::bhkNiTriStripsShape::TYPE);
 		case kNiflibType_bhkOrientHingedBodyAction:
-			return Niflib::bhkOrientHingedBodyAction::TYPE;
+			return &(Niflib::bhkOrientHingedBodyAction::TYPE);
 		case kNiflibType_bhkPackedNiTriStripsShape:
-			return Niflib::bhkPackedNiTriStripsShape::TYPE;
+			return &(Niflib::bhkPackedNiTriStripsShape::TYPE);
 		case kNiflibType_bhkPCollisionObject:
-			return Niflib::bhkPCollisionObject::TYPE;
+			return &(Niflib::bhkPCollisionObject::TYPE);
 		case kNiflibType_bhkPhantom:
-			return Niflib::bhkPhantom::TYPE;
+			return &(Niflib::bhkPhantom::TYPE);
 		case kNiflibType_bhkPrismaticConstraint:
-			return Niflib::bhkPrismaticConstraint::TYPE;
+			return &(Niflib::bhkPrismaticConstraint::TYPE);
 		case kNiflibType_bhkRagdollConstraint:
-			return Niflib::bhkRagdollConstraint::TYPE;
+			return &(Niflib::bhkRagdollConstraint::TYPE);
 		case kNiflibType_bhkRefObject:
-			return Niflib::bhkRefObject::TYPE;
+			return &(Niflib::bhkRefObject::TYPE);
 		case kNiflibType_bhkRigidBody:
-			return Niflib::bhkRigidBody::TYPE;
+			return &(Niflib::bhkRigidBody::TYPE);
 		case kNiflibType_bhkRigidBodyT:
-			return Niflib::bhkRigidBodyT::TYPE;
+			return &(Niflib::bhkRigidBodyT::TYPE);
 		case kNiflibType_bhkSerializable:
-			return Niflib::bhkSerializable::TYPE;
+			return &(Niflib::bhkSerializable::TYPE);
 		case kNiflibType_bhkShape:
-			return Niflib::bhkShape::TYPE;
+			return &(Niflib::bhkShape::TYPE);
 		case kNiflibType_bhkShapeCollection:
-			return Niflib::bhkShapeCollection::TYPE;
+			return &(Niflib::bhkShapeCollection::TYPE);
 		case kNiflibType_bhkShapePhantom:
-			return Niflib::bhkShapePhantom::TYPE;
+			return &(Niflib::bhkShapePhantom::TYPE);
 		case kNiflibType_bhkSimpleShapePhantom:
-			return Niflib::bhkSimpleShapePhantom::TYPE;
+			return &(Niflib::bhkSimpleShapePhantom::TYPE);
 		case kNiflibType_bhkSPCollisionObject:
-			return Niflib::bhkSPCollisionObject::TYPE;
+			return &(Niflib::bhkSPCollisionObject::TYPE);
 		case kNiflibType_bhkSphereRepShape:
-			return Niflib::bhkSphereRepShape::TYPE;
+			return &(Niflib::bhkSphereRepShape::TYPE);
 		case kNiflibType_bhkSphereShape:
-			return Niflib::bhkSphereShape::TYPE;
+			return &(Niflib::bhkSphereShape::TYPE);
 		case kNiflibType_bhkStiffSpringConstraint:
-			return Niflib::bhkStiffSpringConstraint::TYPE;
+			return &(Niflib::bhkStiffSpringConstraint::TYPE);
 		case kNiflibType_bhkTransformShape:
-			return Niflib::bhkTransformShape::TYPE;
+			return &(Niflib::bhkTransformShape::TYPE);
 		case kNiflibType_bhkWorldObject:
-			return Niflib::bhkWorldObject::TYPE;
+			return &(Niflib::bhkWorldObject::TYPE);
 		case kNiflibType_BSAnimNotes:
-			return Niflib::BSAnimNotes::TYPE;
+			return &(Niflib::BSAnimNotes::TYPE);
 		case kNiflibType_BSBlastNode:
-			return Niflib::BSBlastNode::TYPE;
+			return &(Niflib::BSBlastNode::TYPE);
 		case kNiflibType_BSBound:
-			return Niflib::BSBound::TYPE;
+			return &(Niflib::BSBound::TYPE);
 		case kNiflibType_BSDamageStage:
-			return Niflib::BSDamageStage::TYPE;
+			return &(Niflib::BSDamageStage::TYPE);
 		case kNiflibType_BSDebrisNode:
-			return Niflib::BSDebrisNode::TYPE;
+			return &(Niflib::BSDebrisNode::TYPE);
 		case kNiflibType_BSDecalPlacementVectorExtraData:
-			return Niflib::BSDecalPlacementVectorExtraData::TYPE;
+			return &(Niflib::BSDecalPlacementVectorExtraData::TYPE);
 		case kNiflibType_BSDismemberSkinInstance:
-			return Niflib::BSDismemberSkinInstance::TYPE;
+			return &(Niflib::BSDismemberSkinInstance::TYPE);
 		case kNiflibType_BSDistantTreeShaderProperty:
-			return Niflib::BSDistantTreeShaderProperty::TYPE;
+			return &(Niflib::BSDistantTreeShaderProperty::TYPE);
 		case kNiflibType_BSFadeNode:
-			return Niflib::BSFadeNode::TYPE;
+			return &(Niflib::BSFadeNode::TYPE);
 		case kNiflibType_BSFrustumFOVController:
-			return Niflib::BSFrustumFOVController::TYPE;
+			return &(Niflib::BSFrustumFOVController::TYPE);
 		case kNiflibType_BSFurnitureMarker:
-			return Niflib::BSFurnitureMarker::TYPE;
+			return &(Niflib::BSFurnitureMarker::TYPE);
 		case kNiflibType_BSKeyframeController:
-			return Niflib::BSKeyframeController::TYPE;
+			return &(Niflib::BSKeyframeController::TYPE);
 		case kNiflibType_BSMasterParticleSystem:
-			return Niflib::BSMasterParticleSystem::TYPE;
+			return &(Niflib::BSMasterParticleSystem::TYPE);
 		case kNiflibType_BSMaterialEmittanceMultController:
-			return Niflib::BSMaterialEmittanceMultController::TYPE;
+			return &(Niflib::BSMaterialEmittanceMultController::TYPE);
 		case kNiflibType_BSMultiBound:
-			return Niflib::BSMultiBound::TYPE;
+			return &(Niflib::BSMultiBound::TYPE);
 		case kNiflibType_BSMultiBoundAABB:
-			return Niflib::BSMultiBoundAABB::TYPE;
+			return &(Niflib::BSMultiBoundAABB::TYPE);
 		case kNiflibType_BSMultiBoundData:
-			return Niflib::BSMultiBoundData::TYPE;
+			return &(Niflib::BSMultiBoundData::TYPE);
 		case kNiflibType_BSMultiBoundNode:
-			return Niflib::BSMultiBoundNode::TYPE;
+			return &(Niflib::BSMultiBoundNode::TYPE);
 		case kNiflibType_BSMultiBoundSphere:
-			return Niflib::BSMultiBoundSphere::TYPE;
+			return &(Niflib::BSMultiBoundSphere::TYPE);
 		case kNiflibType_BSOrderedNode:
-			return Niflib::BSOrderedNode::TYPE;
+			return &(Niflib::BSOrderedNode::TYPE);
 		case kNiflibType_BSParentVelocityModifier:
-			return Niflib::BSParentVelocityModifier::TYPE;
+			return &(Niflib::BSParentVelocityModifier::TYPE);
 		case kNiflibType_BSPSysArrayEmitter:
-			return Niflib::BSPSysArrayEmitter::TYPE;
+			return &(Niflib::BSPSysArrayEmitter::TYPE);
 		case kNiflibType_BSPSysMultiTargetEmitterCtlr:
-			return Niflib::BSPSysMultiTargetEmitterCtlr::TYPE;
+			return &(Niflib::BSPSysMultiTargetEmitterCtlr::TYPE);
 		case kNiflibType_BSPSysSimpleColorModifier:
-			return Niflib::BSPSysSimpleColorModifier::TYPE;
+			return &(Niflib::BSPSysSimpleColorModifier::TYPE);
 		case kNiflibType_BSPSysStripUpdateModifier:
-			return Niflib::BSPSysStripUpdateModifier::TYPE;
+			return &(Niflib::BSPSysStripUpdateModifier::TYPE);
 		case kNiflibType_BSRefractionFirePeriodController:
-			return Niflib::BSRefractionFirePeriodController::TYPE;
+			return &(Niflib::BSRefractionFirePeriodController::TYPE);
 		case kNiflibType_BSRefractionStrengthController:
-			return Niflib::BSRefractionStrengthController::TYPE;
+			return &(Niflib::BSRefractionStrengthController::TYPE);
 		case kNiflibType_BSSegmentedTriShape:
-			return Niflib::BSSegmentedTriShape::TYPE;
+			return &(Niflib::BSSegmentedTriShape::TYPE);
 		case kNiflibType_BSShaderLightingProperty:
-			return Niflib::BSShaderLightingProperty::TYPE;
+			return &(Niflib::BSShaderLightingProperty::TYPE);
 		case kNiflibType_BSShaderNoLightingProperty:
-			return Niflib::BSShaderNoLightingProperty::TYPE;
+			return &(Niflib::BSShaderNoLightingProperty::TYPE);
 		case kNiflibType_BSShaderPPLightingProperty:
-			return Niflib::BSShaderPPLightingProperty::TYPE;
+			return &(Niflib::BSShaderPPLightingProperty::TYPE);
 		case kNiflibType_BSShaderProperty:
-			return Niflib::BSShaderProperty::TYPE;
+			return &(Niflib::BSShaderProperty::TYPE);
 		case kNiflibType_BSShaderTextureSet:
-			return Niflib::BSShaderTextureSet::TYPE;
+			return &(Niflib::BSShaderTextureSet::TYPE);
 		case kNiflibType_BSStripParticleSystem:
-			return Niflib::BSStripParticleSystem::TYPE;
+			return &(Niflib::BSStripParticleSystem::TYPE);
 		case kNiflibType_BSStripPSysData:
-			return Niflib::BSStripPSysData::TYPE;
+			return &(Niflib::BSStripPSysData::TYPE);
 		case kNiflibType_BSTreadTransfInterpolator:
-			return Niflib::BSTreadTransfInterpolator::TYPE;
+			return &(Niflib::BSTreadTransfInterpolator::TYPE);
 		case kNiflibType_BSValueNode:
-			return Niflib::BSValueNode::TYPE;
+			return &(Niflib::BSValueNode::TYPE);
 		case kNiflibType_BSWArray:
-			return Niflib::BSWArray::TYPE;
+			return &(Niflib::BSWArray::TYPE);
 		case kNiflibType_BSWindModifier:
-			return Niflib::BSWindModifier::TYPE;
+			return &(Niflib::BSWindModifier::TYPE);
 		case kNiflibType_BSXFlags:
-			return Niflib::BSXFlags::TYPE;
+			return &(Niflib::BSXFlags::TYPE);
 		case kNiflibType_DistantLODShaderProperty:
-			return Niflib::DistantLODShaderProperty::TYPE;
+			return &(Niflib::DistantLODShaderProperty::TYPE);
 		case kNiflibType_FxButton:
-			return Niflib::FxButton::TYPE;
+			return &(Niflib::FxButton::TYPE);
 		case kNiflibType_FxRadioButton:
-			return Niflib::FxRadioButton::TYPE;
+			return &(Niflib::FxRadioButton::TYPE);
 		case kNiflibType_FxWidget:
-			return Niflib::FxWidget::TYPE;
+			return &(Niflib::FxWidget::TYPE);
 		case kNiflibType_HairShaderProperty:
-			return Niflib::HairShaderProperty::TYPE;
+			return &(Niflib::HairShaderProperty::TYPE);
 		case kNiflibType_hkPackedNiTriStripsData:
-			return Niflib::hkPackedNiTriStripsData::TYPE;
+			return &(Niflib::hkPackedNiTriStripsData::TYPE);
 		case kNiflibType_Lighting30ShaderProperty:
-			return Niflib::Lighting30ShaderProperty::TYPE;
+			return &(Niflib::Lighting30ShaderProperty::TYPE);
 		case kNiflibType_Ni3dsAlphaAnimator:
-			return Niflib::Ni3dsAlphaAnimator::TYPE;
+			return &(Niflib::Ni3dsAlphaAnimator::TYPE);
 		case kNiflibType_Ni3dsAnimationNode:
-			return Niflib::Ni3dsAnimationNode::TYPE;
+			return &(Niflib::Ni3dsAnimationNode::TYPE);
 		case kNiflibType_Ni3dsColorAnimator:
-			return Niflib::Ni3dsColorAnimator::TYPE;
+			return &(Niflib::Ni3dsColorAnimator::TYPE);
 		case kNiflibType_Ni3dsMorphShape:
-			return Niflib::Ni3dsMorphShape::TYPE;
+			return &(Niflib::Ni3dsMorphShape::TYPE);
 		case kNiflibType_Ni3dsParticleSystem:
-			return Niflib::Ni3dsParticleSystem::TYPE;
+			return &(Niflib::Ni3dsParticleSystem::TYPE);
 		case kNiflibType_Ni3dsPathController:
-			return Niflib::Ni3dsPathController::TYPE;
+			return &(Niflib::Ni3dsPathController::TYPE);
 		case kNiflibType_NiAdditionalGeometryData:
-			return Niflib::NiAdditionalGeometryData::TYPE;
+			return &(Niflib::NiAdditionalGeometryData::TYPE);
 		case kNiflibType_NiAlphaController:
-			return Niflib::NiAlphaController::TYPE;
+			return &(Niflib::NiAlphaController::TYPE);
 		case kNiflibType_NiAlphaProperty:
-			return Niflib::NiAlphaProperty::TYPE;
+			return &(Niflib::NiAlphaProperty::TYPE);
 		case kNiflibType_NiAmbientLight:
-			return Niflib::NiAmbientLight::TYPE;
+			return &(Niflib::NiAmbientLight::TYPE);
 		case kNiflibType_NiArkAnimationExtraData:
-			return Niflib::NiArkAnimationExtraData::TYPE;
+			return &(Niflib::NiArkAnimationExtraData::TYPE);
 		case kNiflibType_NiArkImporterExtraData:
-			return Niflib::NiArkImporterExtraData::TYPE;
+			return &(Niflib::NiArkImporterExtraData::TYPE);
 		case kNiflibType_NiArkShaderExtraData:
-			return Niflib::NiArkShaderExtraData::TYPE;
+			return &(Niflib::NiArkShaderExtraData::TYPE);
 		case kNiflibType_NiArkTextureExtraData:
-			return Niflib::NiArkTextureExtraData::TYPE;
+			return &(Niflib::NiArkTextureExtraData::TYPE);
 		case kNiflibType_NiArkViewportInfoExtraData:
-			return Niflib::NiArkViewportInfoExtraData::TYPE;
+			return &(Niflib::NiArkViewportInfoExtraData::TYPE);
 		case kNiflibType_NiAutoNormalParticles:
-			return Niflib::NiAutoNormalParticles::TYPE;
+			return &(Niflib::NiAutoNormalParticles::TYPE);
 		case kNiflibType_NiAutoNormalParticlesData:
-			return Niflib::NiAutoNormalParticlesData::TYPE;
+			return &(Niflib::NiAutoNormalParticlesData::TYPE);
 		case kNiflibType_NiAVObject:
-			return Niflib::NiAVObject::TYPE;
+			return &(Niflib::NiAVObject::TYPE);
 		case kNiflibType_NiAVObjectPalette:
-			return Niflib::NiAVObjectPalette::TYPE;
+			return &(Niflib::NiAVObjectPalette::TYPE);
 		case kNiflibType_NiBezierMesh:
-			return Niflib::NiBezierMesh::TYPE;
+			return &(Niflib::NiBezierMesh::TYPE);
 		case kNiflibType_NiBezierTriangle4:
-			return Niflib::NiBezierTriangle4::TYPE;
+			return &(Niflib::NiBezierTriangle4::TYPE);
 		case kNiflibType_NiBillboardNode:
-			return Niflib::NiBillboardNode::TYPE;
+			return &(Niflib::NiBillboardNode::TYPE);
 		case kNiflibType_NiBinaryExtraData:
-			return Niflib::NiBinaryExtraData::TYPE;
+			return &(Niflib::NiBinaryExtraData::TYPE);
 		case kNiflibType_NiBinaryVoxelData:
-			return Niflib::NiBinaryVoxelData::TYPE;
+			return &(Niflib::NiBinaryVoxelData::TYPE);
 		case kNiflibType_NiBinaryVoxelExtraData:
-			return Niflib::NiBinaryVoxelExtraData::TYPE;
+			return &(Niflib::NiBinaryVoxelExtraData::TYPE);
 		case kNiflibType_NiBlendBoolInterpolator:
-			return Niflib::NiBlendBoolInterpolator::TYPE;
+			return &(Niflib::NiBlendBoolInterpolator::TYPE);
 		case kNiflibType_NiBlendFloatInterpolator:
-			return Niflib::NiBlendFloatInterpolator::TYPE;
+			return &(Niflib::NiBlendFloatInterpolator::TYPE);
 		case kNiflibType_NiBlendInterpolator:
-			return Niflib::NiBlendInterpolator::TYPE;
+			return &(Niflib::NiBlendInterpolator::TYPE);
 		case kNiflibType_NiBlendPoint3Interpolator:
-			return Niflib::NiBlendPoint3Interpolator::TYPE;
+			return &(Niflib::NiBlendPoint3Interpolator::TYPE);
 		case kNiflibType_NiBlendTransformInterpolator:
-			return Niflib::NiBlendTransformInterpolator::TYPE;
+			return &(Niflib::NiBlendTransformInterpolator::TYPE);
 		case kNiflibType_NiBone:
-			return Niflib::NiBone::TYPE;
+			return &(Niflib::NiBone::TYPE);
 		case kNiflibType_NiBoneLODController:
-			return Niflib::NiBoneLODController::TYPE;
+			return &(Niflib::NiBoneLODController::TYPE);
 		case kNiflibType_NiBoolData:
-			return Niflib::NiBoolData::TYPE;
+			return &(Niflib::NiBoolData::TYPE);
 		case kNiflibType_NiBooleanExtraData:
-			return Niflib::NiBooleanExtraData::TYPE;
+			return &(Niflib::NiBooleanExtraData::TYPE);
 		case kNiflibType_NiBoolInterpController:
-			return Niflib::NiBoolInterpController::TYPE;
+			return &(Niflib::NiBoolInterpController::TYPE);
 		case kNiflibType_NiBoolInterpolator:
-			return Niflib::NiBoolInterpolator::TYPE;
+			return &(Niflib::NiBoolInterpolator::TYPE);
 		case kNiflibType_NiBoolTimelineInterpolator:
-			return Niflib::NiBoolTimelineInterpolator::TYPE;
+			return &(Niflib::NiBoolTimelineInterpolator::TYPE);
 		case kNiflibType_NiBSAnimationNode:
-			return Niflib::NiBSAnimationNode::TYPE;
+			return &(Niflib::NiBSAnimationNode::TYPE);
 		case kNiflibType_NiBSBoneLODController:
-			return Niflib::NiBSBoneLODController::TYPE;
+			return &(Niflib::NiBSBoneLODController::TYPE);
 		case kNiflibType_NiBSPArrayController:
-			return Niflib::NiBSPArrayController::TYPE;
+			return &(Niflib::NiBSPArrayController::TYPE);
 		case kNiflibType_NiBSParticleNode:
-			return Niflib::NiBSParticleNode::TYPE;
+			return &(Niflib::NiBSParticleNode::TYPE);
 		case kNiflibType_NiBSplineBasisData:
-			return Niflib::NiBSplineBasisData::TYPE;
+			return &(Niflib::NiBSplineBasisData::TYPE);
 		case kNiflibType_NiBSplineCompFloatInterpolator:
-			return Niflib::NiBSplineCompFloatInterpolator::TYPE;
+			return &(Niflib::NiBSplineCompFloatInterpolator::TYPE);
 		case kNiflibType_NiBSplineCompPoint3Interpolator:
-			return Niflib::NiBSplineCompPoint3Interpolator::TYPE;
+			return &(Niflib::NiBSplineCompPoint3Interpolator::TYPE);
 		case kNiflibType_NiBSplineCompTransformInterpolator:
-			return Niflib::NiBSplineCompTransformInterpolator::TYPE;
+			return &(Niflib::NiBSplineCompTransformInterpolator::TYPE);
 		case kNiflibType_NiBSplineData:
-			return Niflib::NiBSplineData::TYPE;
+			return &(Niflib::NiBSplineData::TYPE);
 		case kNiflibType_NiBSplineFloatInterpolator:
-			return Niflib::NiBSplineFloatInterpolator::TYPE;
+			return &(Niflib::NiBSplineFloatInterpolator::TYPE);
 		case kNiflibType_NiBSplineInterpolator:
-			return Niflib::NiBSplineInterpolator::TYPE;
+			return &(Niflib::NiBSplineInterpolator::TYPE);
 		case kNiflibType_NiBSplinePoint3Interpolator:
-			return Niflib::NiBSplinePoint3Interpolator::TYPE;
+			return &(Niflib::NiBSplinePoint3Interpolator::TYPE);
 		case kNiflibType_NiBSplineTransformInterpolator:
-			return Niflib::NiBSplineTransformInterpolator::TYPE;
+			return &(Niflib::NiBSplineTransformInterpolator::TYPE);
 		case kNiflibType_NiCamera:
-			return Niflib::NiCamera::TYPE;
+			return &(Niflib::NiCamera::TYPE);
 		case kNiflibType_NiClod:
-			return Niflib::NiClod::TYPE;
+			return &(Niflib::NiClod::TYPE);
 		case kNiflibType_NiClodData:
-			return Niflib::NiClodData::TYPE;
+			return &(Niflib::NiClodData::TYPE);
 		case kNiflibType_NiClodSkinInstance:
-			return Niflib::NiClodSkinInstance::TYPE;
+			return &(Niflib::NiClodSkinInstance::TYPE);
 		case kNiflibType_NiCollisionData:
-			return Niflib::NiCollisionData::TYPE;
+			return &(Niflib::NiCollisionData::TYPE);
 		case kNiflibType_NiCollisionObject:
-			return Niflib::NiCollisionObject::TYPE;
+			return &(Niflib::NiCollisionObject::TYPE);
 		case kNiflibType_NiColorData:
-			return Niflib::NiColorData::TYPE;
+			return &(Niflib::NiColorData::TYPE);
 		case kNiflibType_NiColorExtraData:
-			return Niflib::NiColorExtraData::TYPE;
+			return &(Niflib::NiColorExtraData::TYPE);
 		case kNiflibType_NiControllerManager:
-			return Niflib::NiControllerManager::TYPE;
+			return &(Niflib::NiControllerManager::TYPE);
 		case kNiflibType_NiControllerSequence:
-			return Niflib::NiControllerSequence::TYPE;
+			return &(Niflib::NiControllerSequence::TYPE);
 		case kNiflibType_NiDefaultAVObjectPalette:
-			return Niflib::NiDefaultAVObjectPalette::TYPE;
+			return &(Niflib::NiDefaultAVObjectPalette::TYPE);
 		case kNiflibType_NiDirectionalLight:
-			return Niflib::NiDirectionalLight::TYPE;
+			return &(Niflib::NiDirectionalLight::TYPE);
 		case kNiflibType_NiDitherProperty:
-			return Niflib::NiDitherProperty::TYPE;
+			return &(Niflib::NiDitherProperty::TYPE);
 		case kNiflibType_NiDynamicEffect:
-			return Niflib::NiDynamicEffect::TYPE;
+			return &(Niflib::NiDynamicEffect::TYPE);
 		case kNiflibType_NiEnvMappedTriShape:
-			return Niflib::NiEnvMappedTriShape::TYPE;
+			return &(Niflib::NiEnvMappedTriShape::TYPE);
 		case kNiflibType_NiEnvMappedTriShapeData:
-			return Niflib::NiEnvMappedTriShapeData::TYPE;
+			return &(Niflib::NiEnvMappedTriShapeData::TYPE);
 		case kNiflibType_NiExtraData:
-			return Niflib::NiExtraData::TYPE;
+			return &(Niflib::NiExtraData::TYPE);
 		case kNiflibType_NiExtraDataController:
-			return Niflib::NiExtraDataController::TYPE;
+			return &(Niflib::NiExtraDataController::TYPE);
 		case kNiflibType_NiFlipController:
-			return Niflib::NiFlipController::TYPE;
+			return &(Niflib::NiFlipController::TYPE);
 		case kNiflibType_NiFloatData:
-			return Niflib::NiFloatData::TYPE;
+			return &(Niflib::NiFloatData::TYPE);
 		case kNiflibType_NiFloatExtraData:
-			return Niflib::NiFloatExtraData::TYPE;
+			return &(Niflib::NiFloatExtraData::TYPE);
 		case kNiflibType_NiFloatExtraDataController:
-			return Niflib::NiFloatExtraDataController::TYPE;
+			return &(Niflib::NiFloatExtraDataController::TYPE);
 		case kNiflibType_NiFloatInterpController:
-			return Niflib::NiFloatInterpController::TYPE;
+			return &(Niflib::NiFloatInterpController::TYPE);
 		case kNiflibType_NiFloatInterpolator:
-			return Niflib::NiFloatInterpolator::TYPE;
+			return &(Niflib::NiFloatInterpolator::TYPE);
 		case kNiflibType_NiFloatsExtraData:
-			return Niflib::NiFloatsExtraData::TYPE;
+			return &(Niflib::NiFloatsExtraData::TYPE);
 		case kNiflibType_NiFogProperty:
-			return Niflib::NiFogProperty::TYPE;
+			return &(Niflib::NiFogProperty::TYPE);
 		case kNiflibType_NiGeometry:
-			return Niflib::NiGeometry::TYPE;
+			return &(Niflib::NiGeometry::TYPE);
 		case kNiflibType_NiGeometryData:
-			return Niflib::NiGeometryData::TYPE;
+			return &(Niflib::NiGeometryData::TYPE);
 		case kNiflibType_NiGeomMorpherController:
-			return Niflib::NiGeomMorpherController::TYPE;
+			return &(Niflib::NiGeomMorpherController::TYPE);
 		case kNiflibType_NiGravity:
-			return Niflib::NiGravity::TYPE;
+			return &(Niflib::NiGravity::TYPE);
 		case kNiflibType_NiImage:
-			return Niflib::NiImage::TYPE;
+			return &(Niflib::NiImage::TYPE);
 		case kNiflibType_NiIntegerExtraData:
-			return Niflib::NiIntegerExtraData::TYPE;
+			return &(Niflib::NiIntegerExtraData::TYPE);
 		case kNiflibType_NiIntegersExtraData:
-			return Niflib::NiIntegersExtraData::TYPE;
+			return &(Niflib::NiIntegersExtraData::TYPE);
 		case kNiflibType_NiInterpController:
-			return Niflib::NiInterpController::TYPE;
+			return &(Niflib::NiInterpController::TYPE);
 		case kNiflibType_NiInterpolator:
-			return Niflib::NiInterpolator::TYPE;
+			return &(Niflib::NiInterpolator::TYPE);
 		case kNiflibType_NiKeyBasedInterpolator:
-			return Niflib::NiKeyBasedInterpolator::TYPE;
+			return &(Niflib::NiKeyBasedInterpolator::TYPE);
 		case kNiflibType_NiKeyframeController:
-			return Niflib::NiKeyframeController::TYPE;
+			return &(Niflib::NiKeyframeController::TYPE);
 		case kNiflibType_NiKeyframeData:
-			return Niflib::NiKeyframeData::TYPE;
+			return &(Niflib::NiKeyframeData::TYPE);
 		case kNiflibType_NiLight:
-			return Niflib::NiLight::TYPE;
+			return &(Niflib::NiLight::TYPE);
 		case kNiflibType_NiLightColorController:
-			return Niflib::NiLightColorController::TYPE;
+			return &(Niflib::NiLightColorController::TYPE);
 		case kNiflibType_NiLightDimmerController:
-			return Niflib::NiLightDimmerController::TYPE;
+			return &(Niflib::NiLightDimmerController::TYPE);
 		case kNiflibType_NiLightIntensityController:
-			return Niflib::NiLightIntensityController::TYPE;
+			return &(Niflib::NiLightIntensityController::TYPE);
 		case kNiflibType_NiLines:
-			return Niflib::NiLines::TYPE;
+			return &(Niflib::NiLines::TYPE);
 		case kNiflibType_NiLinesData:
-			return Niflib::NiLinesData::TYPE;
+			return &(Niflib::NiLinesData::TYPE);
 		case kNiflibType_NiLODData:
-			return Niflib::NiLODData::TYPE;
+			return &(Niflib::NiLODData::TYPE);
 		case kNiflibType_NiLODNode:
-			return Niflib::NiLODNode::TYPE;
+			return &(Niflib::NiLODNode::TYPE);
 		case kNiflibType_NiLookAtController:
-			return Niflib::NiLookAtController::TYPE;
+			return &(Niflib::NiLookAtController::TYPE);
 		case kNiflibType_NiLookAtInterpolator:
-			return Niflib::NiLookAtInterpolator::TYPE;
+			return &(Niflib::NiLookAtInterpolator::TYPE);
 		case kNiflibType_NiMaterialColorController:
-			return Niflib::NiMaterialColorController::TYPE;
+			return &(Niflib::NiMaterialColorController::TYPE);
 		case kNiflibType_NiMaterialProperty:
-			return Niflib::NiMaterialProperty::TYPE;
+			return &(Niflib::NiMaterialProperty::TYPE);
 		case kNiflibType_NiMeshParticleSystem:
-			return Niflib::NiMeshParticleSystem::TYPE;
+			return &(Niflib::NiMeshParticleSystem::TYPE);
 		case kNiflibType_NiMeshPSysData:
-			return Niflib::NiMeshPSysData::TYPE;
+			return &(Niflib::NiMeshPSysData::TYPE);
 		case kNiflibType_NiMorphController:
-			return Niflib::NiMorphController::TYPE;
+			return &(Niflib::NiMorphController::TYPE);
 		case kNiflibType_NiMorphData:
-			return Niflib::NiMorphData::TYPE;
+			return &(Niflib::NiMorphData::TYPE);
 		case kNiflibType_NiMorpherController:
-			return Niflib::NiMorpherController::TYPE;
+			return &(Niflib::NiMorpherController::TYPE);
 		case kNiflibType_NiMultiTargetTransformController:
-			return Niflib::NiMultiTargetTransformController::TYPE;
+			return &(Niflib::NiMultiTargetTransformController::TYPE);
 		case kNiflibType_NiMultiTextureProperty:
-			return Niflib::NiMultiTextureProperty::TYPE;
+			return &(Niflib::NiMultiTextureProperty::TYPE);
 		case kNiflibType_NiNode:
-			return Niflib::NiNode::TYPE;
+			return &(Niflib::NiNode::TYPE);
 		case kNiflibType_NiObject:
-			return Niflib::NiObject::TYPE;
+			return &(Niflib::NiObject::TYPE);
 		case kNiflibType_NiObjectNET:
-			return Niflib::NiObjectNET::TYPE;
+			return &(Niflib::NiObjectNET::TYPE);
 		case kNiflibType_NiPalette:
-			return Niflib::NiPalette::TYPE;
+			return &(Niflib::NiPalette::TYPE);
 		case kNiflibType_NiParticleBomb:
-			return Niflib::NiParticleBomb::TYPE;
+			return &(Niflib::NiParticleBomb::TYPE);
 		case kNiflibType_NiParticleColorModifier:
-			return Niflib::NiParticleColorModifier::TYPE;
+			return &(Niflib::NiParticleColorModifier::TYPE);
 		case kNiflibType_NiParticleGrowFade:
-			return Niflib::NiParticleGrowFade::TYPE;
+			return &(Niflib::NiParticleGrowFade::TYPE);
 		case kNiflibType_NiParticleMeshes:
-			return Niflib::NiParticleMeshes::TYPE;
+			return &(Niflib::NiParticleMeshes::TYPE);
 		case kNiflibType_NiParticleMeshesData:
-			return Niflib::NiParticleMeshesData::TYPE;
+			return &(Niflib::NiParticleMeshesData::TYPE);
 		case kNiflibType_NiParticleMeshModifier:
-			return Niflib::NiParticleMeshModifier::TYPE;
+			return &(Niflib::NiParticleMeshModifier::TYPE);
 		case kNiflibType_NiParticleModifier:
-			return Niflib::NiParticleModifier::TYPE;
+			return &(Niflib::NiParticleModifier::TYPE);
 		case kNiflibType_NiParticleRotation:
-			return Niflib::NiParticleRotation::TYPE;
+			return &(Niflib::NiParticleRotation::TYPE);
 		case kNiflibType_NiParticles:
-			return Niflib::NiParticles::TYPE;
+			return &(Niflib::NiParticles::TYPE);
 		case kNiflibType_NiParticlesData:
-			return Niflib::NiParticlesData::TYPE;
+			return &(Niflib::NiParticlesData::TYPE);
 		case kNiflibType_NiParticleSystem:
-			return Niflib::NiParticleSystem::TYPE;
+			return &(Niflib::NiParticleSystem::TYPE);
 		case kNiflibType_NiParticleSystemController:
-			return Niflib::NiParticleSystemController::TYPE;
+			return &(Niflib::NiParticleSystemController::TYPE);
 		case kNiflibType_NiPathController:
-			return Niflib::NiPathController::TYPE;
+			return &(Niflib::NiPathController::TYPE);
 		case kNiflibType_NiPathInterpolator:
-			return Niflib::NiPathInterpolator::TYPE;
+			return &(Niflib::NiPathInterpolator::TYPE);
 		case kNiflibType_NiPersistentSrcTextureRendererData:
-			return Niflib::NiPersistentSrcTextureRendererData::TYPE;
+			return &(Niflib::NiPersistentSrcTextureRendererData::TYPE);
 		case kNiflibType_NiPhysXActorDesc:
-			return Niflib::NiPhysXActorDesc::TYPE;
+			return &(Niflib::NiPhysXActorDesc::TYPE);
 		case kNiflibType_NiPhysXBodyDesc:
-			return Niflib::NiPhysXBodyDesc::TYPE;
+			return &(Niflib::NiPhysXBodyDesc::TYPE);
 		case kNiflibType_NiPhysXD6JointDesc:
-			return Niflib::NiPhysXD6JointDesc::TYPE;
+			return &(Niflib::NiPhysXD6JointDesc::TYPE);
 		case kNiflibType_NiPhysXKinematicSrc:
-			return Niflib::NiPhysXKinematicSrc::TYPE;
+			return &(Niflib::NiPhysXKinematicSrc::TYPE);
 		case kNiflibType_NiPhysXMaterialDesc:
-			return Niflib::NiPhysXMaterialDesc::TYPE;
+			return &(Niflib::NiPhysXMaterialDesc::TYPE);
 		case kNiflibType_NiPhysXMeshDesc:
-			return Niflib::NiPhysXMeshDesc::TYPE;
+			return &(Niflib::NiPhysXMeshDesc::TYPE);
 		case kNiflibType_NiPhysXProp:
-			return Niflib::NiPhysXProp::TYPE;
+			return &(Niflib::NiPhysXProp::TYPE);
 		case kNiflibType_NiPhysXPropDesc:
-			return Niflib::NiPhysXPropDesc::TYPE;
+			return &(Niflib::NiPhysXPropDesc::TYPE);
 		case kNiflibType_NiPhysXShapeDesc:
-			return Niflib::NiPhysXShapeDesc::TYPE;
+			return &(Niflib::NiPhysXShapeDesc::TYPE);
 		case kNiflibType_NiPhysXTransformDest:
-			return Niflib::NiPhysXTransformDest::TYPE;
+			return &(Niflib::NiPhysXTransformDest::TYPE);
 		case kNiflibType_NiPixelData:
-			return Niflib::NiPixelData::TYPE;
+			return &(Niflib::NiPixelData::TYPE);
 		case kNiflibType_NiPlanarCollider:
-			return Niflib::NiPlanarCollider::TYPE;
+			return &(Niflib::NiPlanarCollider::TYPE);
 		case kNiflibType_NiPoint3InterpController:
-			return Niflib::NiPoint3InterpController::TYPE;
+			return &(Niflib::NiPoint3InterpController::TYPE);
 		case kNiflibType_NiPoint3Interpolator:
-			return Niflib::NiPoint3Interpolator::TYPE;
+			return &(Niflib::NiPoint3Interpolator::TYPE);
 		case kNiflibType_NiPointLight:
-			return Niflib::NiPointLight::TYPE;
+			return &(Niflib::NiPointLight::TYPE);
 		case kNiflibType_NiPortal:
-			return Niflib::NiPortal::TYPE;
+			return &(Niflib::NiPortal::TYPE);
 		case kNiflibType_NiPosData:
-			return Niflib::NiPosData::TYPE;
+			return &(Niflib::NiPosData::TYPE);
 		case kNiflibType_NiProperty:
-			return Niflib::NiProperty::TYPE;
+			return &(Niflib::NiProperty::TYPE);
 		case kNiflibType_NiPSysAgeDeathModifier:
-			return Niflib::NiPSysAgeDeathModifier::TYPE;
+			return &(Niflib::NiPSysAgeDeathModifier::TYPE);
 		case kNiflibType_NiPSysAirFieldModifier:
-			return Niflib::NiPSysAirFieldModifier::TYPE;
+			return &(Niflib::NiPSysAirFieldModifier::TYPE);
 		case kNiflibType_NiPSysBombModifier:
-			return Niflib::NiPSysBombModifier::TYPE;
+			return &(Niflib::NiPSysBombModifier::TYPE);
 		case kNiflibType_NiPSysBoundUpdateModifier:
-			return Niflib::NiPSysBoundUpdateModifier::TYPE;
+			return &(Niflib::NiPSysBoundUpdateModifier::TYPE);
 		case kNiflibType_NiPSysBoxEmitter:
-			return Niflib::NiPSysBoxEmitter::TYPE;
+			return &(Niflib::NiPSysBoxEmitter::TYPE);
 		case kNiflibType_NiPSysCollider:
-			return Niflib::NiPSysCollider::TYPE;
+			return &(Niflib::NiPSysCollider::TYPE);
 		case kNiflibType_NiPSysColliderManager:
-			return Niflib::NiPSysColliderManager::TYPE;
+			return &(Niflib::NiPSysColliderManager::TYPE);
 		case kNiflibType_NiPSysColorModifier:
-			return Niflib::NiPSysColorModifier::TYPE;
+			return &(Niflib::NiPSysColorModifier::TYPE);
 		case kNiflibType_NiPSysCylinderEmitter:
-			return Niflib::NiPSysCylinderEmitter::TYPE;
+			return &(Niflib::NiPSysCylinderEmitter::TYPE);
 		case kNiflibType_NiPSysData:
-			return Niflib::NiPSysData::TYPE;
+			return &(Niflib::NiPSysData::TYPE);
 		case kNiflibType_NiPSysDragFieldModifier:
-			return Niflib::NiPSysDragFieldModifier::TYPE;
+			return &(Niflib::NiPSysDragFieldModifier::TYPE);
 		case kNiflibType_NiPSysDragModifier:
-			return Niflib::NiPSysDragModifier::TYPE;
+			return &(Niflib::NiPSysDragModifier::TYPE);
 		case kNiflibType_NiPSysEmitter:
-			return Niflib::NiPSysEmitter::TYPE;
+			return &(Niflib::NiPSysEmitter::TYPE);
 		case kNiflibType_NiPSysEmitterCtlr:
-			return Niflib::NiPSysEmitterCtlr::TYPE;
+			return &(Niflib::NiPSysEmitterCtlr::TYPE);
 		case kNiflibType_NiPSysEmitterCtlrData:
-			return Niflib::NiPSysEmitterCtlrData::TYPE;
+			return &(Niflib::NiPSysEmitterCtlrData::TYPE);
 		case kNiflibType_NiPSysEmitterDeclinationCtlr:
-			return Niflib::NiPSysEmitterDeclinationCtlr::TYPE;
+			return &(Niflib::NiPSysEmitterDeclinationCtlr::TYPE);
 		case kNiflibType_NiPSysEmitterDeclinationVarCtlr:
-			return Niflib::NiPSysEmitterDeclinationVarCtlr::TYPE;
+			return &(Niflib::NiPSysEmitterDeclinationVarCtlr::TYPE);
 		case kNiflibType_NiPSysEmitterInitialRadiusCtlr:
-			return Niflib::NiPSysEmitterInitialRadiusCtlr::TYPE;
+			return &(Niflib::NiPSysEmitterInitialRadiusCtlr::TYPE);
 		case kNiflibType_NiPSysEmitterLifeSpanCtlr:
-			return Niflib::NiPSysEmitterLifeSpanCtlr::TYPE;
+			return &(Niflib::NiPSysEmitterLifeSpanCtlr::TYPE);
 		case kNiflibType_NiPSysEmitterSpeedCtlr:
-			return Niflib::NiPSysEmitterSpeedCtlr::TYPE;
+			return &(Niflib::NiPSysEmitterSpeedCtlr::TYPE);
 		case kNiflibType_NiPSysFieldMagnitudeCtlr:
-			return Niflib::NiPSysFieldMagnitudeCtlr::TYPE;
+			return &(Niflib::NiPSysFieldMagnitudeCtlr::TYPE);
 		case kNiflibType_NiPSysFieldModifier:
-			return Niflib::NiPSysFieldModifier::TYPE;
+			return &(Niflib::NiPSysFieldModifier::TYPE);
 		case kNiflibType_NiPSysGravityFieldModifier:
-			return Niflib::NiPSysGravityFieldModifier::TYPE;
+			return &(Niflib::NiPSysGravityFieldModifier::TYPE);
 		case kNiflibType_NiPSysGravityModifier:
-			return Niflib::NiPSysGravityModifier::TYPE;
+			return &(Niflib::NiPSysGravityModifier::TYPE);
 		case kNiflibType_NiPSysGravityStrengthCtlr:
-			return Niflib::NiPSysGravityStrengthCtlr::TYPE;
+			return &(Niflib::NiPSysGravityStrengthCtlr::TYPE);
 		case kNiflibType_NiPSysGrowFadeModifier:
-			return Niflib::NiPSysGrowFadeModifier::TYPE;
+			return &(Niflib::NiPSysGrowFadeModifier::TYPE);
 		case kNiflibType_NiPSysMeshEmitter:
-			return Niflib::NiPSysMeshEmitter::TYPE;
+			return &(Niflib::NiPSysMeshEmitter::TYPE);
 		case kNiflibType_NiPSysMeshUpdateModifier:
-			return Niflib::NiPSysMeshUpdateModifier::TYPE;
+			return &(Niflib::NiPSysMeshUpdateModifier::TYPE);
 		case kNiflibType_NiPSysModifier:
-			return Niflib::NiPSysModifier::TYPE;
+			return &(Niflib::NiPSysModifier::TYPE);
 		case kNiflibType_NiPSysModifierActiveCtlr:
-			return Niflib::NiPSysModifierActiveCtlr::TYPE;
+			return &(Niflib::NiPSysModifierActiveCtlr::TYPE);
 		case kNiflibType_NiPSysModifierBoolCtlr:
-			return Niflib::NiPSysModifierBoolCtlr::TYPE;
+			return &(Niflib::NiPSysModifierBoolCtlr::TYPE);
 		case kNiflibType_NiPSysModifierCtlr:
-			return Niflib::NiPSysModifierCtlr::TYPE;
+			return &(Niflib::NiPSysModifierCtlr::TYPE);
 		case kNiflibType_NiPSysModifierFloatCtlr:
-			return Niflib::NiPSysModifierFloatCtlr::TYPE;
+			return &(Niflib::NiPSysModifierFloatCtlr::TYPE);
 		case kNiflibType_NiPSysPlanarCollider:
-			return Niflib::NiPSysPlanarCollider::TYPE;
+			return &(Niflib::NiPSysPlanarCollider::TYPE);
 		case kNiflibType_NiPSysPositionModifier:
-			return Niflib::NiPSysPositionModifier::TYPE;
+			return &(Niflib::NiPSysPositionModifier::TYPE);
 		case kNiflibType_NiPSysResetOnLoopCtlr:
-			return Niflib::NiPSysResetOnLoopCtlr::TYPE;
+			return &(Niflib::NiPSysResetOnLoopCtlr::TYPE);
 		case kNiflibType_NiPSysRotationModifier:
-			return Niflib::NiPSysRotationModifier::TYPE;
+			return &(Niflib::NiPSysRotationModifier::TYPE);
 		case kNiflibType_NiPSysSpawnModifier:
-			return Niflib::NiPSysSpawnModifier::TYPE;
+			return &(Niflib::NiPSysSpawnModifier::TYPE);
 		case kNiflibType_NiPSysSphereEmitter:
-			return Niflib::NiPSysSphereEmitter::TYPE;
+			return &(Niflib::NiPSysSphereEmitter::TYPE);
 		case kNiflibType_NiPSysSphericalCollider:
-			return Niflib::NiPSysSphericalCollider::TYPE;
+			return &(Niflib::NiPSysSphericalCollider::TYPE);
 		case kNiflibType_NiPSysTrailEmitter:
-			return Niflib::NiPSysTrailEmitter::TYPE;
+			return &(Niflib::NiPSysTrailEmitter::TYPE);
 		case kNiflibType_NiPSysTurbulenceFieldModifier:
-			return Niflib::NiPSysTurbulenceFieldModifier::TYPE;
+			return &(Niflib::NiPSysTurbulenceFieldModifier::TYPE);
 		case kNiflibType_NiPSysUpdateCtlr:
-			return Niflib::NiPSysUpdateCtlr::TYPE;
+			return &(Niflib::NiPSysUpdateCtlr::TYPE);
 		case kNiflibType_NiPSysVolumeEmitter:
-			return Niflib::NiPSysVolumeEmitter::TYPE;
+			return &(Niflib::NiPSysVolumeEmitter::TYPE);
 		case kNiflibType_NiPSysVortexFieldModifier:
-			return Niflib::NiPSysVortexFieldModifier::TYPE;
+			return &(Niflib::NiPSysVortexFieldModifier::TYPE);
 		case kNiflibType_NiRangeLODData:
-			return Niflib::NiRangeLODData::TYPE;
+			return &(Niflib::NiRangeLODData::TYPE);
 		case kNiflibType_NiRawImageData:
-			return Niflib::NiRawImageData::TYPE;
+			return &(Niflib::NiRawImageData::TYPE);
 		case kNiflibType_NiRollController:
-			return Niflib::NiRollController::TYPE;
+			return &(Niflib::NiRollController::TYPE);
 		case kNiflibType_NiRoom:
-			return Niflib::NiRoom::TYPE;
+			return &(Niflib::NiRoom::TYPE);
 		case kNiflibType_NiRoomGroup:
-			return Niflib::NiRoomGroup::TYPE;
+			return &(Niflib::NiRoomGroup::TYPE);
 		case kNiflibType_NiRotatingParticles:
-			return Niflib::NiRotatingParticles::TYPE;
+			return &(Niflib::NiRotatingParticles::TYPE);
 		case kNiflibType_NiRotatingParticlesData:
-			return Niflib::NiRotatingParticlesData::TYPE;
+			return &(Niflib::NiRotatingParticlesData::TYPE);
 		case kNiflibType_NiScreenElements:
-			return Niflib::NiScreenElements::TYPE;
+			return &(Niflib::NiScreenElements::TYPE);
 		case kNiflibType_NiScreenElementsData:
-			return Niflib::NiScreenElementsData::TYPE;
+			return &(Niflib::NiScreenElementsData::TYPE);
 		case kNiflibType_NiScreenLODData:
-			return Niflib::NiScreenLODData::TYPE;
+			return &(Niflib::NiScreenLODData::TYPE);
 		case kNiflibType_NiSequence:
-			return Niflib::NiSequence::TYPE;
+			return &(Niflib::NiSequence::TYPE);
 		case kNiflibType_NiSequenceStreamHelper:
-			return Niflib::NiSequenceStreamHelper::TYPE;
+			return &(Niflib::NiSequenceStreamHelper::TYPE);
 		case kNiflibType_NiShadeProperty:
-			return Niflib::NiShadeProperty::TYPE;
+			return &(Niflib::NiShadeProperty::TYPE);
 		case kNiflibType_NiSingleInterpController:
-			return Niflib::NiSingleInterpController::TYPE;
+			return &(Niflib::NiSingleInterpController::TYPE);
 		case kNiflibType_NiSkinData:
-			return Niflib::NiSkinData::TYPE;
+			return &(Niflib::NiSkinData::TYPE);
 		case kNiflibType_NiSkinInstance:
-			return Niflib::NiSkinInstance::TYPE;
+			return &(Niflib::NiSkinInstance::TYPE);
 		case kNiflibType_NiSkinPartition:
-			return Niflib::NiSkinPartition::TYPE;
+			return &(Niflib::NiSkinPartition::TYPE);
 		case kNiflibType_NiSortAdjustNode:
-			return Niflib::NiSortAdjustNode::TYPE;
+			return &(Niflib::NiSortAdjustNode::TYPE);
 		case kNiflibType_NiSourceCubeMap:
-			return Niflib::NiSourceCubeMap::TYPE;
+			return &(Niflib::NiSourceCubeMap::TYPE);
 		case kNiflibType_NiSourceTexture:
-			return Niflib::NiSourceTexture::TYPE;
+			return &(Niflib::NiSourceTexture::TYPE);
 		case kNiflibType_NiSpecularProperty:
-			return Niflib::NiSpecularProperty::TYPE;
+			return &(Niflib::NiSpecularProperty::TYPE);
 		case kNiflibType_NiSphericalCollider:
-			return Niflib::NiSphericalCollider::TYPE;
+			return &(Niflib::NiSphericalCollider::TYPE);
 		case kNiflibType_NiSpotLight:
-			return Niflib::NiSpotLight::TYPE;
+			return &(Niflib::NiSpotLight::TYPE);
 		case kNiflibType_NiStencilProperty:
-			return Niflib::NiStencilProperty::TYPE;
+			return &(Niflib::NiStencilProperty::TYPE);
 		case kNiflibType_NiStringExtraData:
-			return Niflib::NiStringExtraData::TYPE;
+			return &(Niflib::NiStringExtraData::TYPE);
 		case kNiflibType_NiStringPalette:
-			return Niflib::NiStringPalette::TYPE;
+			return &(Niflib::NiStringPalette::TYPE);
 		case kNiflibType_NiStringsExtraData:
-			return Niflib::NiStringsExtraData::TYPE;
+			return &(Niflib::NiStringsExtraData::TYPE);
 		case kNiflibType_NiSwitchNode:
-			return Niflib::NiSwitchNode::TYPE;
+			return &(Niflib::NiSwitchNode::TYPE);
 		case kNiflibType_NiTextKeyExtraData:
-			return Niflib::NiTextKeyExtraData::TYPE;
+			return &(Niflib::NiTextKeyExtraData::TYPE);
 		case kNiflibType_NiTexture:
-			return Niflib::NiTexture::TYPE;
+			return &(Niflib::NiTexture::TYPE);
 		case kNiflibType_NiTextureEffect:
-			return Niflib::NiTextureEffect::TYPE;
+			return &(Niflib::NiTextureEffect::TYPE);
 		case kNiflibType_NiTextureModeProperty:
-			return Niflib::NiTextureModeProperty::TYPE;
+			return &(Niflib::NiTextureModeProperty::TYPE);
 		case kNiflibType_NiTextureProperty:
-			return Niflib::NiTextureProperty::TYPE;
+			return &(Niflib::NiTextureProperty::TYPE);
 		case kNiflibType_NiTextureTransformController:
-			return Niflib::NiTextureTransformController::TYPE;
+			return &(Niflib::NiTextureTransformController::TYPE);
 		case kNiflibType_NiTexturingProperty:
-			return Niflib::NiTexturingProperty::TYPE;
+			return &(Niflib::NiTexturingProperty::TYPE);
 		case kNiflibType_NiTimeController:
-			return Niflib::NiTimeController::TYPE;
+			return &(Niflib::NiTimeController::TYPE);
 		case kNiflibType_NiTransformController:
-			return Niflib::NiTransformController::TYPE;
+			return &(Niflib::NiTransformController::TYPE);
 		case kNiflibType_NiTransformData:
-			return Niflib::NiTransformData::TYPE;
+			return &(Niflib::NiTransformData::TYPE);
 		case kNiflibType_NiTransformInterpolator:
-			return Niflib::NiTransformInterpolator::TYPE;
+			return &(Niflib::NiTransformInterpolator::TYPE);
 		case kNiflibType_NiTransparentProperty:
-			return Niflib::NiTransparentProperty::TYPE;
+			return &(Niflib::NiTransparentProperty::TYPE);
 		case kNiflibType_NiTriBasedGeom:
-			return Niflib::NiTriBasedGeom::TYPE;
+			return &(Niflib::NiTriBasedGeom::TYPE);
 		case kNiflibType_NiTriBasedGeomData:
-			return Niflib::NiTriBasedGeomData::TYPE;
+			return &(Niflib::NiTriBasedGeomData::TYPE);
 		case kNiflibType_NiTriShape:
-			return Niflib::NiTriShape::TYPE;
+			return &(Niflib::NiTriShape::TYPE);
 		case kNiflibType_NiTriShapeData:
-			return Niflib::NiTriShapeData::TYPE;
+			return &(Niflib::NiTriShapeData::TYPE);
 		case kNiflibType_NiTriShapeSkinController:
-			return Niflib::NiTriShapeSkinController::TYPE;
+			return &(Niflib::NiTriShapeSkinController::TYPE);
 		case kNiflibType_NiTriStrips:
-			return Niflib::NiTriStrips::TYPE;
+			return &(Niflib::NiTriStrips::TYPE);
 		case kNiflibType_NiTriStripsData:
-			return Niflib::NiTriStripsData::TYPE;
+			return &(Niflib::NiTriStripsData::TYPE);
 		case kNiflibType_NiUVController:
-			return Niflib::NiUVController::TYPE;
+			return &(Niflib::NiUVController::TYPE);
 		case kNiflibType_NiUVData:
-			return Niflib::NiUVData::TYPE;
+			return &(Niflib::NiUVData::TYPE);
 		case kNiflibType_NiVectorExtraData:
-			return Niflib::NiVectorExtraData::TYPE;
+			return &(Niflib::NiVectorExtraData::TYPE);
 		case kNiflibType_NiVertexColorProperty:
-			return Niflib::NiVertexColorProperty::TYPE;
+			return &(Niflib::NiVertexColorProperty::TYPE);
 		case kNiflibType_NiVertWeightsExtraData:
-			return Niflib::NiVertWeightsExtraData::TYPE;
+			return &(Niflib::NiVertWeightsExtraData::TYPE);
 		case kNiflibType_NiVisController:
-			return Niflib::NiVisController::TYPE;
+			return &(Niflib::NiVisController::TYPE);
 		case kNiflibType_NiVisData:
-			return Niflib::NiVisData::TYPE;
+			return &(Niflib::NiVisData::TYPE);
 		case kNiflibType_NiWireframeProperty:
-			return Niflib::NiWireframeProperty::TYPE;
+			return &(Niflib::NiWireframeProperty::TYPE);
 		case kNiflibType_NiZBufferProperty:
-			return Niflib::NiZBufferProperty::TYPE;
+			return &(Niflib::NiZBufferProperty::TYPE);
 		case kNiflibType_RefObject:
-			return Niflib::RefObject::TYPE;
+			return &(Niflib::RefObject::TYPE);
 		case kNiflibType_RootCollisionNode:
-			return Niflib::RootCollisionNode::TYPE;
+			return &(Niflib::RootCollisionNode::TYPE);
 		case kNiflibType_SkyShaderProperty:
-			return Niflib::SkyShaderProperty::TYPE;
+			return &(Niflib::SkyShaderProperty::TYPE);
 		case kNiflibType_TallGrassShaderProperty:
-			return Niflib::TallGrassShaderProperty::TYPE;
+			return &(Niflib::TallGrassShaderProperty::TYPE);
 		case kNiflibType_TileShaderProperty:
-			return Niflib::TileShaderProperty::TYPE;
+			return &(Niflib::TileShaderProperty::TYPE);
 		case kNiflibType_VolumetricFogShaderProperty:
-			return Niflib::VolumetricFogShaderProperty::TYPE;
+			return &(Niflib::VolumetricFogShaderProperty::TYPE);
 		case kNiflibType_WaterShaderProperty:
-			return Niflib::WaterShaderProperty::TYPE;
+			return &(Niflib::WaterShaderProperty::TYPE);
 		default:
 			throw std::exception("kNiflibType_UNKNOWN");
 	}

@@ -248,7 +248,7 @@ void NifSE_PreloadCallback(void * reserved) {
 					dPrintAndLog("NifLoad","ChangeLog loaded.");
 					while ( changes.length() != 0 ) {
 						LoadChangelog(changes, chNode, chType, chAct, chVal);
-						dPrintAndLog("NifLoad","Changes loaded.");
+						dPrintAndLog("NifLoad","Changes loaded; parsing.");
 						switch (chType) {
 							case kNiflibType_NiExtraData:
 							case kNiflibType_BSBound:
@@ -274,7 +274,7 @@ void NifSE_PreloadCallback(void * reserved) {
 							case kNiflibType_NiTextKeyExtraData:
 							case kNiflibType_NiVectorExtraData:
 							case kNiflibType_NiVertWeightsExtraData:
-								nifPtr->loadChNiAVObject(chNode, chType, chVal);
+								nifPtr->loadChNiExtraData(chNode, chAct, chType, chVal);
 								break;
 
 							case kNiflibType_NiObjectNET:
@@ -292,6 +292,10 @@ void NifSE_PreloadCallback(void * reserved) {
 							case kNiflibType_NiProperty:
 							case kNiflibType_NiTexturingProperty:
 								nifPtr->loadChNiProperty(chNode, chAct, chVal);
+								break;
+
+							case kNiflibType_NiSourceTexture:
+								nifPtr->loadChNiSourceTexture(chNode, chAct, chVal);
 								break;
 
 							default:

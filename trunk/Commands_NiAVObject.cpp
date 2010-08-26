@@ -472,7 +472,7 @@ static bool Cmd_NiAVObjectGetPropertyByType_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 					if ( avObj ) {
-						*result = avObj->GetPropertyByType(getNiflibType(prType))->internal_block_number;
+						*result = avObj->GetPropertyByType(*(getNiflibType(prType)))->internal_block_number;
 						dPrintAndLog("NiAVObjectGetPropertyByType","Returning "+UIntToString(blockID)+".\n");
 					}
 				}
@@ -487,7 +487,7 @@ DEFINE_CMD_PLUGIN_ALT(
 	NiAVObjGetEDByType,
 	"Returns the index of the Property of the given type on the specified Nif.",
 	0,
-	kParams_OneString_OneInt_OneOptionalInt
+	kParams_TwoInts_OneOptionalInt
 );
 
 static bool Cmd_NiAVObjectAddProperty_Execute(COMMAND_ARGS) {
@@ -509,7 +509,7 @@ static bool Cmd_NiAVObjectAddProperty_Execute(COMMAND_ARGS) {
 						if ( avObj ) {
 							try {
 								*result = Util_NiAVObjectAddProperty(nifPtr, avObj, typeID, name);
-								dPrintAndLog("NiAVObjectAddProperty","Addition successful.");
+								dPrintAndLog("NiAVObjectAddProperty","Addition successful; property is block #"+UIntToString(*result)+".\n");
 							}
 							catch (std::exception e) {
 								*result = -1;
@@ -539,18 +539,18 @@ DEFINE_CMD_PLUGIN_ALT(
 	NiAVObjAddED,
 	"Adds an Property node of the given type to the given Nif",
 	0,
-	kParams_TwoStrings_OneInt_OneOptionalInt
+	kParams_OneString_TwoInts_OneOptionalInt
 );
 
 static bool Cmd_NiAVObjectDeleteProperty_Execute(COMMAND_ARGS) {
 	*result = 0;
 
 	int nifID = -1;
-	int edID = -1;
+	int prID = -1;
 	UInt32 blockID = 0;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &edID, &nifID, &blockID)) {
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &prID, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiAVObjectDeleteProperty","Deleting Property with Block #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+".");
+		dPrintAndLog("NiAVObjectDeleteProperty","Deleting Property with Block #"+UIntToString(prID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+".");
 		NifFile* nifPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
 			if ( nifPtr->root ) {
@@ -558,21 +558,38 @@ static bool Cmd_NiAVObjectDeleteProperty_Execute(COMMAND_ARGS) {
 					if ( blockID < nifPtr->nifList.size() ) {
 						Niflib::NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 						if ( avObj ) {
-							if ( edID < nifPtr->nifList.size() ) {
-								Niflib::NiPropertyRef ed = Niflib::DynamicCast<Niflib::NiProperty>(nifPtr->nifList[blockID]);
-								if ( ed ) {
-									avObj->RemoveProperty(ed);
+							if ( prID < nifPtr->nifList.size() ) {
+								Niflib::NiPropertyRef pr = Niflib::DynamicCast<Niflib::NiProperty>(nifPtr->nifList[prID]);
+								if ( pr ) {
+									avObj->RemoveProperty(pr);
 									*result = 1;
-									dPrintAndLog("NiAVObjectDeleteProperty","Property deleted.");
-									nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_DelProp,UIntToString(edID));
+									dPrintAndLog("NiAVObjectDeleteProperty","Property deleted.\n");
+									nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_DelProp,UIntToString(prID));
 								}
+								else
+									dPrintAndLog("NiAVObjectDeleteProperty","Block not NiProperty; not deleted. Block type: \""+nifPtr->nifList[prID]->GetType().GetTypeName()+"\".\n");
 							}
+							else
+								dPrintAndLog("NiAVObjectDeleteProperty","Block indicated for Property is out of range; block not deleted.\n");
 						}
+						else
+							dPrintAndLog("NiAVObjectDeleteProperty","Block not NiObjectNET; ExtraData not deleted. Block type: \""+nifPtr->nifList[blockID]->GetType().GetTypeName()+"\".\n");
 					}
+					else
+						dPrintAndLog("NiAVObjectDeleteProperty","Block indicated for ObjectNET is out of range; ExtraData not deleted.\n");
 				}
+				else
+					dPrintAndLog("NiAVObjectDeleteProperty","Nif is not editable.\n");
 			}
+			else
+				dPrintAndLog("NiAVObjectDeleteProperty","Nif root is bad.\n");
 		}
+		else
+			dPrintAndLog("NiAVObjectDeleteProperty","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NiAVObjectDeleteProperty","Could not extract arguments.\n");
+
 	return true;
 }
 
@@ -713,7 +730,6 @@ UInt32 Util_NiAVObjectAddProperty(NifFile* nifPtr, Niflib::NiAVObjectRef avObj, 
 		nuProp->internal_block_number = nifPtr->nifList.size();
 		avObj->AddProperty(nuProp);
 		nifPtr->nifList.push_back(Niflib::StaticCast<Niflib::NiObject>(nuProp));
-		dPrintAndLog("NiAVObjectAddProperty","Addition successful; property is block #"+UIntToString(nuProp->internal_block_number)+".\n");
 		nifPtr->logChange(avObj->internal_block_number,kNiflibType_NiAVObject,kNiAVObjAct_AddProp,UIntToString(typeID)+logValType+name);
 		return nuProp->internal_block_number;
 	}
@@ -794,10 +810,18 @@ void NifFile::loadChNiAVObject(UInt32 block, UInt32 act, std::string &val) {
 					break;
 
 				case kNiAVObjAct_DelProp:
-					for ( vector<Niflib::NiPropertyRef>::iterator i = avObj->GetProperties().begin(); i != avObj->GetProperties().end(); ++i )
-						if ( *i == Niflib::DynamicCast<Niflib::NiProperty>(nifList[StringToUInt(val)]) )
-							avObj->RemoveProperty(*i);
-					dPrintAndLog("NifLoad - NiAVObject","Property (block #"+val+") deleted.");
+					{
+						UInt32 prID = StringToUInt(val);
+						if ( prID < nifList.size() ) {
+							vector<Niflib::NiPropertyRef> prs = avObj->GetProperties();
+							for ( vector<Niflib::NiPropertyRef>::iterator i = prs.begin(); i != prs.end(); ++i )
+								if ( *i == Niflib::DynamicCast<Niflib::NiProperty>(nifList[prID]) )
+									avObj->RemoveProperty(*i);
+							dPrintAndLog("NifLoad - NiAVObject","Property (block #"+val+") deleted.");
+						}
+						else
+							dPrintAndLog("NifLoad - NiAVObject","\n\n\t\tBlock #"+val+" out of range! Loaded nif will be incorrect!\n");
+					}
 					break;
 
 				case kNiAVObjAct_SetFlags:

@@ -238,6 +238,7 @@ static bool Cmd_NiObjectNETAddExtraData_Execute(COMMAND_ARGS) {
 		else
 			dPrintAndLog("NiObjectNETAddExtraData","Nif not found.\n");
 	}
+
 	return true;
 }
 
@@ -246,18 +247,18 @@ DEFINE_CMD_PLUGIN_ALT(
 	NiObjNETAddED,
 	"Adds an ExtraData node of the given type to the given Nif",
 	0,
-	kParams_TwoStrings_OneInt_OneOptionalInt
+	kParams_OneString_TwoInts_OneOptionalInt
 );
 
 static bool Cmd_NiObjectNETDeleteExtraData_Execute(COMMAND_ARGS) {
 	*result = 0;
 
-	int nifID = -1;
 	int edID = -1;
+	int nifID = -1;
 	UInt32 blockID = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &edID, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiObjectNETDeleteExtraData","Deleting ExtraData with Block #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+".");
+		dPrintAndLog("NiObjectNETDeleteExtraData","Deleting ExtraData with Block #"+UIntToString(edID)+" from ObjectNET (nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+").");
 		NifFile* nifPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
 			if ( nifPtr->root ) {
@@ -266,21 +267,38 @@ static bool Cmd_NiObjectNETDeleteExtraData_Execute(COMMAND_ARGS) {
 						Niflib::NiObjectNETRef objNET = Niflib::DynamicCast<Niflib::NiObjectNET>(nifPtr->nifList[blockID]);
 						if ( objNET ) {
 							if ( edID < nifPtr->nifList.size() ) {
-								Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifPtr->nifList[blockID]);
+								Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifPtr->nifList[edID]);
 								if ( ed ) {
 									objNET->RemoveExtraData(ed);
 									nifPtr->nifList.erase(nifPtr->nifList.begin()+edID);
 									*result = 1;
-									dPrintAndLog("NiObjectNETDeleteExtraData","ExtraData deleted.");
+									dPrintAndLog("NiObjectNETDeleteExtraData","ExtraData deleted.\n");
 									nifPtr->logChange(blockID, kNiflibType_NiObjectNET, kNiObjNETAct_DelED, UIntToString(edID));
 								}
+								else
+									dPrintAndLog("NiObjectNETDeleteExtraData","Block not NiExtraData; not deleted. Block type: \""+nifPtr->nifList[edID]->GetType().GetTypeName()+"\".\n");
 							}
+							else
+								dPrintAndLog("NiObjectNetDeleteExtraData","Block indicated for ExtraData is out of range; block not deleted.\n");
 						}
+						else
+							dPrintAndLog("NiObjectNetDeleteExtraData","Block not NiObjectNET; ExtraData not deleted. Block type: \""+nifPtr->nifList[blockID]->GetType().GetTypeName()+"\".\n");
 					}
+					else
+						dPrintAndLog("NiObjectNetDeleteExtraData","Block indicated for ObjectNET is out of range; ExtraData not deleted.\n");
 				}
+				else
+					dPrintAndLog("NiObjectNetDeleteExtraData","Nif is not editable.\n");
 			}
+			else
+				dPrintAndLog("NiObjectNetDeleteExtraData","Nif root is bad.\n");
 		}
+		else
+			dPrintAndLog("NiObjectNetDeleteExtraData","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NiObjectNetDeleteExtraData","Could not extract arguments.\n");
+
 	return true;
 }
 
@@ -372,7 +390,7 @@ UInt32 Util_NiObjectNETAddExtraData(NifFile* nifPtr, Niflib::NiObjectNETRef objN
 		nuED->internal_block_number = nifPtr->nifList.size();
 		objNET->AddExtraData(nuED, nifPtr->nifVersion);
 		nifPtr->nifList.push_back(Niflib::StaticCast<Niflib::NiObject>(nuED));
-		nifPtr->logChange(objNET->internal_block_number, kNiflibType_NiObjectNET, kNiObjNETAct_AddED, name);
+		nifPtr->logChange(objNET->internal_block_number, kNiflibType_NiObjectNET, kNiObjNETAct_AddED, UIntToString(typeID)+logValType+name);
 		return nuED->internal_block_number;
 	}
 	else
@@ -394,8 +412,8 @@ void NifFile::loadChNiObjectNET(UInt32 block, UInt32 act, string& val) {
 						string::size_type i = val.find(logValType);
 						UInt32 edType = StringToUInt(val.substr(0, i));
 						string edName = val.substr(i+1);
-						Util_NiObjectNETAddExtraData(this, objNET, edType, edName);
-						dPrintAndLog("NifLoad - NiObjectNET","NiExtraData \""+edName+"\" added to nif.");
+						UInt32 blockID = Util_NiObjectNETAddExtraData(this, objNET, edType, edName);
+						dPrintAndLog("NifLoad - NiObjectNET","NiExtraData \""+edName+"\" added to nif as block #"+UIntToString(blockID)+".");
 					}
 					catch (std::exception e) {
 						dPrintAndLog("NifLoad - NiObjectNET","\n\n\t\tNiExtraData node not added! Exception \""+string(e.what())+"\" thrown. Loaded nif will be incorrect!\n");
@@ -403,10 +421,18 @@ void NifFile::loadChNiObjectNET(UInt32 block, UInt32 act, string& val) {
 					break;
 
 				case kNiObjNETAct_DelED:
-					for ( list<Niflib::NiExtraDataRef>::iterator i = objNET->GetExtraData().begin(); i != objNET->GetExtraData().end(); ++i )
-						if ( *i == Niflib::DynamicCast<Niflib::NiExtraData>(nifList[StringToUInt(val)]) )
-							objNET->RemoveExtraData(*i);
-					dPrintAndLog("NifLoad - NiObjectNET","ExtraData (block #"+val+") deleted.");
+					{
+						UInt32 edID = StringToUInt(val);
+						if ( edID < nifList.size() ) {
+							list<Niflib::NiExtraDataRef> eds = objNET->GetExtraData();
+							for ( list<Niflib::NiExtraDataRef>::iterator i = eds.begin(); i != eds.end(); ++i )
+								if ( *i == Niflib::DynamicCast<Niflib::NiExtraData>(nifList[edID]) )
+									objNET->RemoveExtraData(*i);
+							dPrintAndLog("NifLoad - NiObjectNET","ExtraData (block #"+val+") deleted.");
+						}
+						else
+							dPrintAndLog("NifLoad - NiObjectNET","\n\n\t\tBlock #"+val+" out of range! Loaded nif will be incorrect!\n");
+					}
 					break;
 
 				case kNiObjNETAct_AddCtlr:

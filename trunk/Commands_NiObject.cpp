@@ -88,10 +88,11 @@ static bool Cmd_NiObjectTypeDerivesFrom_Execute(COMMAND_ARGS) {
 					Niflib::NiObjectRef obj = nifPtr->nifList[blockID];
 					if ( obj ) {
 						try {
-							Niflib::Type ancestor = getNiflibType(nifType);
-							dPrintAndLog("NiObjectTypeDerivesFrom","Testing whether \""+obj->GetType().GetTypeName()+"\" derives from \""+ancestor.GetTypeName()+"\".");
-							*result = ancestor.IsDerivedType(obj->GetType());
-							dPrintAndLog("NiObjectTypeDerivesFrom","Returning "+string((*result)!=0?"TRUE":"FALSE")+".\n");
+							const Niflib::Type* ancestor = getNiflibType(nifType);
+							dPrintAndLog("NiObjectTypeDerivesFrom","Testing whether \""+obj->GetType().GetTypeName()+"\" derives from \""+ancestor->GetTypeName()+"\".");
+							bool isDeriv = obj->GetType().IsDerivedType(*ancestor);
+							*result = (isDeriv?1:0);
+							dPrintAndLog("NiObjectTypeDerivesFrom","Returning "+string(isDeriv?"TRUE":"FALSE")+".\n");
 						}
 						catch (std::exception e) {
 							dPrintAndLog("NiObjectTypeDerivesFrom","Niflib type exception: \""+string(e.what())+"\".\n");
