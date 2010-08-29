@@ -254,14 +254,18 @@ namespace TES_BSA {
 		}
 		else {
 			if ( fileInfo[file_number].size & (1 << 30) ) {
-				unsigned int size;
-				file.seekg( fileInfo[file_number].offset, ios_base::beg );
-				file.read( (char*)&size, 4 );
-				return size;
+				try {
+					unsigned int size;
+					file.seekg( fileInfo[file_number].offset, ios_base::beg );
+					file.read( (char*)&size, 4 );
+					return size;
+				}
+				catch (std::exception e) {
+					throw std::exception(string("Calculating uncompressed size of compressed file failed. Exception \""+string(e.what())+"\" thrown.").c_str());
+				}
 			}
-			else {
+			else
 				return fileInfo[file_number].size;
-			}
 		}
 	}
 
@@ -291,6 +295,10 @@ namespace TES_BSA {
 
 	unsigned int TES4BSA_Archive::GetFileCount() {
 		return header.fileCount;
+	}
+
+	void TES4BSA_Archive::CompressionBitWrong( unsigned int file_number ) {
+		fileInfo[file_number].size ^= (1 << 30);
 	}
 
 	const char * TES4BSA_Archive::GetFileName( unsigned int file_number ) {
