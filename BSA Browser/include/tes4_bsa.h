@@ -43,6 +43,8 @@ public:
 	void GetFileData( unsigned int file_number, char * dest );
 	unsigned int GetFileCount();
 	const char * GetFileName( unsigned int file_number );
+
+	void CompressionBitWrong( unsigned int file_number );
 protected:
 	ifstream file;
 	BSAHeader4 header;

@@ -393,7 +393,7 @@ void WriteNifToStream(string path, UInt32& loc, std::iostream* stream) {
 	}
 	else if ( loc == 2 ) {
 		UInt32 fileNum = 0;
-		UInt32 size = 0;
+		unsigned int size = 0;
 		TES4BSA_Archive * BSA = NULL;
 		char* buf = NULL;
 		for ( BSAit = BSAlist.begin(); BSAit != BSAlist.end(); ++BSAit ) {
@@ -405,22 +405,45 @@ void WriteNifToStream(string path, UInt32& loc, std::iostream* stream) {
 						try {
 							size = BSA->GetFileSize(fileNum);
 							buf = new char[size];
+						}
+						catch (std::bad_alloc& ba) {
 							try {
-								BSA->GetFileData(fileNum, buf);
-								stream->write(buf, size);
-								dPrintAndLog("WriteNifToStream","Successfully read nif data in BSA \""+(*BSAit)+"\". Buffer length is "+UIntToString(size)+".");
+								dPrintAndLog("WriteNifToStream","Failed to allocate enough memory - size may be wrong. Going to try flipping the compression bit and recalculating.");
+								BSA->CompressionBitWrong(fileNum);
+								size = BSA->GetFileSize(fileNum);
+								buf = new char[size];
 							}
 							catch (exception& except) {
-								dPrintAndLog("WriteNifToStream","Failed to read nif data in BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
+								dPrintAndLog("WriteNifToStream","Failed to determine nif file size in BSA \""+(*BSAit)+"\". Exceptions \""+string(ba.what())+"\" and \""+string(except.what())+"\" thrown.");
 								continue;
 							}
-							delete [] buf;
-							break;
 						}
-						catch (exception& except) {
+						catch (std::exception& except) {
 							dPrintAndLog("WriteNifToStream","Failed to determine nif file size in BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
 							continue;
 						}
+						try {
+							BSA->GetFileData(fileNum, buf);
+						}
+						catch (exception& exceptOne) {
+							try {
+								dPrintAndLog("WriteNifToStream","Failed to read data; going to try flipping the compression bit and recalculating.");
+								BSA->CompressionBitWrong(fileNum);
+								size = BSA->GetFileSize(fileNum);
+								delete [] buf;
+								buf = new char[size];
+								BSA->GetFileData(fileNum, buf);
+							}
+							catch (std::exception& exceptTwo) {
+								dPrintAndLog("WriteNifToStream","Failed to read nif data in BSA \""+(*BSAit)+"\". Exceptions \""+string(exceptOne.what())+"\" and \""+string(exceptTwo.what())+"\" thrown.");
+								delete [] buf;
+								continue;
+							}
+						}
+						stream->write(buf, size);
+						dPrintAndLog("WriteNifToStream","Successfully read nif data in BSA \""+(*BSAit)+"\". Buffer length is "+UIntToString(size)+".");
+						delete [] buf;
+						break;
 					}
 					catch (...) {
 						continue;
