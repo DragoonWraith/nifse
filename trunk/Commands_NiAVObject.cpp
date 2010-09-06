@@ -37,10 +37,21 @@ static bool Cmd_NiAVObjectGetLocalTransform_Execute(COMMAND_ARGS) {
 						}
 						omatrix = ArrayFromStdVector(vmatrix, scriptObj);
 					}
+					else
+						dPrintAndLog("NiAVObjectGetLocalTransform","Not NiAVObject.");
 				}
+				else
+					dPrintAndLog("NiAVObjectGetLocalTransform","Block index out of range.");
 			}
+			else
+				dPrintAndLog("NiAVObjectGetLocalTransform","Nif root bad.");
 		}
+		else
+			dPrintAndLog("NiAVObjectGetLocalTransform","Could not find Nif.");
 	}
+	else
+		dPrintAndLog("NiAVObjectGetLocalTransform","Error extracting arguments");
+
 	if ( arrInterface->AssignCommandResult(omatrix, result) )
 		dPrintAndLog("NiAVObjectGetLocalTransform","Returning child's local transform.\n");
 	else
@@ -74,16 +85,27 @@ static bool Cmd_NiAVObjectGetLocalTranslation_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 					if ( avObj ) {
-						map<string,OBSEElement> translation;
-						translation[string("x")] = avObj->GetLocalTranslation().x;
-						translation[string("y")] = avObj->GetLocalTranslation().y;
-						translation[string("z")] = avObj->GetLocalTranslation().z;
-						arr = StringMapFromStdMap(translation, scriptObj);
+						vector<OBSEElement> translation;
+						translation.push_back(avObj->GetLocalTranslation().x);
+						translation.push_back(avObj->GetLocalTranslation().y);
+						translation.push_back(avObj->GetLocalTranslation().z);
+						arr = ArrayFromStdVector(translation, scriptObj);
 					}
+					else
+						dPrintAndLog("NiAVObjectGetLocalTranslation","Not NiAVObject.");
 				}
+				else
+					dPrintAndLog("NiAVObjectGetLocalTranslation","Block index out of range.");
 			}
+			else
+				dPrintAndLog("NiAVObjectGetLocalTranslation","Nif root bad.");
 		}
+		else
+			dPrintAndLog("NiAVObjectGetLocalTranslation","Could not find Nif.");
 	}
+	else
+		dPrintAndLog("NiAVObjectGetLocalTranslation","Error extracting arguments");
+
 	if ( arrInterface->AssignCommandResult(arr, result) )
 		dPrintAndLog("NiAVObjectGetLocalTranslation","Returning child's local translation.\n");
 	else
@@ -180,10 +202,21 @@ static bool Cmd_NiAVObjectGetLocalScale_Execute(COMMAND_ARGS) {
 						*result = avObj->GetLocalScale();
 						dPrintAndLog("NiAVObjectGetLocalScale""Returning "+FloatToString(*result)+".\n");
 					}
+					else
+						dPrintAndLog("NiAVObjectGetLocalScale","Not NiAVObject.");
 				}
+				else
+					dPrintAndLog("NiAVObjectGetLocalScale","Block index out of range.");
 			}
+			else
+				dPrintAndLog("NiAVObjectGetLocalScale","Nif root bad.");
 		}
+		else
+			dPrintAndLog("NiAVObjectGetLocalScale","Could not find Nif.");
 	}
+	else
+		dPrintAndLog("NiAVObjectGetLocalScale","Error extracting arguments");
+
 	return true;
 }
 
@@ -217,13 +250,25 @@ static bool Cmd_NiAVObjectSetLocalScale_Execute(COMMAND_ARGS) {
 							avObj->SetLocalScale(nuScale);
 							*result = 1;
 							nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocScale,FloatToString(nuScale),true);
+							dPrintAndLog("NiAVObjectSetLocalScale","Local scale set.\n");
 						}
+						else
+							dPrintAndLog("NiAVObjectSetLocalScale","Not NiAVObject.\n");
 					}
+					else
+						dPrintAndLog("NiAVObjectSetLocalScale","Block index out of range.\n");
 				}
+				else
+					dPrintAndLog("NiAVObjectSetLocalScale","Nif is not editable.\n");
 			}
+			else
+				dPrintAndLog("NiAVObjectSetLocalScale","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiAVObjectSetLocalScale","Could not find Nif.\n");
 	}
-	dPrintAndLog("NiAVObjectSetLocalScale","Local Scale of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" has"+(((*result)!=0)?(" "):(" not "))+"been set.\n");
+	else
+		dPrintAndLog("NiAVObjectSetLocalScale","Error extracting arguments.\n");
 
 	return true;
 }
@@ -266,13 +311,25 @@ static bool Cmd_NiAVObjectSetLocalTransformTEMP_Execute(COMMAND_ARGS) {
 							avObj->SetLocalTransform(newTransform);
 							*result = 1;
 							nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocTransf,MatrixToString(newTransform),true);
+							dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Local transform set.\n");
 						}
+						else
+							dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Not NiAVObject.\n");
 					}
+					else
+						dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Block index out of range.\n");
 				}
+				else
+					dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Nif is not editable.\n");
 			}
+			else
+				dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Could not find Nif.\n");
 	}
-	dPrintAndLog("NiAVObjectSetLocalTransform","Local Transform of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" has"+(*result!=0?(" "):(" not "))+"been set.\n");
+	else
+		dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Error extracting arguments.\n");
 
 	return true;
 }
@@ -307,13 +364,25 @@ static bool Cmd_NiAVObjectSetLocalTranslationTEMP_Execute(COMMAND_ARGS) {
 							avObj->SetLocalTranslation(newTranslation);
 							*result = 1;
 							nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocTransl,VectorToString(newTranslation),true);
+							dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Set local translation.\n");
 						}
+						else
+							dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Not NiAVObject.\n");
 					}
+					else
+						dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Block index out of range.\n");
 				}
+				else
+					dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Nif is not editable.\n");
 			}
+			else
+				dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Could not find Nif.\n");
 	}
-	dPrintAndLog("NiAVObjectSetLocalTranslation","Local Translation of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" has"+(*result!=0?(" "):(" not "))+"been set.\n");
+	else
+		dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Error extracting arguments.\n");
 
 	return true;
 }
@@ -354,23 +423,25 @@ static bool Cmd_NiAVObjectSetLocalRotationTEMP_Execute(COMMAND_ARGS) {
 							avObj->SetLocalRotation(newRotation);
 							*result = 1;
 							nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocRot,MatrixToString(newRotation),true);
+							dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Local rotation set.\n");
 						}
 						else
-							dPrintAndLog("NiAVObjectSetLocalRotation","Child not found.");
+							dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Child not found.\n");
 					}
 					else
-						dPrintAndLog("NiAVObjectSetLocalRotation","Child index out of range.");
+						dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Child index out of range.\n");
 				}
 				else
-					dPrintAndLog("NiAVObjectSetLocalRotation","Nif not editable.");
+					dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Nif not editable.\n");
 			}
 			else
-				dPrintAndLog("NiAVObjectSetLocalRotation","Nif not found.");
+				dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Nif not found.\n");
 		}
 		else
-			dPrintAndLog("NiAVObjectSetLocalRotation","Nif not found.");
+			dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Nif not found.\n");
 	}
-	dPrintAndLog("NiAVObjectSetLocalRotation","Local Rotation of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" has"+(*result!=0?(" "):(" not "))+"been set.\n");
+	else
+		dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Error extracting arguments.\n");
 
 	return true;
 }
@@ -401,10 +472,21 @@ static bool Cmd_NiAVObjectGetNumProperties_Execute(COMMAND_ARGS) {
 						*result = avObj->GetProperties().size();
 						dPrintAndLog("NiAVObjectGetNumProperties","Returning "+UIntToString(*result)+".");
 					}
+					else
+						dPrintAndLog("NiAVObjectGetNumProperties","Not NiAVObject.\n");
 				}
+				else
+					dPrintAndLog("NiAVObjectGetNumProperties","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiAVObjectGetNumProperties","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiAVObjectGetNumProperties","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiAVObjectGetNumProperties","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -438,10 +520,21 @@ static bool Cmd_NiAVObjectGetProperties_Execute(COMMAND_ARGS) {
 							prvec.push_back((*i)->internal_block_number);
 						arr = ArrayFromStdVector(prvec, scriptObj);
 					}
+					else
+						dPrintAndLog("NiAVObjectGetProperties","Not NiAVObject.");
 				}
+				else
+					dPrintAndLog("NiAVObjectGetProperties","Block index out of range.");
 			}
+			else
+				dPrintAndLog("NiAVObjectGetProperties","Nif root bad.");
 		}
+		else
+			dPrintAndLog("NiAVObjectGetProperties","Could not find Nif.");
 	}
+	else
+		dPrintAndLog("NiAVObjectGetProperties","Error extracting arguments.");
+
 	if ( arrInterface->AssignCommandResult(arr, result) )
 		dPrintAndLog("NiAVObjectGetProperties","Returning node's extra data.\n");
 	else
@@ -475,10 +568,21 @@ static bool Cmd_NiAVObjectGetPropertyByType_Execute(COMMAND_ARGS) {
 						*result = avObj->GetPropertyByType(*(getNiflibType(prType)))->internal_block_number;
 						dPrintAndLog("NiAVObjectGetPropertyByType","Returning "+UIntToString(blockID)+".\n");
 					}
+					else
+						dPrintAndLog("NiAVObjectGetPropertyByType","Not NiAVObject.\n");
 				}
+				else
+					dPrintAndLog("NiAVObjectGetPropertyByType","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiAVObjectGetPropertyByType","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiAVObjectGetPropertyByType","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiAVObjectGetPropertyByType","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -531,6 +635,9 @@ static bool Cmd_NiAVObjectAddProperty_Execute(COMMAND_ARGS) {
 		else
 			dPrintAndLog("NiAVObjectAddProperty","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NiAVObjectAddProperty","Error extracting arguments.\n");
+
 	return true;
 }
 

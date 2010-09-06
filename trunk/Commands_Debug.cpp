@@ -22,6 +22,9 @@ static bool Cmd_NifWriteToDisk_Execute(COMMAND_ARGS) {
 		else
 			dPrintAndLog("NifWriteToDisk","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NifWriteToDisk","Error extracting arguments.\n");
+
 	return true;
 }
 

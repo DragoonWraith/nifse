@@ -28,9 +28,18 @@ static bool Cmd_NiObjectNETGetName_Execute(COMMAND_ARGS) {
 					else
 						dPrintAndLog("NiObjectNETGetName","Block is not ObjectNET.\n");
 				}
+				else
+					dPrintAndLog("NiObjectNETGetName","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiObjectNETGetName","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiObjectNETGetName","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiObjectNETGetName","Error extracting arguments.\n");
+
 	strInterface->Assign(PASS_COMMAND_ARGS, nameStr.c_str());
 	return true;
 }
@@ -66,11 +75,24 @@ static bool Cmd_NiObjectNETSetName_Execute(COMMAND_ARGS) {
 							dPrintAndLog("NiObjectNETSetName","ExtraData name set successfully.\n");
 							nifPtr->logChange(blockID, kNiflibType_NiObjectNET, kNiObjNETAct_SetName, nuName, true);
 						}
+						else
+							dPrintAndLog("NiObjectNETSetName","Block is not ObjectNET.\n");
 					}
+					else
+						dPrintAndLog("NiObjectNETSetName","Block index out of range.\n");
 				}
+				else
+					dPrintAndLog("NiObjectNETSetName","Nif not editable.\n");
 			}
+			else
+				dPrintAndLog("NiObjectNETSetName","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiObjectNETSetName","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiObjectNETSetName","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -99,12 +121,23 @@ static bool Cmd_NiObjectNETGetNumExtraData_Execute(COMMAND_ARGS) {
 					Niflib::NiObjectNETRef objNET = Niflib::DynamicCast<Niflib::NiObjectNET>(nifPtr->nifList[blockID]);
 					if ( objNET ) {
 						*result = objNET->GetExtraData().size();
-						dPrintAndLog("NifGetNumExtraData","Returning "+UIntToString(*result)+".\n");
+						dPrintAndLog("NiObjectNETGetNumExtraData","Returning "+UIntToString(*result)+".\n");
 					}
+					else
+						dPrintAndLog("NiObjectNETGetNumExtraData","Block is not ObjectNET.\n");
 				}
+				else
+					dPrintAndLog("NiObjectNETGetNumExtraData","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiObjectNETGetNumExtraData","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiObjectNETGetNumExtraData","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiObjectNETGetNumExtraData","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -139,10 +172,21 @@ static bool Cmd_NiObjectNETGetExtraData_Execute(COMMAND_ARGS) {
 							edvec.push_back((*i)->internal_block_number);
 						arr = ArrayFromStdVector(edvec, scriptObj);
 					}
+					else
+						dPrintAndLog("NiObjectNETGetExtraData","Block is not ObjectNET.");
 				}
+				else
+					dPrintAndLog("NiObjectNETGetExtraData","Block index out of range.");
 			}
+			else
+				dPrintAndLog("NiObjectNETGetExtraData","Nif root bad.");
 		}
+		else
+			dPrintAndLog("NiObjectNETGetExtraData","Could not find Nif.");
 	}
+	else
+		dPrintAndLog("NiObjectNETGetExtraData","Error extracting arguments.");
+
 	if ( arrInterface->AssignCommandResult(arr, result) )
 		dPrintAndLog("NiObjectNETGetExtraData","Returning node's extra data.\n");
 	else
@@ -182,10 +226,21 @@ static bool Cmd_NiObjectNETGetExtraDataByName_Execute(COMMAND_ARGS) {
 						else
 							dPrintAndLog("NiObjectNETGetExtraDataByName","ExtraData found.\n");
 					}
+					else
+						dPrintAndLog("NiObjectNETGetExtraDataByName","Block is not ObjectNET.\n");
 				}
+				else
+					dPrintAndLog("NiObjectNETGetExtraDataByName","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiObjectNETGetExtraDataByName","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiObjectNETGetExtraDataByName","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiObjectNETGetExtraDataByName","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -224,20 +279,22 @@ static bool Cmd_NiObjectNETAddExtraData_Execute(COMMAND_ARGS) {
 							}
 						}
 						else
-							dPrintAndLog("NiObjectNETAddExtraData","Nif node not an extra-data-supporting type.\n");
+							dPrintAndLog("NiObjectNETAddExtraData","Block is not ObjectNET.\n");
 					}
 					else
-						dPrintAndLog("NiObjectNETAddExtraData","Nif node index out of bounds.\n");
+						dPrintAndLog("NiObjectNETAddExtraData","Block index out of bounds.\n");
 				}
 				else
 					dPrintAndLog("NiObjectNETAddExtraData","Nif not editable.\n");
 			}
 			else
-				dPrintAndLog("NiObjectNETAddExtraData","Nif not found.\n");
+				dPrintAndLog("NiObjectNETAddExtraData","Nif root bad.\n");
 		}
 		else
 			dPrintAndLog("NiObjectNETAddExtraData","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NiObjectNETAddExtraData","Error extracting arguments.\n");
 
 	return true;
 }

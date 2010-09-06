@@ -415,9 +415,9 @@ static bool Cmd_NiExtraDataGetArray_Execute(COMMAND_ARGS) {
 
 							case kNiflibType_NiVectorExtraData:
 								vecData = Niflib::DynamicCast<Niflib::NiVectorExtraData>(ed)->GetData();
-								omap[string("x")] = vecData.x;
-								omap[string("y")] = vecData.y;
-								omap[string("z")] = vecData.z;
+								ovec.push_back(vecData.x);
+								ovec.push_back(vecData.y);
+								ovec.push_back(vecData.z);
 								break;
 
 							default:
