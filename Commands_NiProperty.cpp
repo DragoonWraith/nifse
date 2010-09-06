@@ -22,10 +22,21 @@ static bool Cmd_NiTexturingPropertyGetTextureCount_Execute(COMMAND_ARGS) {
 						*result = texPr->GetTextureCount();
 						dPrintAndLog("NiTexturingPropertyGetTextureCount","Returning "+UIntToString(*result)+".\n");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertyGetTextureCount","Not a NiTexturingProperty.\n");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertyGetTextureCount","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertyGetTextureCount","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertyGetTextureCount","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiTexturingPropertyGetTextureCount","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -59,12 +70,27 @@ static bool Cmd_NiTexturingPropertySetTextureCount_Execute(COMMAND_ARGS) {
 								dPrintAndLog("NiTexturingPropertySetTextureCount","Texture count set.\n");
 								nifPtr->logChange(blockID, kNiflibType_NiTexturingProperty, kNiTexingPropAct_SetTexCount, UIntToString(texCount), true);
 							}
+							else
+								dPrintAndLog("NiTexturingPropertySetTextureCount","Not a NiTexturingProperty.\n");
 						}
+						else
+							dPrintAndLog("NiTexturingPropertySetTextureCount","Block index out of range.\n");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertySetTextureCount","Nif not editable.\n");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertySetTextureCount","Nif root bad.\n");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertySetTextureCount","Could not find Nif.\n");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertySetTextureCount","Impossible texture count; must be between 0 and 11, inclusive.\n");
 	}
+	else
+		dPrintAndLog("NiTexturingPropertySetTextureCount","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -95,11 +121,24 @@ static bool Cmd_NiTexturingPropertyHasTexture_Execute(COMMAND_ARGS) {
 							*result = texPr->HasTexture(texSlot);
 							dPrintAndLog("NiTexturingPropertyHasTexture","Returning "+string((*result)!=0?"TRUE":"FALSE")+".\n");
 						}
+						else
+							dPrintAndLog("NiTexturingPropertyHasTexture","Texture slot out of range.\n");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertyHasTexture","Not a NiTexturingProperty.\n");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertyHasTexture","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertyHasTexture","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertyHasTexture","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiTexturingPropertyHasTexture","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -134,13 +173,30 @@ static bool Cmd_NiTexturingPropertyGetTextureSource_Execute(COMMAND_ARGS) {
 									*result = texSrc->internal_block_number;
 									dPrintAndLog("NiTexturingPropertyGetTextureSource","Returning block #"+UIntToString(*result)+".\n");
 								}
+								else
+									dPrintAndLog("NiTexturingPropertyGetTextureSource","Bad texture source.\n");
 							}
+							else
+								dPrintAndLog("NiTexturingPropertyGetTextureSource","Texture slot is empty.\n");
 						}
+						else
+							dPrintAndLog("NiTexturingPropertyGetTextureSource","Texture slot out of range.\n");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertyGetTextureSource","Not a NiTexturingProperty.\n");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertyGetTextureSource","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertyGetTextureSource","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertyGetTextureSource","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiTexturingPropertyGetTextureSource","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -171,11 +227,24 @@ static bool Cmd_NiTexturingPropertyGetTextureClampMode_Execute(COMMAND_ARGS) {
 							*result = texPr->GetTexture(texSlot).clampMode;
 							dPrintAndLog("NiTexturingPropertyGetTextureClampMode","Returning "+UIntToString(*result)+".\n");
 						}
+						else
+							dPrintAndLog("NiTexturingPropertyGetTextureClampMode","Texture slot out of range.\n");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertyGetTextureClampMode","Not a NiTexturingProperty.\n");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertyGetTextureClampMode","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertyGetTextureClampMode","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertyGetTextureClampMode","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiTexturingPropertyGetTextureClampMode","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -206,11 +275,24 @@ static bool Cmd_NiTexturingPropertyGetTextureFilterMode_Execute(COMMAND_ARGS) {
 							*result = texPr->GetTexture(texSlot).filterMode;
 							dPrintAndLog("NiTexturingPropertyGetTextureFilterMode","Returning "+UIntToString(*result)+".\n");
 						}
+						else
+							dPrintAndLog("NiTexturingPropertyGetTextureFilterMode","Texture slot out of range.\n");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertyGetTextureFilterMode","Not a NiTexturingProperty.\n");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertyGetTextureFilterMode","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertyGetTextureFilterMode","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertyGetTextureFilterMode","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiTexturingPropertyGetTextureFilterMode","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -241,11 +323,24 @@ static bool Cmd_NiTexturingPropertyGetTextureFlags_Execute(COMMAND_ARGS) {
 							*result = texPr->GetTexture(texSlot).flags;
 							dPrintAndLog("NiTexturingPropertyGetTextureFlags","Returning "+UIntToString(*result)+".\n");
 						}
+						else
+							dPrintAndLog("NiTexturingPropertyGetTextureFlags","Texture slot out of range.\n");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertyGetTextureFlags","Not a NiTexturingProperty.\n");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertyGetTextureFlags","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertyGetTextureFlags","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertyGetTextureFlags","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiTexturingPropertyGetTextureFlags","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -276,11 +371,24 @@ static bool Cmd_NiTexturingPropertyGetTextureUVSet_Execute(COMMAND_ARGS) {
 							*result = texPr->GetTexture(texSlot).uvSet;
 							dPrintAndLog("NiTexturingPropertyGetTextureUVSet","Returning "+UIntToString(*result)+".\n");
 						}
+						else
+							dPrintAndLog("NiTexturingPropertyGetTextureUVSet","Texture slot out of range.\n");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertyGetTextureUVSet","Not a NiTexturingProperty.\n");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertyGetTextureUVSet","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertyGetTextureUVSet","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertyGetTextureUVSet","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiTexturingPropertyGetTextureUVSet","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -311,11 +419,24 @@ static bool Cmd_NiTexturingPropertyTextureHasTransform_Execute(COMMAND_ARGS) {
 							*result = texPr->GetTexture(texSlot).hasTextureTransform;
 							dPrintAndLog("NiTexturingPropertyTextureHasTransform","Returning "+string((*result)!=0?"TRUE":"FALSE")+".\n");
 						}
+						else
+							dPrintAndLog("NiTexturingPropertyTextureHasTransform","Texture slot out of range.\n");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertyTextureHasTransform","Not a NiTexturingProperty.\n");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertyTextureHasTransform","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertyTextureHasTransform","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertyTextureHasTransform","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiTexturingPropertyTextureHasTransform","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -349,11 +470,24 @@ static bool Cmd_NiTexturingPropertyGetTextureTranslation_Execute(COMMAND_ARGS) {
 							omap[string("v")] = texPr->GetTexture(texSlot).translation.v;
 							arr = StringMapFromStdMap(omap, scriptObj);
 						}
+						else
+							dPrintAndLog("NiTexturingPropertyGetTextureTranslation","Texture slot out of range.");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertyGetTextureTranslation","Not a NiTexturingProperty.");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertyGetTextureTranslation","Block index out of range.");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertyGetTextureTranslation","Nif root bad.");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertyGetTextureTranslation","Could not find Nif.");
 	}
+	else
+		dPrintAndLog("NiTexturingPropertyGetTextureTranslation","Error extracting arguments.");
+
 	if ( arrInterface->AssignCommandResult(arr, result) )
 		dPrintAndLog("NiTexturingPropertyGetTextureTranslation","Returning TexturingProperty's translation.\n");
 	else
@@ -391,11 +525,24 @@ static bool Cmd_NiTexturingPropertyGetTextureTiling_Execute(COMMAND_ARGS) {
 							omap[string("v")] = texPr->GetTexture(texSlot).tiling.v;
 							arr = StringMapFromStdMap(omap, scriptObj);
 						}
+						else
+							dPrintAndLog("NiTexturingPropertyGetTextureTiling","Texture slot out of range.");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertyGetTextureTiling","Not a NiTexturingProperty.");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertyGetTextureTiling","Block index out of range.");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertyGetTextureTiling","Nif root bad.");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertyGetTextureTiling","Could not find Nif.");
 	}
+	else
+		dPrintAndLog("NiTexturingPropertyGetTextureTiling","Error extracting arguments.");
+
 	if ( arrInterface->AssignCommandResult(arr, result) )
 		dPrintAndLog("NiTexturingPropertyGetTextureTiling","Returning TexturingProperty's tiling.\n");
 	else
@@ -430,11 +577,24 @@ static bool Cmd_NiTexturingPropertyGetTextureRotation_Execute(COMMAND_ARGS) {
 							*result = texPr->GetTexture(texSlot).wRotation;
 							dPrintAndLog("NiTexturingPropertyGetTextureRotation","Returning "+FloatToString(*result)+".\n");
 						}
+						else
+							dPrintAndLog("NiTexturingPropertyGetTextureRotation","Texture slot out of range.\n");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertyGetTextureRotation","Not a NiTexturingProperty.\n");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertyGetTextureRotation","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertyGetTextureRotation","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertyGetTextureRotation","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiTexturingPropertyGetTextureRotation","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -468,15 +628,28 @@ static bool Cmd_NiTexturingPropertyGetTextureCenterOffset_Execute(COMMAND_ARGS) 
 							omap[string("v")] = texPr->GetTexture(texSlot).centerOffset.v;
 							arr = StringMapFromStdMap(omap, scriptObj);
 						}
+						else
+							dPrintAndLog("NiTexturingPropertyGetTextureCenterOffset","Texture slot out of range.");
 					}
+					else
+						dPrintAndLog("NiTexturingPropertyGetTextureCenterOffset","Not a NiTexturingProperty.");
 				}
+				else
+					dPrintAndLog("NiTexturingPropertyGetTextureCenterOffset","Block index out of range.");
 			}
+			else
+				dPrintAndLog("NiTexturingPropertyGetTextureCenterOffset","Nif root bad.");
 		}
+		else
+			dPrintAndLog("NiTexturingPropertyGetTextureCenterOffset","Could not find Nif.");
 	}
-	if ( arrInterface->AssignCommandResult(arr, result) )
-		dPrintAndLog("NiExtraDataGetArray","Returning TexturingProperty's center offset.\n");
 	else
-		dPrintAndLog("NiExtraDataGetArray","Failed to create and return array.\n");
+		dPrintAndLog("NiTexturingPropertyGetTextureCenterOffset","Error extracting arguments.");
+
+	if ( arrInterface->AssignCommandResult(arr, result) )
+		dPrintAndLog("NiTexturingPropertyGetTextureCenterOffset","Returning TexturingProperty's center offset.\n");
+	else
+		dPrintAndLog("NiTexturingPropertyGetTextureCenterOffset","Failed to create and return array.\n");
 	return true;
 }
 

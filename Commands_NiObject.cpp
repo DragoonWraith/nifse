@@ -9,7 +9,7 @@ static bool Cmd_NiObjectGetType_Execute(COMMAND_ARGS) {
 	UInt32 blockID = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiObjectGetTypeName","Getting the type of object #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
+		dPrintAndLog("NiObjectGetType","Getting the type of object #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
 		NifFile* nifPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
 			if ( nifPtr->root ) {
@@ -17,14 +17,23 @@ static bool Cmd_NiObjectGetType_Execute(COMMAND_ARGS) {
 					Niflib::NiObjectRef obj = nifPtr->nifList[blockID];
 					if ( obj ) {
 						*result = getNiflibTypeIndex(obj->GetType());
-						dPrintAndLog("NiObjectGetTypeName","Returning "+UIntToString(*result)+".\n");
+						dPrintAndLog("NiObjectGetType","Returning "+UIntToString(*result)+".\n");
 					}
+					else
+						dPrintAndLog("NiObjectGetType","Bad object.\n");
 				}
 				else
-					dPrintAndLog("NiObjectGetTypeName","Object index out of range.\n");
+					dPrintAndLog("NiObjectGetType","Object index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiObjectGetType","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiObjectGetType","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NiObjectGetType","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -54,12 +63,21 @@ static bool Cmd_NiObjectGetTypeName_Execute(COMMAND_ARGS) {
 						typeStr = obj->GetType().GetTypeName();
 						dPrintAndLog("NiObjectGetTypeName","Returning \""+typeStr+"\".\n");
 					}
+					else
+						dPrintAndLog("NiObjectGetTypeName","Bad object.\n");
 				}
 				else
 					dPrintAndLog("NiObjectGetTypeName","Object index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiObjectGetTypeName","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiObjectGetTypeName","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NiObjectGetTypeName","Error extracting arguments.\n");
+
 	strInterface->Assign(PASS_COMMAND_ARGS, typeStr.c_str());
 	return true;
 }
@@ -98,12 +116,21 @@ static bool Cmd_NiObjectTypeDerivesFrom_Execute(COMMAND_ARGS) {
 							dPrintAndLog("NiObjectTypeDerivesFrom","Niflib type exception: \""+string(e.what())+"\".\n");
 						}
 					}
+					else
+						dPrintAndLog("NiObjectTypeDerivesFrom","Bad object.\n");
 				}
 				else
 					dPrintAndLog("NiObjectTypeDerivesFrom","Object index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiObjectTypeDerivesFrom","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiObjectTypeDerivesFrom","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NiObjectTypeDerivesFrom","Error extracting arguments.\n");
+
 	return true;
 }
 

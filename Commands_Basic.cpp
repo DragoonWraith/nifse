@@ -7,7 +7,10 @@ static bool Cmd_NifOpen_Execute(COMMAND_ARGS) {
 
 	char oriPath[kMaxMessageLength] = " ";
 	int forEdit = 0;
-	if (!ExtractArgs(PASS_EXTRACT_ARGS, &oriPath, &forEdit)) return true;
+	if (!ExtractArgs(PASS_EXTRACT_ARGS, &oriPath, &forEdit)) {
+		dPrintAndLog("NifOpen","Error extracting arguments.\n");
+		return true;
+	}
 	dPrintAndLog("NifOpen", "\""+string(oriPath)+"\" opened"+(forEdit!=0?(" for editing."):(" for reading.")));
 
 	try {
@@ -26,6 +29,7 @@ static bool Cmd_NifOpen_Execute(COMMAND_ARGS) {
 	catch (exception& except) {
 		dPrintAndLog("NifOpen","Failed to create NifFile; exception \""+string(except.what())+"\" thrown.\n");
 	}
+
 	return true;
 }
 
@@ -42,7 +46,10 @@ static bool Cmd_NifClose_Execute(COMMAND_ARGS) {
 	*result = 0;
 
 	UInt32 nifID = 0;
-	if (!ExtractArgs(PASS_EXTRACT_ARGS, &nifID)) return true;
+	if (!ExtractArgs(PASS_EXTRACT_ARGS, &nifID)) {
+		dPrintAndLog("NifClose","Error extracting arguments.\n");
+		return true;
+	}
 
 	UInt8 modID = scriptObj->GetModIndex();
 	dPrintAndLog("NifClose","Closing nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
@@ -87,6 +94,9 @@ static bool Cmd_NifGetPath_Execute(COMMAND_ARGS) {
 		else
 			dPrintAndLog("NifGetPath","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NifGetPath","Error extracting arguments.\n");
+
 	strInterface->Assign(PASS_COMMAND_ARGS, pathStr.c_str());
 	return true;
 }
@@ -121,6 +131,9 @@ static bool Cmd_NifGetOriginalPath_Execute(COMMAND_ARGS) {
 		else
 			dPrintAndLog("NifGetOriginalPath","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NifGetOriginalPath","Error extracting arguments.\n");
+
 	strInterface->Assign(PASS_COMMAND_ARGS, pathStr.c_str());
 	return true;
 }
@@ -153,6 +166,9 @@ static bool Cmd_NifGetNumBlocks_Execute(COMMAND_ARGS) {
 		else
 			dPrintAndLog("NifGetNumBlocks","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NifGetNumBlocks","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -173,6 +189,9 @@ static bool Cmd_GetNifTypeIndex_Execute(COMMAND_ARGS) {
 		*result = getNiflibTypeIndex(typeName);
 		dPrintAndLog("GetNifTypeIndex","Returning "+UIntToString(*result)+".\n");
 	}
+	else
+		dPrintAndLog("GetNifTypeIndex","Error extracting arguments.\n");
+
 	return true;
 }
 

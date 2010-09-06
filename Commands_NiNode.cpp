@@ -24,10 +24,21 @@ static bool Cmd_NiNodeGetNumChildren_Execute(COMMAND_ARGS) {
 						*result = node->GetChildren().size();
 						dPrintAndLog("NiNodeGetNumChildren","Returning "+UIntToString(*result)+" Children nodes.\n");
 					}
+					else
+						dPrintAndLog("NiNodeGetNumChildren","Not NiNode.\n");
 				}
+				else
+					dPrintAndLog("NiNodeGetNumChildren","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiNodeGetNumChildren","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiNodeGetNumChildren","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiNodeGetNumChildren","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -62,10 +73,21 @@ static bool Cmd_NiNodeGetChildren_Execute(COMMAND_ARGS) {
 							chvec.push_back((*i)->internal_block_number);
 						arr = ArrayFromStdVector(chvec, scriptObj);
 					}
+					else
+						dPrintAndLog("NiNodeGetChildren","Not NiNode.");
 				}
+				else
+					dPrintAndLog("NiNodeGetChildren","Block index out of range.");
 			}
+			else
+				dPrintAndLog("NiNodeGetChildren","Nif root bad.");
 		}
+		else
+			dPrintAndLog("NiNodeGetChildren","Could not find Nif.");
 	}
+	else
+		dPrintAndLog("NiNodeGetChildren","Error extracting arguments.");
+
 	if ( arrInterface->AssignCommandResult(arr, result) )
 		dPrintAndLog("NiNodeGetChildren","Returning node's children.\n");
 	else
@@ -108,10 +130,21 @@ static bool Cmd_NiNodeGetChildByName_Execute(COMMAND_ARGS) {
 						else
 							dPrintAndLog("NiNodeGetChildByName","Child found; returning "+UIntToString(*result)+".\n");
 					}
+					else
+						dPrintAndLog("NiNodeGetChildByName","Not NiNode.\n");
 				}
+				else
+					dPrintAndLog("NiNodeGetChildByName","Block index out of range.\n");
 			}
+			else
+				dPrintAndLog("NiNodeGetChildByName","Nif root bad.\n");
 		}
+		else
+			dPrintAndLog("NiNodeGetChildByName","Could not find Nif.\n");
 	}
+	else
+		dPrintAndLog("NiNodeGetChildByName","Error extracting arguments.\n");
+
 	return true;
 }
 
@@ -153,11 +186,24 @@ static bool Cmd_NiNodeDeleteChild_Execute(COMMAND_ARGS) {
 							else
 								dPrintAndLog("NiNodeDeleteChild","Child not deleted: Child not found.\n");
 						}
+						else
+							dPrintAndLog("NiNodeDeleteChild","Not a NiNode.\n");
 					}
+					else
+						dPrintAndLog("NiNodeDeleteChild","Nif block index out of bounds.\n");
 				}
+				else
+					dPrintAndLog("NiNodeDeleteChild","Nif not editable.\n");
 			}
+			else
+				dPrintAndLog("NiNodeDeleteChild","Nif not found.\n");
 		}
+		else
+			dPrintAndLog("NiNodeDeleteChild","Nif not found.\n");
 	}
+	else
+		dPrintAndLog("NiNodeDeleteChild","Error extracting arguments.\n");
+
 	return true;
 }
 
