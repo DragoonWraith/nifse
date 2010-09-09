@@ -336,7 +336,7 @@ void NifFile::write(string path) {
 		string::size_type i = 0;
 		UInt32 nifSEoff = (path.substr(0,s_nifSEPathLen).compare(s_nifSEPath)==0?s_nifSEPathLen:0);
 		while ( (i = path.substr(nifSEoff).find_first_of("\\", i+1)) != string::npos ) {
-			string folderPath = GetOblivionDirectory()+"Data\\"+path.substr(0,i);
+			string folderPath = GetOblivionDirectory()+"Data\\Meshes\\"+path.substr(0,i+nifSEoff);
 			CreateDirectory(folderPath.c_str(), NULL);
 		}
 		try {

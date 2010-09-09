@@ -101,7 +101,7 @@ DEFINE_CMD_PLUGIN_ALT(
 	NiObjNETSetName,
 	"Sets the name of the NiObjectNET to the passed string.",
 	0,
-	kParams_OneString_TwoInts
+	kParams_OneString_OneInt_OneOptionalInt
 );
 
 // returns the number of ExtraData in the NifFile associated

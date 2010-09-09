@@ -18,9 +18,22 @@
 	0 \
 };
 
+static ParamInfo kParams_OneString_OneOptionalBool[2] = 
+{
+	{	"string",	kParamType_String,	0 },
+	{	"boolean",	kParamType_Integer,	1 },
+};
+
 static ParamInfo kParams_TwoInts_OneOptionalInt[3] =
 {
 	{	"integer",	kParamType_Integer,	0 },
+	{	"integer",	kParamType_Integer,	0 },
+	{	"integer",	kParamType_Integer,	1 },
+};
+
+static ParamInfo kParams_OneFloat_OneInt_OneOptionalInt[3] =
+{
+	{	"float",	kParamType_Float,	0 },
 	{	"integer",	kParamType_Integer,	0 },
 	{	"integer",	kParamType_Integer,	1 },
 };
@@ -32,37 +45,26 @@ static ParamInfo kParams_OneString_OneInt_OneOptionalInt[3] =
 	{	"integer",	kParamType_Integer,	1 },
 };
 
-static ParamInfo kParams_OneString_TwoInts_OneOptionalInt[4] =
+static ParamInfo kParams_ThreeInts_OneOptionalInt[4] =
 {
-	{	"string",	kParamType_String,	0 },
+	{	"integer",	kParamType_Integer,	0 },
 	{	"integer",	kParamType_Integer,	0 },
 	{	"integer",	kParamType_Integer,	0 },
 	{	"integer",	kParamType_Integer,	1 },
 };
 
-static ParamInfo kParams_OneString_OneOptionalBool[2] = 
-{
-	{	"string",	kParamType_String,	0 },
-	{	"boolean",	kParamType_Integer,	1 },
-};
-
-static ParamInfo kParams_OneString_TwoInts[3] = 
-{
-	{	"string",	kParamType_String,	0 },
-	{	"integer",	kParamType_Integer,	0 },
-	{	"integer",	kParamType_Integer,	0 },
-};
-
-static ParamInfo kParams_TwoStrings_OneInt[3] =
-{
-	{	"string",	kParamType_String,	0 },
-	{	"string",	kParamType_String,	0 },
-	{	"integer",	kParamType_Integer,	0 },
-};
-
-static ParamInfo kParams_OneFloat_OneInt_OneOptionalInt[3] =
+static ParamInfo kParams_OneFloat_TwoInts_OneOptionalInt[4] =
 {
 	{	"float",	kParamType_Float,	0 },
+	{	"integer",	kParamType_Integer,	0 },
+	{	"integer",	kParamType_Integer,	0 },
+	{	"integer",	kParamType_Integer,	1 },
+};
+
+static ParamInfo kParams_OneString_TwoInts_OneOptionalInt[4] =
+{
+	{	"string",	kParamType_String,	0 },
+	{	"integer",	kParamType_Integer,	0 },
 	{	"integer",	kParamType_Integer,	0 },
 	{	"integer",	kParamType_Integer,	1 },
 };
