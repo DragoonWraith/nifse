@@ -614,19 +614,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Commands_NiProperty.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Commands_NiProperty.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Commands_NiSourceTexture.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\Commands_NiSourceTexture.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiTexturingProperty.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiTexturingProperty.h"
 				>
 			</File>
 		</Filter>

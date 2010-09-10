@@ -271,6 +271,7 @@ static bool Cmd_NiObjectNETAddExtraData_Execute(COMMAND_ARGS) {
 						if ( objNET ) {
 							try {
 								*result = Util_NiObjectNETAddExtraData(nifPtr, objNET, typeID, name);
+								nifPtr->logChange(objNET->internal_block_number, kNiflibType_NiObjectNET, kNiObjNETAct_AddED, UIntToString(typeID)+logValType+name);
 								dPrintAndLog("NiObjectNETAddExtraData","Addition successful.\n");
 							}
 							catch (std::exception e) {
@@ -327,7 +328,6 @@ static bool Cmd_NiObjectNETDeleteExtraData_Execute(COMMAND_ARGS) {
 								Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifPtr->nifList[edID]);
 								if ( ed ) {
 									objNET->RemoveExtraData(ed);
-									nifPtr->nifList.erase(nifPtr->nifList.begin()+edID);
 									*result = 1;
 									dPrintAndLog("NiObjectNETDeleteExtraData","ExtraData deleted.\n");
 									nifPtr->logChange(blockID, kNiflibType_NiObjectNET, kNiObjNETAct_DelED, UIntToString(edID));
@@ -447,7 +447,6 @@ UInt32 Util_NiObjectNETAddExtraData(NifFile* nifPtr, Niflib::NiObjectNETRef objN
 		nuED->internal_block_number = nifPtr->nifList.size();
 		objNET->AddExtraData(nuED, nifPtr->nifVersion);
 		nifPtr->nifList.push_back(Niflib::StaticCast<Niflib::NiObject>(nuED));
-		nifPtr->logChange(objNET->internal_block_number, kNiflibType_NiObjectNET, kNiObjNETAct_AddED, UIntToString(typeID)+logValType+name);
 		return nuED->internal_block_number;
 	}
 	else

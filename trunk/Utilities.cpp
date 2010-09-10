@@ -2,7 +2,7 @@
 
 extern string						g_pluginName	("NifSE");
 extern IDebugLog					g_Log			((g_pluginName+".log").c_str());
-extern UInt32						g_pluginVersion	(getV(0x0001,0x00,0x2,0xF));
+extern UInt32						g_pluginVersion	(getV(0x0001,0x00,0x3,0xF));
 extern PluginHandle					g_pluginHandle	(kPluginHandle_Invalid);
 
 extern OBSEArrayVarInterface*		arrInterface	(NULL);

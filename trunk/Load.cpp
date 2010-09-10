@@ -245,6 +245,7 @@ void NifSE_PreloadCallback(void * reserved) {
 				dPrintAndLog("NifLoad","'niCh' record - new changes.");
 				if ( modLoaded ) {
 					changes = ReadString(length);
+					nifPtr->delta = changes;
 					dPrintAndLog("NifLoad","ChangeLog loaded.");
 					while ( changes.length() != 0 ) {
 						LoadChangelog(changes, chNode, chType, chAct, chVal);
@@ -289,9 +290,8 @@ void NifSE_PreloadCallback(void * reserved) {
 								nifPtr->loadChNiNode(chNode, chAct, chVal);
 								break;
 
-							case kNiflibType_NiProperty:
 							case kNiflibType_NiTexturingProperty:
-								nifPtr->loadChNiProperty(chNode, chAct, chVal);
+								nifPtr->loadChNiTexturingProperty(chNode, chAct, chVal);
 								break;
 
 							case kNiflibType_NiSourceTexture:
