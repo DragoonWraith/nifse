@@ -613,6 +613,7 @@ static bool Cmd_NiAVObjectAddProperty_Execute(COMMAND_ARGS) {
 						if ( avObj ) {
 							try {
 								*result = Util_NiAVObjectAddProperty(nifPtr, avObj, typeID, name);
+								nifPtr->logChange(avObj->internal_block_number,kNiflibType_NiAVObject,kNiAVObjAct_AddProp,UIntToString(typeID)+logValType+name);
 								dPrintAndLog("NiAVObjectAddProperty","Addition successful; property is block #"+UIntToString(*result)+".\n");
 							}
 							catch (std::exception e) {
@@ -837,7 +838,6 @@ UInt32 Util_NiAVObjectAddProperty(NifFile* nifPtr, Niflib::NiAVObjectRef avObj, 
 		nuProp->internal_block_number = nifPtr->nifList.size();
 		avObj->AddProperty(nuProp);
 		nifPtr->nifList.push_back(Niflib::StaticCast<Niflib::NiObject>(nuProp));
-		nifPtr->logChange(avObj->internal_block_number,kNiflibType_NiAVObject,kNiAVObjAct_AddProp,UIntToString(typeID)+logValType+name);
 		return nuProp->internal_block_number;
 	}
 	else

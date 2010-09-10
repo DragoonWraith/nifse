@@ -39,4 +39,4 @@ extern CommandInfo kCommandInfo_NiAVObjectGetPropertyByType;
 extern CommandInfo kCommandInfo_NiAVObjectAddProperty;
 extern CommandInfo kCommandInfo_NiAVObjectDeleteProperty;
 
-UInt32 Util_NiAVObjectAddProperty(NifFile* nifPtr, Niflib::NiAVObjectRef avObj, UInt32 typeID, const string& name);
+extern UInt32 Util_NiAVObjectAddProperty(NifFile* nifPtr, Niflib::NiAVObjectRef avObj, UInt32 typeID, const string& name);

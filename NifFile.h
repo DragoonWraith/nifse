@@ -67,7 +67,7 @@ public:
 	void loadChNiObjectNET(UInt32 block, UInt32 act, string& val);
 	void loadChNiAVObject(UInt32 block, UInt32 act, string& val);
 	void loadChNiNode(UInt32 block, UInt32 act, string& val);
-	void loadChNiProperty(UInt32 block, UInt32 act, string& val);
+	void loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val);
 	void loadChNiSourceTexture(UInt32 block, UInt32 act, string& val);
 };
 
