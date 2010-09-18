@@ -290,6 +290,10 @@ void NifSE_PreloadCallback(void * reserved) {
 								nifPtr->loadChNiNode(chNode, chAct, chVal);
 								break;
 
+							case kNiflibType_NiAlphaProperty:
+								nifPtr->loadChNiAlphaProperty(chNode, chAct, chVal);
+								break;
+
 							case kNiflibType_NiTexturingProperty:
 								nifPtr->loadChNiTexturingProperty(chNode, chAct, chVal);
 								break;

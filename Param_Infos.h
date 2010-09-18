@@ -69,23 +69,9 @@ static ParamInfo kParams_OneString_TwoInts_OneOptionalInt[4] =
 	{	"integer",	kParamType_Integer,	1 },
 };
 
-static ParamInfo kParams_OneVector3_OneInt_OneOptionalInt[3] =
+static ParamInfo kParams_OneArray_OneInt_OneOptionalInt[3] =
 {
-	{	"vector",	kParamType_Integer,	0 },
-	{	"integer",	kParamType_Integer,	0 },
-	{	"integer",	kParamType_Integer,	1 },
-};
-
-static ParamInfo kParams_OneMatrix33_OneInt_OneOptionalInt[3] =
-{
-	{	"matrix33",	kParamType_Integer,	0 },
-	{	"integer",	kParamType_Integer,	0 },
-	{	"integer",	kParamType_Integer,	1 },
-};
-
-static ParamInfo kParams_OneMatrix44_OneInt_OneOptionalInt[3] =
-{
-	{	"matrix44",	kParamType_Integer,	0 },
+	{	"array ID",	kParamType_Integer, 0 },
 	{	"integer",	kParamType_Integer,	0 },
 	{	"integer",	kParamType_Integer,	1 },
 };

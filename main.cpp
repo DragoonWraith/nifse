@@ -151,76 +151,68 @@ extern "C" {
 		obse->RegisterCommand(		&kCommandInfo_NiExtraDataSetString								); //0x2519 T S L
 
 		obse->RegisterTypedCommand(	&kCommandInfo_NiExtraDataGetArray,				kRetnType_Array	); //0x251A T
-/*		obse->RegisterCommand(		&kCommandInfo_NiExtraDataSetArray								); //0x251B 
-*/		obse->SetOpcodeBase(0x251C);
+		obse->RegisterCommand(		&kCommandInfo_NiExtraDataSetArray								); //0x251B 
 
 		// NiAVObject //
-		obse->RegisterTypedCommand(	&kCommandInfo_NiAVObjectGetLocalTransform,		kRetnType_Array	); //0x251C 
+		obse->RegisterTypedCommand(	&kCommandInfo_NiAVObjectGetLocalTransform,		kRetnType_Array	); //0x251C T
 		obse->RegisterTypedCommand(	&kCommandInfo_NiAVObjectGetLocalTranslation,	kRetnType_Array	); //0x251D T
 		obse->RegisterTypedCommand(	&kCommandInfo_NiAVObjectGetLocalRotation,		kRetnType_Array	); //0x251E T
 		obse->RegisterCommand(		&kCommandInfo_NiAVObjectGetLocalScale							); //0x251F T
 
-/*		obse->RegisterCommand(		&kCommandInfo_NiAVObjectSetLocalTransform						); //0x2520     L
-		obse->RegisterCommand(		&kCommandInfo_NiAVObjectSetLocalTranslation						); //0x2521     L
-		obse->RegisterCommand(		&kCommandInfo_NiAVObjectSetLocalRotation						); //0x2522     L
-*/		obse->SetOpcodeBase(0x2523);
+		obse->RegisterCommand(		&kCommandInfo_NiAVObjectSetLocalTransform						); //0x2520   S L
+		obse->RegisterCommand(		&kCommandInfo_NiAVObjectSetLocalTranslation						); //0x2521   S L
+		obse->RegisterCommand(		&kCommandInfo_NiAVObjectSetLocalRotation						); //0x2522   S L
 		obse->RegisterCommand(		&kCommandInfo_NiAVObjectSetLocalScale							); //0x2523 T S L
 
-		obse->RegisterCommand(		&kCommandInfo_NiAVObjectSetLocalTransformTEMP					); //0x2524 T S L
-		obse->RegisterCommand(		&kCommandInfo_NiAVObjectSetLocalTranslationTEMP					); //0x2525 T S L
-		obse->RegisterCommand(		&kCommandInfo_NiAVObjectSetLocalRotationTEMP					); //0x2526 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiAVObjectGetNumProperties						); //0x2524 T
+		obse->RegisterTypedCommand(	&kCommandInfo_NiAVObjectGetProperties,			kRetnType_Array	); //0x2525 T
+		obse->RegisterCommand(		&kCommandInfo_NiAVObjectGetPropertyByType						); //0x2526 T
+		obse->RegisterCommand(		&kCommandInfo_NiAVObjectAddProperty								); //0x2527 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiAVObjectDeleteProperty							); //0x2528 T S L
 
-		obse->RegisterCommand(		&kCommandInfo_NiAVObjectGetNumProperties						); //0x2527 T
-		obse->RegisterTypedCommand(	&kCommandInfo_NiAVObjectGetProperties,			kRetnType_Array	); //0x2528 
-		obse->RegisterCommand(		&kCommandInfo_NiAVObjectGetPropertyByType						); //0x2529 
-		obse->RegisterCommand(		&kCommandInfo_NiAVObjectAddProperty								); //0x252A   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAVObjectDeleteProperty							); //0x252B   S L
+		obse->RegisterCommand(		&kCommandInfo_NiNodeGetNumChildren								); //0x2529 T
+		obse->RegisterTypedCommand(	&kCommandInfo_NiNodeGetChildren,				kRetnType_Array	); //0x252A T
+		obse->RegisterCommand(		&kCommandInfo_NiNodeGetChildByName								); //0x252B T
+		obse->RegisterCommand(		&kCommandInfo_NiNodeDeleteChild									); //0x252C T S L
 
-		obse->RegisterCommand(		&kCommandInfo_NiNodeGetNumChildren								); //0x252C T
-		obse->RegisterTypedCommand(	&kCommandInfo_NiNodeGetChildren,				kRetnType_Array	); //0x252D T
-		obse->RegisterCommand(		&kCommandInfo_NiNodeGetChildByName								); //0x252E T
-		obse->RegisterCommand(		&kCommandInfo_NiNodeDeleteChild									); //0x252F T S L
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureCount				); //0x252D T
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureCount				); //0x252E T S L
+
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyHasTexture						); //0x252F T
 
 		/* 0x2530 out of range */	obse->SetOpcodeBase(0x25C0);	// to 25CF (inclusive)
 
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureCount				); //0x25C0 T
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureCount				); //0x25C1 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureSource				); //0x25C0 T
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyAddTextureSource				); //0x25C1
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyDeleteTextureSource			); //0x25C2
 
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyHasTexture						); //0x25C2 T
-
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureSource				); //0x25C3 T
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyAddTextureSource				); //0x25C4
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyDeleteTextureSource			); //0x25C5
-
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureClampMode			); //0x25C6 T
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureFilterMode			); //0x25C7 T
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureUVSet				); //0x25C8 T
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyTextureHasTransform			); //0x25C9 T
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureClampMode			); //0x25C3 T
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureFilterMode			); //0x25C4 T
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureUVSet				); //0x25C5 T
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyTextureHasTransform			); //0x25C6 T
 		obse->RegisterTypedCommand(	&kCommandInfo_NiTexturingPropertyGetTextureTranslation,
-																					kRetnType_Array	); //0x25CA T
+																					kRetnType_Array	); //0x25C7 T
 		obse->RegisterTypedCommand(	&kCommandInfo_NiTexturingPropertyGetTextureTiling,
-																					kRetnType_Array	); //0x25CB T
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureRotation				); //0x25CC T
+																					kRetnType_Array	); //0x25C8 T
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureRotation				); //0x25C9 T
 		obse->RegisterTypedCommand(	&kCommandInfo_NiTexturingPropertyGetTextureCenterOffset,
-																					kRetnType_Array	); //0x25CD T
+																					kRetnType_Array	); //0x25CA T
 
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureClampMode			); //0x25CE T S L
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureFilterMode			); //0x25CF T S L
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureClampMode			); //0x25CB T S L
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureFilterMode			); //0x25CC T S L
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureUVSet				); //0x26CD T S L
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureHasTransform			); //0x26CE T S L
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureTranslation			); //0x26CF 
+
 
 		/* 0x25D0 out of range */	obse->SetOpcodeBase(0x2660);	// to 267F (inclusive)
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureTiling				); //0x2660 
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureRotation				); //0x2661 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureCenterOffset			); //0x2662 
 
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureUVSet				); //0x2660 T S L
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureHasTransform			); //0x2661 T S L
-/*		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureTranslation			); //0x2662 
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureTiling				); //0x2663 
-*/		obse->SetOpcodeBase(0x2664);
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureRotation				); //0x2664 T S L
-/*		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureCenterOffset			); //0x2665 
-*/		obse->SetOpcodeBase(0x2666);
-
-		obse->RegisterCommand(		&kCommandInfo_NiSourceTextureIsExternal							); //0x2666 T
-		obse->RegisterTypedCommand(	&kCommandInfo_NiSourceTextureGetFile,			kRetnType_String); //0x2667 T
-		obse->RegisterCommand(		&kCommandInfo_NiSourceTextureSetExternalTexture					); //0x2668 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiSourceTextureIsExternal							); //0x2663 T
+		obse->RegisterTypedCommand(	&kCommandInfo_NiSourceTextureGetFile,			kRetnType_String); //0x2664 T
+		obse->RegisterCommand(		&kCommandInfo_NiSourceTextureSetExternalTexture					); //0x2665 T S L
 
 		// set up serialization callbacks when running in the runtime
 		if(!obse->isEditor)
