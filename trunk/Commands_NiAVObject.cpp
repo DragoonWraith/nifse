@@ -228,6 +228,271 @@ DEFINE_CMD_PLUGIN_ALT(
 	kParams_OneInt_OneOptionalInt
 );
 
+// sets the local transformation of the
+// specified Child of the given NifFile
+static bool Cmd_NiAVObjectSetLocalTransform_Execute(COMMAND_ARGS) {
+	*result = 0;
+
+	int arrID = -1;
+	int nifID = -1;
+	UInt32 blockID = 0;
+	UInt8 modID;
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &nifID, &blockID)) {
+		modID = scriptObj->GetModIndex();
+		dPrintAndLog("NiAVObjectSetLocalTransform","Setting local Transform of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
+		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
+		if ( arr ) {
+			UInt32 arrSize = arrInterface->GetArraySize(arr);
+			if ( arrSize == 4 ) {
+				vector<OBSEArray*> row = vector<OBSEArray*>();
+				OBSEElement ele;
+				arrInterface->GetElement(arr, (double)0, ele);
+				row.push_back(ele.Array());
+				arrInterface->GetElement(arr, (double)1, ele);
+				row.push_back(ele.Array());
+				arrInterface->GetElement(arr, (double)2, ele);
+				row.push_back(ele.Array());
+				arrInterface->GetElement(arr, (double)3, ele);
+				row.push_back(ele.Array());
+				if ( row[0] && row[1] && row[2] && row[3] ) {
+					unsigned long row0Size = arrInterface->GetArraySize(row[0]);
+					unsigned long row1Size = arrInterface->GetArraySize(row[1]);
+					unsigned long row2Size = arrInterface->GetArraySize(row[2]);
+					unsigned long row3Size = arrInterface->GetArraySize(row[3]);
+					if ( row0Size == 4 && row1Size == 4 && row2Size ==4 && row3Size == 4 ) {
+						NifFile* nifPtr = NULL;
+						if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+							if ( nifPtr->root ) {
+								if ( nifPtr->editable ) {
+									if ( blockID < nifPtr->nifList.size() ) {
+										NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
+										if ( avObj ) {
+											Niflib::Matrix44 newTransform (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+											for ( UInt32 i = 0; i < 4; ++i ) {
+												for ( UInt32 j = 0; j < 4; ++j ) {
+													arrInterface->GetElement(row[i], j, ele);
+													if ( ele.GetType() == OBSEArrayVarInterface::Element::kType_Numeric )
+														newTransform[i][j] = ele.Number();
+													else {
+														dPrintAndLog("NiAVObjectSetLocalTransform","Array element is not a number. Array must be a 4x4 matrix.\n");
+														return true;
+													}
+												}
+											}
+											avObj->SetLocalTransform(newTransform);
+											*result = 1;
+											nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocTransf,MatrixToString(newTransform),true);
+											dPrintAndLog("NiAVObjectSetLocalTransform","Local transform set.\n");
+										}
+										else
+											dPrintAndLog("NiAVObjectSetLocalTransform","Not NiAVObject.\n");
+									}
+									else
+										dPrintAndLog("NiAVObjectSetLocalTransform","Block index out of range.\n");
+								}
+								else
+									dPrintAndLog("NiAVObjectSetLocalTransform","Nif is not editable.\n");
+							}
+							else
+								dPrintAndLog("NiAVObjectSetLocalTransform","Nif root bad.\n");
+						}
+						else
+							dPrintAndLog("NiAVObjectSetLocalTransform","Could not find Nif.\n");
+					}
+					else
+						dPrintAndLog("NiAVObjectSetLocalTransform","Not every row has size 4. Array must be a 4x4 matrix.\n");
+				}
+				else
+					dPrintAndLog("NiAVObjectSetLocalTransform","Array is not fully 2-dimensional. Array must be 4x4 matrix.\n");
+			}
+			else
+				dPrintAndLog("NiAVObjectSetLocalTransform","Array does not have size 4. Array must be a 4x4 matrix.\n");
+		}
+		else
+			dPrintAndLog("NiAVObjectSetLocalTransform","Array not found.\n");
+	}
+	else
+		dPrintAndLog("NiAVObjectSetLocalTransform","Error extracting arguments.\n");
+
+	return true;
+}
+
+DEFINE_CMD_PLUGIN_ALT(
+	NiAVObjectSetLocalTransform,
+	NiAVObjSetLocTransf,
+	"Sets the local transform of the Nth Child of the given Nif.",
+	0,
+	kParams_OneArray_OneInt_OneOptionalInt
+);
+
+// sets the local translation of the
+// specified Child of the given NifFile
+static bool Cmd_NiAVObjectSetLocalTranslation_Execute(COMMAND_ARGS) {
+	*result = 0;
+
+	int arrID = -1;
+	int nifID = -1;
+	UInt32 blockID = 0;
+	UInt8 modID;
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &nifID, &blockID)) {
+		modID = scriptObj->GetModIndex();
+		dPrintAndLog("NiAVObjectSetLocalTranslation","Setting local Translation of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
+		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
+		if ( arr ) {
+			UInt32 arrSize = arrInterface->GetArraySize(arr);
+			if ( arrSize == 3 ) {
+				NifFile* nifPtr = NULL;
+				if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+					if ( nifPtr->root ) {
+						if ( nifPtr->editable ) {
+							if ( blockID < nifPtr->nifList.size() ) {
+								NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
+								if ( avObj ) {
+									OBSEElement ele;
+									Niflib::Vector3 newTranslation (0,0,0);
+									for ( UInt32 i = 0; i < 3; ++i ) {
+										arrInterface->GetElement(arr, i, ele);
+										if ( ele.GetType() == OBSEArrayVarInterface::Element::kType_Numeric )
+											newTranslation[i] = ele.Number();
+										else {
+											dPrintAndLog("NiAVObjectSetLocalTranslation","Array element is not a number. Array must be a 3-vector.\n");
+											return true;
+										}
+									}
+									avObj->SetLocalTranslation(newTranslation);
+									*result = 1;
+									nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocTransl,VectorToString(newTranslation),true);
+									dPrintAndLog("NiAVObjectSetLocalTranslation","Local translation set.\n");
+								}
+								else
+									dPrintAndLog("NiAVObjectSetLocalTranslation","Not NiAVObject.\n");
+							}
+							else
+								dPrintAndLog("NiAVObjectSetLocalTranslation","Block index out of range.\n");
+						}
+						else
+							dPrintAndLog("NiAVObjectSetLocalTranslation","Nif is not editable.\n");
+					}
+					else
+						dPrintAndLog("NiAVObjectSetLocalTranslation","Nif root bad.\n");
+				}
+				else
+					dPrintAndLog("NiAVObjectSetLocalTranslation","Could not find Nif.\n");
+			}
+			else
+				dPrintAndLog("NiAVObjectSetLocalTranslation","Array does not have size 3. Array must be a 3-vector.\n");
+		}
+		else
+			dPrintAndLog("NiAVObjectSetLocalTranslation","Array not found.\n");
+	}
+	else
+		dPrintAndLog("NiAVObjectSetLocalTranslation","Error extracting arguments.\n");
+
+	return true;
+}
+
+DEFINE_CMD_PLUGIN_ALT(
+	NiAVObjectSetLocalTranslation,
+	NiAVObjSetLocTransl,
+	"Sets the local translation of the Nth Child of the given Nif.",
+	0,
+	kParams_OneArray_OneInt_OneOptionalInt
+);
+
+// sets the local rotation of the
+// specified Child of the given NifFile
+static bool Cmd_NiAVObjectSetLocalRotation_Execute(COMMAND_ARGS) {
+	*result = 0;
+
+	int arrID = -1;
+	int nifID = -1;
+	UInt32 blockID = 0;
+	UInt8 modID;
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &nifID, &blockID)) {
+		modID = scriptObj->GetModIndex();
+		dPrintAndLog("NiAVObjectSetLocalRotation","Setting local Rotation of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
+		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
+		if ( arr ) {
+			UInt32 arrSize = arrInterface->GetArraySize(arr);
+			if ( arrSize == 3 ) {
+				vector<OBSEArray*> row = vector<OBSEArray*>();
+				OBSEElement ele;
+				arrInterface->GetElement(arr, (double)0, ele);
+				row.push_back(ele.Array());
+				arrInterface->GetElement(arr, (double)1, ele);
+				row.push_back(ele.Array());
+				arrInterface->GetElement(arr, (double)2, ele);
+				row.push_back(ele.Array());
+				if ( row[0] && row[1] && row[2] ) {
+					unsigned long row0Size = arrInterface->GetArraySize(row[0]);
+					unsigned long row1Size = arrInterface->GetArraySize(row[1]);
+					unsigned long row2Size = arrInterface->GetArraySize(row[2]);
+					if ( row0Size == 3 && row1Size == 3 && row2Size == 3 ) {
+						NifFile* nifPtr = NULL;
+						if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+							if ( nifPtr->root ) {
+								if ( nifPtr->editable ) {
+									if ( blockID < nifPtr->nifList.size() ) {
+										NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
+										if ( avObj ) {
+											Niflib::Matrix33 newRotation (0,0,0,0,0,0,0,0,0);
+											for ( UInt32 i = 0; i < 4; ++i ) {
+												for ( UInt32 j = 0; j < 4; ++j ) {
+													arrInterface->GetElement(row[i], j, ele);
+													if ( ele.GetType() == OBSEArrayVarInterface::Element::kType_Numeric )
+														newRotation[i][j] = ele.Number();
+													else {
+														dPrintAndLog("NiAVObjectSetLocalRotation","Array element is not a number. Array must be a 3x3 matrix.\n");
+														return true;
+													}
+												}
+											}
+											avObj->SetLocalRotation(newRotation);
+											*result = 1;
+											nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocRot,MatrixToString(newRotation),true);
+											dPrintAndLog("NiAVObjectSetLocalRotation","Local rotation set.\n");
+										}
+										else
+											dPrintAndLog("NiAVObjectSetLocalRotation","Child not found.\n");
+									}
+									else
+										dPrintAndLog("NiAVObjectSetLocalRotation","Child index out of range.\n");
+								}
+								else
+									dPrintAndLog("NiAVObjectSetLocalRotation","Nif not editable.\n");
+							}
+							else
+								dPrintAndLog("NiAVObjectSetLocalRotation","Nif not found.\n");
+						}
+						else
+							dPrintAndLog("NiAVObjectSetLocalRotation","Nif not found.\n");
+					}
+					else
+						dPrintAndLog("NiAVObjectSetLocalRotation","Not every row has size 3. Array must be a 3x3 matrix.\n");
+				}
+				else
+					dPrintAndLog("NiAVObjectSetLocalRotation","Array is not fully 2-dimensional. Array must be 3x3 matrix.\n");
+			}
+			else
+				dPrintAndLog("NiAVObjectSetLocalRotation","Array does not have size 3. Array must be a 3x3 matrix.\n");
+		}
+		else
+			dPrintAndLog("NiAVObjectSetLocalRotation","Array not found.\n");
+	}
+	else
+		dPrintAndLog("NiAVObjectSetLocalRotation","Error extracting arguments.\n");
+
+	return true;
+}
+
+DEFINE_CMD_PLUGIN_ALT(
+	NiAVObjectSetLocalRotation,
+	NiAVObjSetLocRot,
+	"Sets the local rotation of the Nth Child of the given Nif.",
+	0,
+	kParams_OneArray_OneInt_OneOptionalInt
+);
+
 // sets the local scale of the
 // specified Child of the given NifFile
 static bool Cmd_NiAVObjectSetLocalScale_Execute(COMMAND_ARGS) {
@@ -279,179 +544,6 @@ DEFINE_CMD_PLUGIN_ALT(
 	"Sets the local scale of the chosen AVObject.",
 	0,
 	kParams_OneFloat_OneInt_OneOptionalInt
-);
-
-// sets the local transformation of the
-// specified Child of the given NifFile
-static bool Cmd_NiAVObjectSetLocalTransformTEMP_Execute(COMMAND_ARGS) {
-	*result = 0;
-
-	vector< vector<float> > nuTransform = vector< vector<float> >(4, vector<float>(4, 0));
-	int nifID = -1;
-	UInt32 blockID = 0;
-	UInt8 modID;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &nuTransform[0][0], &nuTransform[0][1], &nuTransform[0][2], &nuTransform[0][3], 
-									   &nuTransform[1][0], &nuTransform[1][1], &nuTransform[1][2], &nuTransform[1][3],
-									   &nuTransform[2][0], &nuTransform[2][1], &nuTransform[2][2], &nuTransform[2][3],
-									   &nuTransform[3][0], &nuTransform[3][1], &nuTransform[3][2], &nuTransform[3][3],
-									   &nifID, &blockID)) {
-		modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiAVObjectSetLocalTransform","Setting local Transform of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
-		NifFile* nifPtr = NULL;
-		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
-			if ( nifPtr->root ) {
-				if ( nifPtr->editable ) {
-					if ( blockID < nifPtr->nifList.size() ) {
-						NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
-						if ( avObj ) {
-							Niflib::Matrix44 newTransform (nuTransform[0][0], nuTransform[0][1], nuTransform[0][2], nuTransform[0][3], 
-														   nuTransform[1][0], nuTransform[1][1], nuTransform[1][2], nuTransform[1][3],
-														   nuTransform[2][0], nuTransform[2][1], nuTransform[2][2], nuTransform[2][3],
-														   nuTransform[3][0], nuTransform[3][1], nuTransform[3][2], nuTransform[3][3]);
-							avObj->SetLocalTransform(newTransform);
-							*result = 1;
-							nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocTransf,MatrixToString(newTransform),true);
-							dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Local transform set.\n");
-						}
-						else
-							dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Not NiAVObject.\n");
-					}
-					else
-						dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Block index out of range.\n");
-				}
-				else
-					dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Nif is not editable.\n");
-			}
-			else
-				dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Nif root bad.\n");
-		}
-		else
-			dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Could not find Nif.\n");
-	}
-	else
-		dPrintAndLog("NiAVObjectSetLocalTransformTEMP","Error extracting arguments.\n");
-
-	return true;
-}
-
-DEFINE_CMD_PLUGIN_ALT(
-	NiAVObjectSetLocalTransformTEMP,
-	NiAVObjSetLocTransfT,
-	"Sets the local transform of the Nth Child of the given Nif.",
-	0,
-	kParams_Matrix44f_OneInt_OneOptionalInt
-);
-
-// sets the local translation of the
-// specified Child of the given NifFile
-static bool Cmd_NiAVObjectSetLocalTranslationTEMP_Execute(COMMAND_ARGS) {
-	*result = 0;
-
-	Niflib::Vector3 newTranslation;
-	int nifID = -1;
-	UInt32 blockID = 0;
-	UInt8 modID;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &(newTranslation.x), &(newTranslation.y), &(newTranslation.z), &nifID, &blockID)) {
-		modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiAVObjectSetLocalTranslation","Setting local Translation of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
-		NifFile* nifPtr = NULL;
-		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
-			if ( nifPtr->root ) {
-				if ( nifPtr->editable ) {
-					if ( blockID < nifPtr->nifList.size() ) {
-						NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
-						if ( avObj ) {
-							avObj->SetLocalTranslation(newTranslation);
-							*result = 1;
-							nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocTransl,VectorToString(newTranslation),true);
-							dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Set local translation.\n");
-						}
-						else
-							dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Not NiAVObject.\n");
-					}
-					else
-						dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Block index out of range.\n");
-				}
-				else
-					dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Nif is not editable.\n");
-			}
-			else
-				dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Nif root bad.\n");
-		}
-		else
-			dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Could not find Nif.\n");
-	}
-	else
-		dPrintAndLog("NiAVObjectSetLocalTranslationTEMP","Error extracting arguments.\n");
-
-	return true;
-}
-
-DEFINE_CMD_PLUGIN_ALT(
-	NiAVObjectSetLocalTranslationTEMP,
-	NiAVObjSetLocTranslT,
-	"Sets the local translation of the Nth Child of the given Nif.",
-	0,
-	kParams_Vector3f_OneInt_OneOptionalInt
-);
-
-// sets the local rotation of the
-// specified Child of the given NifFile
-static bool Cmd_NiAVObjectSetLocalRotationTEMP_Execute(COMMAND_ARGS) {
-	*result = 0;
-
-	vector< vector<float> > nuRotation = vector< vector<float> >(3, vector<float>(3, 0));
-	int nifID = -1;
-	UInt32 blockID = 0;
-	UInt8 modID;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &nuRotation[0][0], &nuRotation[0][1], &nuRotation[0][2],
-									   &nuRotation[1][0], &nuRotation[1][1], &nuRotation[1][2],
-									   &nuRotation[2][0], &nuRotation[2][1], &nuRotation[2][2],
-									   &nifID, &blockID)) {
-		modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiAVObjectSetLocalRotation","Setting local Rotation of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
-		NifFile* nifPtr = NULL;
-		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
-			if ( nifPtr->root ) {
-				if ( nifPtr->editable ) {
-					if ( blockID < nifPtr->nifList.size() ) {
-						NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
-						if ( avObj ) {
-							Niflib::Matrix33 newRotation (nuRotation[0][0], nuRotation[0][1], nuRotation[0][2],
-														  nuRotation[1][0], nuRotation[1][1], nuRotation[1][2],
-														  nuRotation[2][0], nuRotation[2][1], nuRotation[2][2]);
-							avObj->SetLocalRotation(newRotation);
-							*result = 1;
-							nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocRot,MatrixToString(newRotation),true);
-							dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Local rotation set.\n");
-						}
-						else
-							dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Child not found.\n");
-					}
-					else
-						dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Child index out of range.\n");
-				}
-				else
-					dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Nif not editable.\n");
-			}
-			else
-				dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Nif not found.\n");
-		}
-		else
-			dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Nif not found.\n");
-	}
-	else
-		dPrintAndLog("NiAVObjectSetLocalRotationTEMP","Error extracting arguments.\n");
-
-	return true;
-}
-
-DEFINE_CMD_PLUGIN_ALT(
-	NiAVObjectSetLocalRotationTEMP,
-	NiAVObjSetLocRotT,
-	"Sets the local rotation of the Nth Child of the given Nif.",
-	0,
-	kParams_Matrix33f_OneInt_OneOptionalInt
 );
 
 // gets the number of properties that the AVObject has

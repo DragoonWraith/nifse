@@ -1,7 +1,6 @@
 #include "Commands_NiTexturingProperty.h"
 
-#include "NiProperties.h"
-
+#include "obj/NiTexturingProperty.h"
 #include "gen/TexDesc.h"
 #include "obj/NiSourceTexture.h"
 
@@ -227,13 +226,13 @@ static bool Cmd_NiTexturingPropertyAddTextureSource_Execute(COMMAND_ARGS) {
 						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
 							if ( !(texPr->HasTexture(texSlot)) ) {
 								Niflib::TexDesc desc;
-								desc.source = Niflib::DynamicCast<NiSourceTexture>(Niflib::NiSourceTexture::Create());
+								desc.source = Niflib::DynamicCast<Niflib::NiSourceTexture>(Niflib::NiSourceTexture::Create());
 								if ( desc.source ) {
 									desc.source->SetExternalTexture(file);
 									desc.source->internal_block_number = nifPtr->nifList.size();
 									texPr->SetTexture(texSlot, desc);
 									nifPtr->nifList.push_back(Niflib::StaticCast<Niflib::NiObject>(desc.source));
-									nifPtr->logChange(texPr->internal_block_number, kNiflibType_NiTexturingProperty, kNiTexingPropAct_AddTex, UIntToString(typeID)+logValType+file);
+									nifPtr->logChange(texPr->internal_block_number, kNiflibType_NiTexturingProperty, kNiTexingPropAct_AddTex, UIntToString(texSlot)+logValType+file);
 									*result = desc.source->internal_block_number;
 								}
 								else
@@ -1194,13 +1193,13 @@ DEFINE_CMD_PLUGIN_ALT(
 */
 void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 	if ( block < nifList.size() ) {
-		Niflib::NiPropertyRef texingPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifList[block]);
-		if ( texingPr ) {
+		Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifList[block]);
+		if ( texPr ) {
 			switch (act) {
 				case kNiTexingPropAct_SetTexCount:
 					{
 						UInt32 texCount = StringToUInt(val);
-						texingPr->SetTextureCount(texCount);
+						texPr->SetTextureCount(texCount);
 					}
 					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture count change loaded.");
 					break;
@@ -1210,8 +1209,8 @@ void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 						string::size_type i = val.find(logValType);
 						UInt32 texSlot = StringToUInt(val.substr(0, i));
 						UInt32 clampMode = StringToUInt(val.substr(i+1));
-						Niflib::TexDesc desc = texingPr->GetTexture(texSlot);
-						texingPr->SetTexture(texSlot, desc);
+						Niflib::TexDesc desc = texPr->GetTexture(texSlot);
+						texPr->SetTexture(texSlot, desc);
 						desc.clampMode = (Niflib::TexClampMode)clampMode;
 					}
 					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture clamp mode change loaded.");
@@ -1222,8 +1221,8 @@ void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 						string::size_type i = val.find(logValType);
 						UInt32 texSlot = StringToUInt(val.substr(0, i));
 						UInt32 filterMode = StringToUInt(val.substr(i+1));
-						Niflib::TexDesc desc = texingPr->GetTexture(texSlot);
-						texingPr->SetTexture(texSlot, desc);
+						Niflib::TexDesc desc = texPr->GetTexture(texSlot);
+						texPr->SetTexture(texSlot, desc);
 						desc.filterMode = (Niflib::TexFilterMode)filterMode;
 					}
 					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture filter mode change loaded.");
@@ -1234,8 +1233,8 @@ void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 						string::size_type i = val.find(logValType);
 						UInt32 texSlot = StringToUInt(val.substr(0, i));
 						UInt32 uvSet = StringToUInt(val.substr(i+1));
-						Niflib::TexDesc desc = texingPr->GetTexture(texSlot);
-						texingPr->SetTexture(texSlot, desc);
+						Niflib::TexDesc desc = texPr->GetTexture(texSlot);
+						texPr->SetTexture(texSlot, desc);
 						desc.uvSet = uvSet;
 					}
 					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture UV set change loaded.");
@@ -1246,8 +1245,8 @@ void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 						string::size_type i = val.find(logValType);
 						UInt32 texSlot = StringToUInt(val.substr(0, i));
 						bool hasTransf = (StringToUInt(val.substr(i+1))!=0);
-						Niflib::TexDesc desc = texingPr->GetTexture(texSlot);
-						texingPr->SetTexture(texSlot, desc);
+						Niflib::TexDesc desc = texPr->GetTexture(texSlot);
+						texPr->SetTexture(texSlot, desc);
 						desc.hasTextureTransform = hasTransf;
 					}
 					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture transform bool change loaded.");
@@ -1258,8 +1257,8 @@ void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 						string::size_type i = val.find(logValType);
 						UInt32 texSlot = StringToUInt(val.substr(0, i));
 						float rotation = StringToFloat(val.substr(i+1));
-						Niflib::TexDesc desc = texingPr->GetTexture(texSlot);
-						texingPr->SetTexture(texSlot, desc);
+						Niflib::TexDesc desc = texPr->GetTexture(texSlot);
+						texPr->SetTexture(texSlot, desc);
 						desc.wRotation = rotation;
 					}
 					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture rotation change loaded.");
@@ -1267,31 +1266,38 @@ void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 
 
 				case kNiTexingPropAct_AddTex:
-					if ( !(texPr->HasTexture(texSlot)) ) {
-						Niflib::TexDesc desc;
-						desc.source = Niflib::DynamicCast<NiSourceTexture>(Niflib::NiSourceTexture::Create());
-						if ( desc.source ) {
-							desc.source->SetExternalTexture(file);
-							desc.source->internal_block_number = nifPtr->nifList.size();
-							texPr->SetTexture(texSlot, desc);
-							nifPtr->nifList.push_back(Niflib::StaticCast<Niflib::NiObject>(desc.source));
-							*result = desc.source->internal_block_number;
-							dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture addition loaded.");
+					{
+						string::size_type i = val.find(logValType);
+						UInt32 texSlot = StringToUInt(val.substr(0, i));
+						string file = val.substr(i+1);
+						if ( !(texPr->HasTexture(texSlot)) ) {
+							Niflib::TexDesc desc;
+							desc.source = Niflib::DynamicCast<Niflib::NiSourceTexture>(Niflib::NiSourceTexture::Create());
+							if ( desc.source ) {
+								desc.source->SetExternalTexture(file);
+								desc.source->internal_block_number = nifList.size();
+								texPr->SetTexture(texSlot, desc);
+								nifList.push_back(Niflib::StaticCast<Niflib::NiObject>(desc.source));
+								dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture addition loaded.");
+							}
+							else
+								dPrintAndLog("NifLoad - NiTexturingProperty","\n\n\t\tCould not create new texture source block! Loaded nif will be incorrect!\n");
 						}
 						else
-							dPrintAndLog("NifLoad - NiTexturingProperty","\n\n\t\tCould not create new texture source block! Loaded nif will be incorrect!\n");
+							dPrintAndLog("NifLoad - NiTexturingProperty","\n\n\t\tTexture slot already filled! Loaded nif will be incorrect!\n");
 					}
-					else
-						dPrintAndLog("NifLoad - NiTexturingProperty","\n\n\t\tTexture slot already filled! Loaded nif will be incorrect!\n");
 					break;
 
 				case kNiTexingPropAct_DelTex:
-					if ( texPr->HasTexture(texSlot) ) {
-						texPr->ClearTexture(texSlot);
-						dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture deletion loaded.");
+					{
+						UInt32 texSlot = StringToUInt(val);
+						if ( texPr->HasTexture(texSlot) ) {
+							texPr->ClearTexture(texSlot);
+							dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture deletion loaded.");
+						}
+						else
+							dPrintAndLog("NifLoad - NiTexturingProperty","\n\n\t\tTexture slot empty! Loaded nif will be incorrect!\n");
 					}
-					else
-						dPrintAndLog("NifLoad - NiTexturingProperty","\n\n\t\tTexture slot empty! Loaded nif will be incorrect!\n");
 					break;
 
 				case kNiTexingPropAct_SetTransl:

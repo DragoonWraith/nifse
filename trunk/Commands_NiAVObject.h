@@ -24,14 +24,10 @@ extern CommandInfo kCommandInfo_NiAVObjectGetLocalTranslation;
 extern CommandInfo kCommandInfo_NiAVObjectGetLocalRotation;
 extern CommandInfo kCommandInfo_NiAVObjectGetLocalScale;
 
-/*extern CommandInfo kCommandInfo_NiAVObjectSetLocalTransform;
-  extern CommandInfo kCommandInfo_NiAVObjectSetLocalTranslation;
-  extern CommandInfo kCommandInfo_NiAVObjectSetLocalRotation;
-*/extern CommandInfo kCommandInfo_NiAVObjectSetLocalScale;
-
-extern CommandInfo kCommandInfo_NiAVObjectSetLocalTransformTEMP;
-extern CommandInfo kCommandInfo_NiAVObjectSetLocalTranslationTEMP;
-extern CommandInfo kCommandInfo_NiAVObjectSetLocalRotationTEMP;
+extern CommandInfo kCommandInfo_NiAVObjectSetLocalTransform;
+extern CommandInfo kCommandInfo_NiAVObjectSetLocalTranslation;
+extern CommandInfo kCommandInfo_NiAVObjectSetLocalRotation;
+extern CommandInfo kCommandInfo_NiAVObjectSetLocalScale;
 
 extern CommandInfo kCommandInfo_NiAVObjectGetNumProperties;
 extern CommandInfo kCommandInfo_NiAVObjectGetProperties;

@@ -574,6 +574,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Commands_NiAlphaProperty.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiAlphaProperty.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Commands_NiAVObject.cpp"
 				>
 			</File>
