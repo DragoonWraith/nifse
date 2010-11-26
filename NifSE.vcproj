@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-D_SCL_SECURE_NO_WARNINGS"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)\..&quot;;&quot;$(SolutionDir)\..\obse\obse&quot;;&quot;$(SolutionDir)\..\obse\&quot;"
+				AdditionalIncludeDirectories="&quot;$(Niflib_dir)\include&quot;;&quot;$(zlib_dir)\zlib&quot;;&quot;$(BOOST_ROOT)&quot;;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)\..&quot;;&quot;$(SolutionDir)\..\obse\obse&quot;;&quot;$(SolutionDir)\..\obse\&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;OBLIVION_VERSION=0x010201A0;OBLIVION;NIFLIB_STATIC_LINK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -67,6 +67,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="ws2_32.lib niflib_static_debug.lib Psapi.lib dzlib.lib"
 				LinkIncremental="0"
+				AdditionalLibraryDirectories="&quot;$(Niflib_dir)\lib&quot;;&quot;$(zlib_dir)\lib&quot;;&quot;$(BOOST_ROOT)\Libs&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT"
 				ModuleDefinitionFile="exports.def"
@@ -126,7 +127,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)\..&quot;;&quot;$(SolutionDir)\..\obse\obse&quot;;&quot;$(SolutionDir)\..\obse\&quot;"
+				AdditionalIncludeDirectories="&quot;$(Niflib_dir)\include&quot;;&quot;$(zlib_dir)\zlib&quot;;&quot;$(BOOST_ROOT)&quot;;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)\..&quot;;&quot;$(SolutionDir)\..\obse\obse&quot;;&quot;$(SolutionDir)\..\obse\&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;OBLIVION_VERSION=0x010201A0;OBLIVION;NIFLIB_STATIC_LINK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -151,6 +152,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="ws2_32.lib niflib_static.lib Psapi.lib zlib.lib"
 				LinkIncremental="0"
+				AdditionalLibraryDirectories="&quot;$(Niflib_dir)\lib&quot;;&quot;$(zlib_dir)\lib&quot;;&quot;$(BOOST_ROOT)\Libs&quot;"
 				IgnoreDefaultLibraryNames="LIBCMTD;MSVCRT"
 				ModuleDefinitionFile="exports.def"
 				GenerateDebugInformation="true"
@@ -183,7 +185,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Installing DLL..."
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\data\obse\plugins\$(TargetFileName)&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\Data\obse\plugins\$(TargetFileName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\Plug-Ins\NifSE\obse\plugins\$(TargetFileName)&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -268,7 +270,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Installing DLL..."
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;F:\Bethesda Softworks\Oblivion\data\obse\plugins\$(TargetFileName)&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\Data\obse\plugins\$(TargetFileName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\Plug-Ins\NifSE\obse\plugins\$(TargetFileName)&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -352,7 +354,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Installing DLL..."
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;F:\Bethesda Softworks\Oblivion\data\obse\plugins\$(TargetFileName)&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\Data\obse\plugins\$(TargetFileName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(OblivionPath)\Plug-Ins\NifSE\obse\plugins\$(TargetFileName)&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -360,9 +362,6 @@
 		<ProjectReference
 			ReferencedProjectIdentifier="{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}"
 			RelativePathToProject="..\common\common.vcproj"
-		/>
-		<ProjectReference
-			ReferencedProjectIdentifier="{54A2F47D-D6E9-47F3-9082-7AA69C5569C3}"
 		/>
 	</References>
 	<Files>
@@ -800,6 +799,14 @@
 		</File>
 		<File
 			RelativePath=".\main.h"
+			>
+		</File>
+		<File
+			RelativePath=".\Versioning.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\Versioning.h"
 			>
 		</File>
 	</Files>

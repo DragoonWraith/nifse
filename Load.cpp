@@ -146,7 +146,7 @@ void NifSE_PreloadCallback(void * reserved) {
 
 	UInt32 modID;
 	bool modLoaded;
-	UInt32 nifSEv = getV(0x0001,0x00,0x0,0x3);
+	UInt32 nifSEv = VERSION(1,0,0,3);
 	UInt32 nifID;
 	string nifPath;
 
@@ -185,7 +185,7 @@ void NifSE_PreloadCallback(void * reserved) {
 				if ( modLoaded )
 					serInterface->ReadRecordData(&nifID, sizeof(UInt32));
 				nifPath = "";
-				nifSEv = getV(0x0001,0x00,0x0,0x3); // defaults to v1.0 a"1.3", as this was the last version to not include version information
+				nifSEv = VERSION(1, 0, 0, 3); // defaults to v1.0 a"1.3", as this was the last version to not include version information
 				dPrintAndLog("NifLoad","New NifFile #"+UIntToString(modID)+"-"+UIntToString(nifID)+".");
 				break;
 

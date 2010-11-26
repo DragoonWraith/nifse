@@ -216,7 +216,7 @@ static bool Cmd_NiTexturingPropertyAddTextureSource_Execute(COMMAND_ARGS) {
 	UInt32 blockID = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &file, &texSlot, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiTexturingPropertyAddTextureSource","Adding a texture to slot #"+UIntToString(texSlot)+" of the NiTexturingProperty (nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+").");
+		dPrintAndLog("NiTexturingPropertyAddTextureSource","Adding texture \""+string(file)+"\" to slot #"+UIntToString(texSlot)+" of the NiTexturingProperty (nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+").");
 		NifFile* nifPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
 			if ( nifPtr->root ) {
@@ -228,12 +228,13 @@ static bool Cmd_NiTexturingPropertyAddTextureSource_Execute(COMMAND_ARGS) {
 								Niflib::TexDesc desc;
 								desc.source = Niflib::DynamicCast<Niflib::NiSourceTexture>(Niflib::NiSourceTexture::Create());
 								if ( desc.source ) {
-									desc.source->SetExternalTexture(file);
+									desc.source->SetExternalTexture(string("textures\\")+file);
 									desc.source->internal_block_number = nifPtr->nifList.size();
 									texPr->SetTexture(texSlot, desc);
 									nifPtr->nifList.push_back(Niflib::StaticCast<Niflib::NiObject>(desc.source));
 									nifPtr->logChange(texPr->internal_block_number, kNiflibType_NiTexturingProperty, kNiTexingPropAct_AddTex, UIntToString(texSlot)+logValType+file);
 									*result = desc.source->internal_block_number;
+									dPrintAndLog("NiTexturingPropertyAddTextureSource","Added new texture.\n");
 								}
 								else
 									dPrintAndLog("NiTexturingPropertyAddTextureSource","Could not create new texture source block.\n");
@@ -968,51 +969,67 @@ DEFINE_CMD_PLUGIN_ALT(
 	0,
 	kParams_ThreeInts_OneOptionalInt
 );
-/*
+
 static bool Cmd_NiTexturingPropertySetTextureTranslation_Execute(COMMAND_ARGS) {
 	*result = 0;
 	OBSEArray* arr = NULL;
 
+	int arrID = -1;
 	int texSlot = -1;
 	int nifID = -1;
 	UInt32 blockID = 0;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &texSlot, &nifID, &blockID)) {
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &texSlot, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
 		dPrintAndLog("NiTexturingPropertySetTextureTranslation","Setting the translation of texture #"+UIntToString(texSlot)+" of the NiTexturingProperty (nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+").");
-		NifFile* nifPtr = NULL;
-		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
-			if ( nifPtr->root ) {
-				if ( blockID < nifPtr->nifList.size() ) {
-					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
-					if ( texPr ) {
-						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-							map<string,OBSEElement> omap;
-							omap[string("u")] = texPr->GetTexture(texSlot).translation.u;
-							omap[string("v")] = texPr->GetTexture(texSlot).translation.v;
-							arr = StringMapFromStdMap(omap, scriptObj);
+		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
+		if ( arr ) {
+			UInt32 arrSize = arrInterface->GetArraySize(arr);
+			if ( arrSize == 2 ) {
+				NifFile* nifPtr = NULL;
+				if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+					if ( nifPtr->editable ) {
+						if ( nifPtr->root ) {
+							if ( blockID < nifPtr->nifList.size() ) {
+								Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
+								if ( texPr ) {
+									if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
+										OBSEElement ele;
+										arrInterface->GetElement(arr, (double)0, ele);
+										double u = ele.Number();
+										arrInterface->GetElement(arr, (double)1, ele);
+										double v = ele.Number();
+										texPr->GetTexture(texSlot).translation.Set(u, v);
+										*result = 1;
+										nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetTransl,UIntToString(texSlot)+logValType+VectorToString(texPr->GetTexture(texSlot).translation),true);
+										dPrintAndLog("NiTexturingPropertySetTextureTranslation","Texture translation set.\n");
+									}
+									else
+										dPrintAndLog("NiTexturingPropertySetTextureTranslation","Texture slot out of range.\n");
+								}
+								else
+									dPrintAndLog("NiTexturingPropertySetTextureTranslation","Not a NiTexturingProperty.\n");
+							}
+							else
+								dPrintAndLog("NiTexturingPropertySetTextureTranslation","Block index out of range.\n");
 						}
 						else
-							dPrintAndLog("NiTexturingPropertySetTextureTranslation","Texture slot out of range.");
+							dPrintAndLog("NiTexturingPropertySetTextureTranslation","Nif root bad.\n");
 					}
 					else
-						dPrintAndLog("NiTexturingPropertySetTextureTranslation","Not a NiTexturingProperty.");
+						dPrintAndLog("NiTexturingPropertySetTextureTranslation","Nif not editable.\n");
 				}
 				else
-					dPrintAndLog("NiTexturingPropertySetTextureTranslation","Block index out of range.");
+					dPrintAndLog("NiTexturingPropertySetTextureTranslation","Could not find Nif.\n");
 			}
 			else
-				dPrintAndLog("NiTexturingPropertySetTextureTranslation","Nif root bad.");
+				dPrintAndLog("NiTexturingPropertySetTextureTranslation","Array size must be 2.\n");
 		}
 		else
-			dPrintAndLog("NiTexturingPropertySetTextureTranslation","Could not find Nif.");
+			dPrintAndLog("NiTexturingPropertySetTextureTranslation","Array not found.\n");
 	}
 	else
-		dPrintAndLog("NiTexturingPropertySetTextureTranslation","Error extracting arguments.");
+		dPrintAndLog("NiTexturingPropertySetTextureTranslation","Error extracting arguments.\n");
 
-	if ( arrInterface->AssignCommandResult(arr, result) )
-		dPrintAndLog("NiTexturingPropertySetTextureTranslation","Returning TexturingProperty's translation.\n");
-	else
-		dPrintAndLog("NiTexturingPropertySetTextureTranslation","Failed to create and return array.\n");
 	return true;
 }
 
@@ -1021,53 +1038,69 @@ DEFINE_CMD_PLUGIN_ALT(
 	NiTexPropSetTexTransl,
 	"Sets the translation of the texture in the property's texture slot.",
 	0,
-	kParams_TwoInts_OneOptionalInt
+	kParams_OneArray_TwoInts_OneOptionalInt
 );
 
 static bool Cmd_NiTexturingPropertySetTextureTiling_Execute(COMMAND_ARGS) {
 	*result = 0;
 	OBSEArray* arr = NULL;
 
+	int arrID = -1;
 	int texSlot = -1;
 	int nifID = -1;
 	UInt32 blockID = 0;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &texSlot, &nifID, &blockID)) {
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &texSlot, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
 		dPrintAndLog("NiTexturingPropertySetTextureTiling","Setting the tiling of texture #"+UIntToString(texSlot)+" of the NiTexturingProperty (nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+").");
-		NifFile* nifPtr = NULL;
-		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
-			if ( nifPtr->root ) {
-				if ( blockID < nifPtr->nifList.size() ) {
-					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
-					if ( texPr ) {
-						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-							map<string,OBSEElement> omap;
-							omap[string("u")] = texPr->GetTexture(texSlot).tiling.u;
-							omap[string("v")] = texPr->GetTexture(texSlot).tiling.v;
-							arr = StringMapFromStdMap(omap, scriptObj);
+		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
+		if ( arr ) {
+			UInt32 arrSize = arrInterface->GetArraySize(arr);
+			if ( arrSize == 2 ) {
+				NifFile* nifPtr = NULL;
+				if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+					if ( nifPtr->editable ) {
+						if ( nifPtr->root ) {
+							if ( blockID < nifPtr->nifList.size() ) {
+								Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
+								if ( texPr ) {
+									if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
+										OBSEElement ele;
+										arrInterface->GetElement(arr, (double)0, ele);
+										double u = ele.Number();
+										arrInterface->GetElement(arr, (double)1, ele);
+										double v = ele.Number();
+										texPr->GetTexture(texSlot).tiling.Set(u, v);
+										*result = 1;
+										nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetTiling,UIntToString(texSlot)+logValType+VectorToString(texPr->GetTexture(texSlot).translation),true);
+										dPrintAndLog("NiTexturingPropertySetTextureTiling","Texture tiling set.\n");
+									}
+									else
+										dPrintAndLog("NiTexturingPropertySetTextureTiling","Texture slot out of range.\n");
+								}
+								else
+									dPrintAndLog("NiTexturingPropertySetTextureTiling","Not a NiTexturingProperty.\n");
+							}
+							else
+								dPrintAndLog("NiTexturingPropertySetTextureTiling","Block index out of range.\n");
 						}
 						else
-							dPrintAndLog("NiTexturingPropertySetTextureTiling","Texture slot out of range.");
+							dPrintAndLog("NiTexturingPropertySetTextureTiling","Nif root bad.\n");
 					}
 					else
-						dPrintAndLog("NiTexturingPropertySetTextureTiling","Not a NiTexturingProperty.");
+						dPrintAndLog("NiTexturingPropertySetTextureTiling","Nif not editable.\n");
 				}
 				else
-					dPrintAndLog("NiTexturingPropertySetTextureTiling","Block index out of range.");
+					dPrintAndLog("NiTexturingPropertySetTextureTiling","Could not find Nif.\n");
 			}
 			else
-				dPrintAndLog("NiTexturingPropertySetTextureTiling","Nif root bad.");
+				dPrintAndLog("NiTexturingPropertySetTextureTiling","Array size must be 2.\n");
 		}
 		else
-			dPrintAndLog("NiTexturingPropertySetTextureTiling","Could not find Nif.");
+			dPrintAndLog("NiTexturingPropertySetTextureTiling","Array not found.\n");
 	}
 	else
-		dPrintAndLog("NiTexturingPropertySetTextureTiling","Error extracting arguments.");
+		dPrintAndLog("NiTexturingPropertySetTextureTiling","Error extracting arguments.\n");
 
-	if ( arrInterface->AssignCommandResult(arr, result) )
-		dPrintAndLog("NiTexturingPropertySetTextureTiling","Returning TexturingProperty's tiling.\n");
-	else
-		dPrintAndLog("NiTexturingPropertySetTextureTiling","Failed to create and return array.\n");
 	return true;
 }
 
@@ -1076,9 +1109,9 @@ DEFINE_CMD_PLUGIN_ALT(
 	NiTexPropSetTexTiling,
 	"Sets the center offset of the texture in the property's texture slot.",
 	0,
-	kParams_TwoInts_OneOptionalInt
+	kParams_OneArray_TwoInts_OneOptionalInt
 );
-*/
+
 static bool Cmd_NiTexturingPropertySetTextureRotation_Execute(COMMAND_ARGS) {
 	*result = 0;
 
@@ -1135,51 +1168,67 @@ DEFINE_CMD_PLUGIN_ALT(
 	0,
 	kParams_OneFloat_TwoInts_OneOptionalInt
 );
-/*
+
 static bool Cmd_NiTexturingPropertySetTextureCenterOffset_Execute(COMMAND_ARGS) {
 	*result = 0;
 	OBSEArray* arr = NULL;
 
+	int arrID = -1;
 	int texSlot = -1;
 	int nifID = -1;
 	UInt32 blockID = 0;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &texSlot, &nifID, &blockID)) {
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &texSlot, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
 		dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Setting the center offset of texture #"+UIntToString(texSlot)+" of the NiTexturingProperty (nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+").");
-		NifFile* nifPtr = NULL;
-		if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
-			if ( nifPtr->root ) {
-				if ( blockID < nifPtr->nifList.size() ) {
-					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
-					if ( texPr ) {
-						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-							map<string,OBSEElement> omap;
-							omap[string("u")] = texPr->GetTexture(texSlot).centerOffset.u;
-							omap[string("v")] = texPr->GetTexture(texSlot).centerOffset.v;
-							arr = StringMapFromStdMap(omap, scriptObj);
+		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
+		if ( arr ) {
+			UInt32 arrSize = arrInterface->GetArraySize(arr);
+			if ( arrSize == 2 ) {
+				NifFile* nifPtr = NULL;
+				if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+					if ( nifPtr->editable ) {
+						if ( nifPtr->root ) {
+							if ( blockID < nifPtr->nifList.size() ) {
+								Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
+								if ( texPr ) {
+									if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
+										OBSEElement ele;
+										arrInterface->GetElement(arr, (double)0, ele);
+										double u = ele.Number();
+										arrInterface->GetElement(arr, (double)1, ele);
+										double v = ele.Number();
+										texPr->GetTexture(texSlot).centerOffset.Set(u, v);
+										*result = 1;
+										nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetCenOff,UIntToString(texSlot)+logValType+VectorToString(texPr->GetTexture(texSlot).translation),true);
+										dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Texture center offset set.\n");
+									}
+									else
+										dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Texture slot out of range.\n");
+								}
+								else
+									dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Not a NiTexturingProperty.\n");
+							}
+							else
+								dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Block index out of range.\n");
 						}
 						else
-							dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Texture slot out of range.");
+							dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Nif root bad.\n");
 					}
 					else
-						dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Not a NiTexturingProperty.");
+						dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Nif not editable.\n");
 				}
 				else
-					dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Block index out of range.");
+					dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Could not find Nif.\n");
 			}
 			else
-				dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Nif root bad.");
+				dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Array size must be 2.\n");
 		}
 		else
-			dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Could not find Nif.");
+			dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Array not found.\n");
 	}
 	else
-		dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Error extracting arguments.");
+		dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Error extracting arguments.\n");
 
-	if ( arrInterface->AssignCommandResult(arr, result) )
-		dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Returning TexturingProperty's center offset.\n");
-	else
-		dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Failed to create and return array.\n");
 	return true;
 }
 
@@ -1188,9 +1237,9 @@ DEFINE_CMD_PLUGIN_ALT(
 	NiTexPropSetTexCenOff,
 	"Sets the center offset of the texture in the property's texture slot.",
 	0,
-	kParams_TwoInts_OneOptionalInt
+	kParams_OneArray_TwoInts_OneOptionalInt
 );
-*/
+
 void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 	if ( block < nifList.size() ) {
 		Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifList[block]);
@@ -1208,10 +1257,7 @@ void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 					{
 						string::size_type i = val.find(logValType);
 						UInt32 texSlot = StringToUInt(val.substr(0, i));
-						UInt32 clampMode = StringToUInt(val.substr(i+1));
-						Niflib::TexDesc desc = texPr->GetTexture(texSlot);
-						texPr->SetTexture(texSlot, desc);
-						desc.clampMode = (Niflib::TexClampMode)clampMode;
+						texPr->GetTexture(texSlot).clampMode = Niflib::TexClampMode(StringToUInt(val.substr(i+1)));
 					}
 					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture clamp mode change loaded.");
 					break;
@@ -1220,10 +1266,7 @@ void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 					{
 						string::size_type i = val.find(logValType);
 						UInt32 texSlot = StringToUInt(val.substr(0, i));
-						UInt32 filterMode = StringToUInt(val.substr(i+1));
-						Niflib::TexDesc desc = texPr->GetTexture(texSlot);
-						texPr->SetTexture(texSlot, desc);
-						desc.filterMode = (Niflib::TexFilterMode)filterMode;
+						texPr->GetTexture(texSlot).filterMode = Niflib::TexFilterMode(StringToUInt(val.substr(i+1)));
 					}
 					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture filter mode change loaded.");
 					break;
@@ -1232,10 +1275,7 @@ void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 					{
 						string::size_type i = val.find(logValType);
 						UInt32 texSlot = StringToUInt(val.substr(0, i));
-						UInt32 uvSet = StringToUInt(val.substr(i+1));
-						Niflib::TexDesc desc = texPr->GetTexture(texSlot);
-						texPr->SetTexture(texSlot, desc);
-						desc.uvSet = uvSet;
+						texPr->GetTexture(texSlot).uvSet = StringToUInt(val.substr(i+1));
 					}
 					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture UV set change loaded.");
 					break;
@@ -1244,26 +1284,46 @@ void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 					{
 						string::size_type i = val.find(logValType);
 						UInt32 texSlot = StringToUInt(val.substr(0, i));
-						bool hasTransf = (StringToUInt(val.substr(i+1))!=0);
-						Niflib::TexDesc desc = texPr->GetTexture(texSlot);
-						texPr->SetTexture(texSlot, desc);
-						desc.hasTextureTransform = hasTransf;
+						texPr->GetTexture(texSlot).hasTextureTransform = (StringToUInt(val.substr(i+1))!=0);
 					}
 					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture transform bool change loaded.");
+					break;
+
+				case kNiTexingPropAct_SetTransl:
+					{
+						string::size_type i = val.find(logValType);
+						UInt32 texSlot = StringToUInt(val.substr(0, i));
+						texPr->GetTexture(texSlot).translation = StringToVectorT(val.substr(i+1));
+					}
+					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture translation change loaded.");
+					break;
+
+				case kNiTexingPropAct_SetTiling:
+					{
+						string::size_type i = val.find(logValType);
+						UInt32 texSlot = StringToUInt(val.substr(0, i));
+						texPr->GetTexture(texSlot).tiling = StringToVectorT(val.substr(i+1));
+					}
+					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture tiling change loaded.");
 					break;
 
 				case kNiTexingPropAct_SetRot:
 					{
 						string::size_type i = val.find(logValType);
 						UInt32 texSlot = StringToUInt(val.substr(0, i));
-						float rotation = StringToFloat(val.substr(i+1));
-						Niflib::TexDesc desc = texPr->GetTexture(texSlot);
-						texPr->SetTexture(texSlot, desc);
-						desc.wRotation = rotation;
+						texPr->GetTexture(texSlot).wRotation = StringToFloat(val.substr(i+1));
 					}
 					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture rotation change loaded.");
 					break;
 
+				case kNiTexingPropAct_SetCenOff:
+					{
+						string::size_type i = val.find(logValType);
+						UInt32 texSlot = StringToUInt(val.substr(0, i));
+						texPr->GetTexture(texSlot).centerOffset = StringToVectorT(val.substr(i+1));
+					}
+					dPrintAndLog("NifLoad - NiTexturingProperty","NiTexturingProperty texture center offset change loaded.");
+					break;
 
 				case kNiTexingPropAct_AddTex:
 					{
@@ -1284,7 +1344,7 @@ void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 								dPrintAndLog("NifLoad - NiTexturingProperty","\n\n\t\tCould not create new texture source block! Loaded nif will be incorrect!\n");
 						}
 						else
-							dPrintAndLog("NifLoad - NiTexturingProperty","\n\n\t\tTexture slot already filled! Loaded nif will be incorrect!\n");
+							dPrintAndLog("NifLoad - NiTexturingProperty","\n\n\t\tTexture slot already filled! Loaded nif may be incorrect!\n");
 					}
 					break;
 
@@ -1299,11 +1359,6 @@ void NifFile::loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val) {
 							dPrintAndLog("NifLoad - NiTexturingProperty","\n\n\t\tTexture slot empty! Loaded nif will be incorrect!\n");
 					}
 					break;
-
-				case kNiTexingPropAct_SetTransl:
-				case kNiTexingPropAct_SetTiling:
-				case kNiTexingPropAct_SetCenOff:
-					dPrintAndLog("NifLoad - NiTexturingProperty","\n\n\t\tThis version of NifSE does not support these changes! Loaded nif will be incorrect!\n");
 
 				default:
 					dPrintAndLog("NifLoad - NiTexturingProperty","\n\n\t\tUnknown change type! Loaded nif will be incorrect!\n");

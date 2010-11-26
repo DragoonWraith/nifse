@@ -2,6 +2,8 @@
 
 #include "NiExtraData.h"
 
+#include "nif_math.h"
+
 // returns the string stored in the specified StringExtraData
 // in the NifFile associated with the given nifID.
 static bool Cmd_NiExtraDataGetName_Execute(COMMAND_ARGS) {
@@ -458,6 +460,349 @@ DEFINE_CMD_PLUGIN_ALT(
 	kParams_OneInt_OneOptionalInt
 );
 
+static bool Cmd_NiExtraDataSetArray_Execute(COMMAND_ARGS) {
+	*result = 0;
+
+	int arrID = -1;
+	int nifID = -1;
+	UInt32 blockID = 0;
+	UInt8 modID;
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &nifID, &blockID)) {
+		modID = scriptObj->GetModIndex();
+		dPrintAndLog("NiExtraDataSetArray","Setting the array value of ExtraData #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
+		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
+		if ( arr ) {
+			NifFile* nifPtr = NULL;
+			if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+				if ( nifPtr->root ) {
+					if ( nifPtr->editable ) {
+						if ( blockID < nifPtr->nifList.size() ) {
+							Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifPtr->nifList[blockID]);
+							if ( ed ) {
+								UInt32 edType = getNiflibTypeIndex(ed->TYPE);
+								string change = "";
+								UInt32 arrSize = arrInterface->GetArraySize(arr);
+								switch (edType) {
+									case kNiflibType_NiBinaryExtraData:
+										{
+											vector<Niflib::byte> data = vector<Niflib::byte>();
+											bool dataGood = true;
+											if ( arrSize > 0 ) {
+												OBSEElement* eles = new OBSEElement[arrSize];
+												if ( arrInterface->GetElements(arr, eles, NULL) ) {
+													for ( UInt32 i = 0; i < arrSize; ++i )
+														if ( eles[i].GetType() == OBSEElement::kType_Numeric )
+															data.push_back(eles[i].Number());
+														else {
+															dataGood = false;
+															dPrintAndLog("NiExtraDataSetArray","Passed array contains non-byte data.\n");
+														}
+												}
+												else {
+													dataGood = false;
+													dPrintAndLog("NiExtraDataSetArray","Could not get elements from passed array.\n");
+												}
+												delete [] eles;
+											}
+											else
+												dPrintAndLog("NiExtraDataSetArray","Passed array is empty; clearing NiBinaryExtraData.");
+
+											if ( dataGood ) {
+												Niflib::NiBinaryExtraDataRef binED = Niflib::DynamicCast<Niflib::NiBinaryExtraData>(ed);
+												if ( binED ) {
+													binED->SetData(data);
+													dPrintAndLog("NiExtraDataSetArray","NiBinaryExtraData block set.\n");
+													change = VectorToString(data);
+												}
+												else
+													dPrintAndLog("NiExtraDataSetArray","ExtraData block indicated is not NiBinaryExtraData.\n");
+											}
+										}
+										break;
+
+									case kNiflibType_NiColorExtraData:
+										if ( arrSize == 4 ) {
+											Niflib::NiColorExtraDataRef colorED = Niflib::DynamicCast<Niflib::NiColorExtraData>(ed);
+											if ( ed ) {
+												OBSEElement ele;
+												Niflib::Color4 data;
+												if ( !(arrInterface->GetElement(arr, "r", ele)) ) {
+													if ( !(arrInterface->GetElement(arr, (double)0, ele)) ) {
+														dPrintAndLog("NiExtraDataSetArray","No value found for 'r'.\n");
+														break;
+													}
+												}
+												if ( ele.GetType() == OBSEElement::kType_Numeric )
+													data.r = ele.Number();
+												else {
+													dPrintAndLog("NiExtraDataSetArray","Value for 'r' is not numeric.\n");
+													break;
+												}
+
+												if ( !(arrInterface->GetElement(arr, "g", ele)) ) {
+													if ( !(arrInterface->GetElement(arr, (double)1, ele)) ) {
+														dPrintAndLog("NiExtraDataSetArray","No value found for 'r'.\n");
+														break;
+													}
+												}
+												if ( ele.GetType() == OBSEElement::kType_Numeric )
+													data.g = ele.Number();
+												else {
+													dPrintAndLog("NiExtraDataSetArray","Value for 'g' is not numeric.\n");
+													break;
+												}
+
+												if ( !(arrInterface->GetElement(arr, "b", ele)) ) {
+													if ( !(arrInterface->GetElement(arr, (double)2, ele)) ) {
+														dPrintAndLog("NiExtraDataSetArray","No value found for 'b'.\n");
+														break;
+													}
+												}
+												if ( ele.GetType() == OBSEElement::kType_Numeric )
+													data.b = ele.Number();
+												else {
+													dPrintAndLog("NiExtraDataSetArray","Value for 'b' is not numeric.\n");
+													break;
+												}
+
+												if ( !(arrInterface->GetElement(arr, "a", ele)) ) {
+													if ( !(arrInterface->GetElement(arr, (double)3, ele)) ) {
+														dPrintAndLog("NiExtraDataSetArray","No value found for 'a'.\n");
+														break;
+													}
+												}
+												if ( ele.GetType() == OBSEElement::kType_Numeric )
+													data.a = ele.Number();
+												else {
+													dPrintAndLog("NiExtraDataSetArray","Value for 'a' is not numeric.\n");
+													break;
+												}
+
+												colorED->SetData(data);
+												dPrintAndLog("NiExtraDataSetArray","NiColorExtraData block set.\n");
+												change = Color4ToString(data);
+											}
+											else
+												dPrintAndLog("NiExtraDataSetArray","ExtraData block indicated is not a NiColorExtraData.\n");
+										}
+										else
+											dPrintAndLog("NiExtraDataSetArray","NiColorExtraData arrays require exactly 4 elements; passed array has "+UIntToString(arrSize)+".\n");
+										break;
+
+									case kNiflibType_NiFloatsExtraData:
+										{
+											vector<float> data = vector<float>();
+											bool dataGood = true;
+											if ( arrSize > 0 ) {
+												OBSEElement* eles = new OBSEElement[arrSize];
+												if ( arrInterface->GetElements(arr, eles, NULL) ) {
+													for ( UInt32 i = 0; i < arrSize; ++i )
+														if ( eles[i].GetType() == OBSEElement::kType_Numeric )
+															data.push_back(eles[i].Number());
+														else {
+															dataGood = false;
+															dPrintAndLog("NiExtraDataSetArray","Passed array contains non-float data.\n");
+														}
+												}
+												else {
+													dataGood = false;
+													dPrintAndLog("NiExtraDataSetArray","Could not get elements from passed array.\n");
+												}
+												delete [] eles;
+											}
+											else
+												dPrintAndLog("NiExtraDataSetArray","Passed array is empty; clearing NiFloatsExtraData.");
+
+											if ( dataGood ) {
+												Niflib::NiFloatsExtraDataRef fltsED = Niflib::DynamicCast<Niflib::NiFloatsExtraData>(ed);
+												if ( fltsED ) {
+													fltsED->SetData(data);
+													dPrintAndLog("NiExtraDataSetArray","NiFloatsExtraData block set.\n");
+													change = VectorToString(data);
+												}
+												else
+													dPrintAndLog("NiExtraDataSetArray","ExtraData block indicated is not NiFloatsExtraData.\n");
+											}
+										}
+										break;
+
+									case kNiflibType_NiIntegersExtraData:
+										{
+											vector<unsigned int> data = vector<unsigned int>();
+											bool dataGood = true;
+											if ( arrSize > 0 ) {
+												OBSEElement* eles = new OBSEElement[arrSize];
+												if ( arrInterface->GetElements(arr, eles, NULL) ) {
+													for ( UInt32 i = 0; i < arrSize; ++i ) {
+														if ( eles[i].GetType() == OBSEElement::kType_Numeric ) {
+															if ( eles[i].Number() > 0 )
+																data.push_back(eles[i].Number());
+															else {
+																dataGood = false;
+																dPrintAndLog("NiExtraDataSetArray","Passed array contains negative data; NiIntegersExtraData accepts only unsigned ints.\n");
+															}
+														}
+														else {
+															dataGood = false;
+															dPrintAndLog("NiExtraDataSetArray","Passed array contains non-integer data.\n");
+														}
+													}
+												}
+												else {
+													dataGood = false;
+													dPrintAndLog("NiExtraDataSetArray","Could not get elements from passed array.\n");
+												}
+												delete [] eles;
+											}
+											else
+												dPrintAndLog("NiExtraDataSetArray","Passed array is empty; clearing NiIntegersExtraData.");
+
+											if ( dataGood ) {
+												Niflib::NiIntegersExtraDataRef intsED = Niflib::DynamicCast<Niflib::NiIntegersExtraData>(ed);
+												if ( intsED ) {
+													intsED->SetData(data);
+													dPrintAndLog("NiExtraDataSetArray","NiIntegersExtraData block set.\n");
+													change = VectorToString(data);
+												}
+												else
+													dPrintAndLog("NiExtraDataSetArray","ExtraData block indicated is not NiIntegersExtraData.\n");
+											}
+										}
+										break;
+
+									case kNiflibType_NiStringsExtraData:
+										{
+											vector<string> data = vector<string>();
+											bool dataGood = true;
+											if ( arrSize > 0 ) {
+												OBSEElement* eles = new OBSEElement[arrSize];
+												if ( arrInterface->GetElements(arr, eles, NULL) ) {
+													for ( UInt32 i = 0; i < arrSize; ++i )
+														if ( eles[i].GetType() == OBSEElement::kType_String )
+															data.push_back(eles[i].String());
+														else {
+															dataGood = false;
+															dPrintAndLog("NiExtraDataSetArray","Passed array contains non-string data.\n");
+														}
+												}
+												else {
+													dataGood = false;
+													dPrintAndLog("NiExtraDataSetArray","Could not get elements from passed array.\n");
+												}
+												delete [] eles;
+											}
+											else
+												dPrintAndLog("NiExtraDataSetArray","Passed array is empty; clearing NiStringsExtraData.");
+
+											if ( dataGood ) {
+												Niflib::NiStringsExtraDataRef strsED = Niflib::DynamicCast<Niflib::NiStringsExtraData>(ed);
+												if ( strsED ) {
+													strsED->SetData(data);
+													dPrintAndLog("NiExtraDataSetArray","NiStringsExtraData block set.\n");
+													change = VectorToString(data);
+												}
+												else
+													dPrintAndLog("NiExtraDataSetArray","ExtraData block indicated is not NiStringsExtraData.\n");
+											}
+										}
+										break;
+
+									case kNiflibType_NiVectorExtraData:
+										if ( arrSize == 3 ) {
+											Niflib::NiVectorExtraDataRef vecED = Niflib::DynamicCast<Niflib::NiVectorExtraData>(ed);
+											if ( ed ) {
+												OBSEElement ele;
+												Niflib::Vector3 data;
+												if ( !(arrInterface->GetElement(arr, (double)0, ele)) ) {
+													if ( !(arrInterface->GetElement(arr, "x", ele)) ) {
+														dPrintAndLog("NiExtraDataSetArray","No value found for 'x'.\n");
+														break;
+													}
+												}
+												if ( ele.GetType() == OBSEElement::kType_Numeric )
+													data.x = ele.Number();
+												else {
+													dPrintAndLog("NiExtraDataSetArray","Value for 'x' is not numeric.\n");
+													break;
+												}
+
+												if ( !(arrInterface->GetElement(arr, (double)1, ele)) ) {
+													if ( !(arrInterface->GetElement(arr, "y", ele)) ) {
+														dPrintAndLog("NiExtraDataSetArray","No value found for 'y'.\n");
+														break;
+													}
+												}
+												if ( ele.GetType() == OBSEElement::kType_Numeric )
+													data.y = ele.Number();
+												else {
+													dPrintAndLog("NiExtraDataSetArray","Value for 'y' is not numeric.\n");
+													break;
+												}
+
+												if ( !(arrInterface->GetElement(arr, (double)2, ele)) ) {
+													if ( !(arrInterface->GetElement(arr, "z", ele)) ) {
+														dPrintAndLog("NiExtraDataSetArray","No value found for 'z'.\n");
+														break;
+													}
+												}
+												if ( ele.GetType() == OBSEElement::kType_Numeric )
+													data.z = ele.Number();
+												else {
+													dPrintAndLog("NiExtraDataSetArray","Value for 'z' is not numeric.\n");
+													break;
+												}
+
+												vecED->SetData(data);
+												dPrintAndLog("NiExtraDataSetArray","NiVectorExtraData block set.\n");
+												change = VectorToString(data);
+											}
+											else
+												dPrintAndLog("NiExtraDataSetArray","ExtraData block indicated is not a NiVectorExtraData.\n");
+										}
+										else
+											dPrintAndLog("NiExtraDataSetArray","NiVectorExtraData arrays require exactly 3 elements; passed array has "+UIntToString(arrSize)+".\n");
+										break;
+
+									default:
+										dPrintAndLog("NiExtraDataSetArray","ExtraData is not an array-holding type.\n");
+								}
+								if ( change.size() > 0 ) {
+									*result = 1;
+									nifPtr->logChange(blockID, edType, kNiEDAct_SetArr, change);
+								}
+							}
+							else
+								dPrintAndLog("NiExtraDataSetArray","Index does not refer to an ExtraData block.\n");
+						}
+						else
+							dPrintAndLog("NiExtraDataSetArray","ExtraData index out of range.\n");
+					}
+					else
+						dPrintAndLog("NiExtraDataSetArray","Nif not editable.\n");
+				}
+				else
+					dPrintAndLog("NiExtraDataSetArray","Nif not found.\n");
+			}
+			else
+				dPrintAndLog("NiExtraDataSetArray","Nif not found.\n");
+		}
+		else
+			dPrintAndLog("NiExtraDataSetArray","Array not found.\n");
+	}
+	else
+		dPrintAndLog("NiExtraDataSetArray","Error extracting arguments.\n");
+
+	return true;
+}
+
+DEFINE_CMD_PLUGIN_ALT(
+	NiExtraDataSetArray,
+	NiEDSetArr,
+	"If the Nth block of the given Nif is an ExtraData that stores an array, sets the value of that array.",
+	0,
+	kParams_OneArray_OneInt_OneOptionalInt
+);
+
 void NifFile::loadChNiExtraData(UInt32 block, UInt32 act, UInt32 type, string& val) {
 	if ( block < nifList.size() ) {
 		Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifList[block]);
@@ -515,7 +860,58 @@ void NifFile::loadChNiExtraData(UInt32 block, UInt32 act, UInt32 type, string& v
 					break;
 
 				case kNiEDAct_SetArr:
-					dPrintAndLog("NifLoad - NiExtraData","\n\n\t\tChanges to array-type ExtraData are not supported in this version of NifSE! Loaded nif will be incorrect!\n");
+					switch(type) {
+						case kNiflibType_NiBinaryExtraData:
+							{
+								Niflib::NiBinaryExtraDataRef binED = Niflib::DynamicCast<Niflib::NiBinaryExtraData>(ed);
+								binED->SetData(StringToVectorB(val));
+							}
+							dPrintAndLog("NifLoad - NiExtraData","Loaded NiBinaryExtraData change.");
+							break;
+
+						case kNiflibType_NiColorExtraData:
+							{
+								Niflib::NiColorExtraDataRef colorED = Niflib::DynamicCast<Niflib::NiColorExtraData>(ed);
+								colorED->SetData(StringToColor4(val));
+							}
+							dPrintAndLog("NifLoad - NiExtraData","Loaded NiColorExtraData change.");
+							break;
+
+						case kNiflibType_NiFloatsExtraData:
+							{
+								Niflib::NiFloatsExtraDataRef fltsED = Niflib::DynamicCast<Niflib::NiFloatsExtraData>(ed);
+								fltsED->SetData(StringToVector(val));
+							}
+							dPrintAndLog("NifLoad - NiExtraData","Loaded NiFloatsExtraData change.");
+							break;
+
+						case kNiflibType_NiIntegersExtraData:
+							{
+								Niflib::NiIntegersExtraDataRef intsED = Niflib::DynamicCast<Niflib::NiIntegersExtraData>(ed);
+								intsED->SetData(StringToVectorU(val));
+							}
+							dPrintAndLog("NifLoad - NiExtraData","Loaded NiIntegersExtraData change.");
+							break;
+
+						case kNiflibType_NiStringsExtraData:
+							{
+								Niflib::NiStringsExtraDataRef strsED = Niflib::DynamicCast<Niflib::NiStringsExtraData>(ed);
+								strsED->SetData(StringToVectorS(val));
+							}
+							dPrintAndLog("NifLoad - NiExtraData","Loaded NiStringsExtraData change.");
+							break;
+
+						case kNiflibType_NiVectorExtraData:
+							{
+								Niflib::NiVectorExtraDataRef vecED = Niflib::DynamicCast<Niflib::NiVectorExtraData>(ed);
+								vecED->SetData(StringToVector3(val));
+							}
+							dPrintAndLog("NifLoad - NiExtraData","Loaded NiVectorExtraData change.");
+							break;
+
+						default:
+							dPrintAndLog("NifLoad - NiExtraData","\n\n\t\tCannot set the array of a non-array ExtraData! Loaded nif will be incorrect!\n");
+					}
 					break;
 
 				case kNiEDAct_SetBSBound:

@@ -21,3 +21,4 @@ extern CommandInfo kCommandInfo_NiExtraDataGetString;
 extern CommandInfo kCommandInfo_NiExtraDataSetString;
 
 extern CommandInfo kCommandInfo_NiExtraDataGetArray;
+extern CommandInfo kCommandInfo_NiExtraDataSetArray;
