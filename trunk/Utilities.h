@@ -4,11 +4,13 @@
 
 #include "obse/PluginAPI.h"
 #include "obse/CommandTable.h"
+
 #if OBLIVION
 #include "obse/GameAPI.h"
 #else
 #include "obse_editor/EditorAPI.h"
 #endif
+
 #include "obse/GameData.h"
 #include "obse/GameForms.h"
 #include "obse/GameObjects.h"
@@ -37,31 +39,12 @@ using std::iostream;
 #include "BSA Browser\include\tes4_bsa.h"
 using TES_BSA::TES4BSA_Archive;
 
+#include "Versioning.h"
+
 extern string				g_pluginName;
 extern IDebugLog			g_Log;
 extern UInt32				g_pluginVersion;
 extern PluginHandle			g_pluginHandle;
-
-static const UInt8 alpha = 0;
-static const UInt8 beta = 4;
-static const UInt8 minor = 8;
-static const UInt8 major = 16;
-
-UInt8  getAlphaV(const UInt32 ver = g_pluginVersion);
-void setAlphaV(UInt8 a, UInt32 ver = g_pluginVersion);
-bool isAlpha(const UInt32 ver = g_pluginVersion);
-
-UInt8   getBetaV(const UInt32 ver = g_pluginVersion);
-void setBetaV(UInt8 b, UInt32 ver = g_pluginVersion);
-bool isBeta(const UInt32 ver = g_pluginVersion);
-
-UInt8  getMinorV(const UInt32 ver = g_pluginVersion);
-void setMinorV(UInt8 m, UInt32 ver = g_pluginVersion);
-
-UInt16 getMajorV(const UInt32 ver = g_pluginVersion);
-void setMajorV(UInt16 M, UInt32 ver = g_pluginVersion);
-
-UInt32 getV(const UInt16 major, const UInt8 minor, const UInt8 beta = 0xF, const UInt8 alpha = 0xF);
 
 // various OBSE interfaces
 extern OBSEArrayVarInterface* arrInterface;
@@ -103,13 +86,27 @@ string FloatToString(float flt);
 float StringToFloat(string str);
 
 string VectorToString(vector<float> vec);
+string VectorToString(vector<Niflib::byte> vec);
+string VectorToString(vector<unsigned int> vec);
+string VectorToString(vector<string> vec);
 string VectorToString(Niflib::Vector3 vec);
+string VectorToString(Niflib::TexCoord mat);
 vector<float> StringToVector(string str);
+vector<Niflib::byte> StringToVectorB(string str);
+vector<unsigned int> StringToVectorU(string str);
+vector<string> StringToVectorS(string str);
+Niflib::Vector3 StringToVector3(string str);
+Niflib::TexCoord StringToVectorT(string str);
 
 string MatrixToString(vector< vector<float> > mat);
 string MatrixToString(Niflib::Matrix33 mat);
 string MatrixToString(Niflib::Matrix44 mat);
 vector< vector<float> > StringToMatrix(string str);
+Niflib::Matrix33 StringToMatrix33(string str);
+Niflib::Matrix44 StringToMatrix44(string str);
+
+string Color4ToString(Niflib::Color4 color);
+Niflib::Color4 StringToColor4(string str);
 
 // list of BSA files that is constructed on load; used later to find BSA'd files and read them
 extern list<string> BSAlist;

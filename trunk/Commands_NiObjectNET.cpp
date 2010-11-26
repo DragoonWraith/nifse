@@ -72,7 +72,7 @@ static bool Cmd_NiObjectNETSetName_Execute(COMMAND_ARGS) {
 						if ( objNET ) {
 							*result = 1;
 							objNET->SetName(nuName);
-							dPrintAndLog("NiObjectNETSetName","ExtraData name set successfully.\n");
+							dPrintAndLog("NiObjectNETSetName","ObjectNET name set successfully.\n");
 							nifPtr->logChange(blockID, kNiflibType_NiObjectNET, kNiObjNETAct_SetName, nuName, true);
 						}
 						else
@@ -368,79 +368,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 UInt32 Util_NiObjectNETAddExtraData(NifFile* nifPtr, Niflib::NiObjectNETRef objNET, UInt32 typeID, const string& name) {
-	Niflib::NiExtraDataRef nuED = NULL;
-	switch (typeID) {
-		case kNiflibType_NiExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiExtraData::Create());
-			break;
-
-		case kNiflibType_BSBound:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::BSBound::Create());
-			break;
-
-		case kNiflibType_BSFurnitureMarker:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::BSFurnitureMarker::Create());
-			break;
-
-		case kNiflibType_NiBinaryExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiBinaryExtraData::Create());
-			break;
-
-		case kNiflibType_NiBinaryVoxelData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiBinaryVoxelData::Create());
-			break;
-
-		case kNiflibType_NiBooleanExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiBooleanExtraData::Create());
-			break;
-
-		case kNiflibType_NiColorExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiColorExtraData::Create());
-			break;
-
-		case kNiflibType_NiFloatExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiFloatExtraData::Create());
-			break;
-
-		case kNiflibType_NiFloatsExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiFloatsExtraData::Create());
-			break;
-
-		case kNiflibType_NiIntegerExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiIntegerExtraData::Create());
-			break;
-
-		case kNiflibType_BSXFlags:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::BSXFlags::Create());
-			break;
-
-		case kNiflibType_NiIntegersExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiIntegersExtraData::Create());
-			break;
-
-		case kNiflibType_NiStringExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiStringExtraData::Create());
-			break;
-
-		case kNiflibType_NiStringsExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiStringsExtraData::Create());
-			break;
-
-		case kNiflibType_NiTextKeyExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiTextKeyExtraData::Create());
-			break;
-
-		case kNiflibType_NiVectorExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiVectorExtraData::Create());
-			break;
-
-		case kNiflibType_NiVertWeightsExtraData:
-			nuED = Niflib::StaticCast<Niflib::NiExtraData>(Niflib::NiVertWeightsExtraData::Create());
-			break;
-
-		default:
-			throw std::exception("Extra data type unknown.");
-	}
+	Niflib::NiExtraDataRef nuED = Niflib::DynamicCast<Niflib::NiExtraData>(getNiflibType(typeID)->Create());
 
 	if ( nuED ) {
 		nuED->SetName(name);
@@ -450,7 +378,7 @@ UInt32 Util_NiObjectNETAddExtraData(NifFile* nifPtr, Niflib::NiObjectNETRef objN
 		return nuED->internal_block_number;
 	}
 	else
-		throw std::exception("New NiExtraData not created.");
+		throw std::exception("Passed type is not derived from NiExtraData.");
 }
 
 void NifFile::loadChNiObjectNET(UInt32 block, UInt32 act, string& val) {

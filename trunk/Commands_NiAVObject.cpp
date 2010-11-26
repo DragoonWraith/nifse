@@ -200,7 +200,7 @@ static bool Cmd_NiAVObjectGetLocalScale_Execute(COMMAND_ARGS) {
 					NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 					if ( avObj ) {
 						*result = avObj->GetLocalScale();
-						dPrintAndLog("NiAVObjectGetLocalScale""Returning "+FloatToString(*result)+".\n");
+						dPrintAndLog("NiAVObjectGetLocalScale","Returning "+FloatToString(*result)+".\n");
 					}
 					else
 						dPrintAndLog("NiAVObjectGetLocalScale","Not NiAVObject.");
@@ -352,8 +352,22 @@ static bool Cmd_NiAVObjectSetLocalTranslation_Execute(COMMAND_ARGS) {
 									Niflib::Vector3 newTranslation (0,0,0);
 									for ( UInt32 i = 0; i < 3; ++i ) {
 										arrInterface->GetElement(arr, i, ele);
-										if ( ele.GetType() == OBSEArrayVarInterface::Element::kType_Numeric )
-											newTranslation[i] = ele.Number();
+										if ( ele.GetType() == OBSEElement::kType_Numeric ) {
+											switch (i) {
+												case 0:
+													newTranslation.x = ele.Number();
+													dPrintAndLog("NiAVObjectSetLocalTranslation","x translation set to "+FloatToString(newTranslation.x));
+													break;
+												case 1:
+													newTranslation.y = ele.Number();
+													dPrintAndLog("NiAVObjectSetLocalTranslation","y translation set to "+FloatToString(newTranslation.y));
+													break;
+												case 2:
+													newTranslation.z = ele.Number();
+													dPrintAndLog("NiAVObjectSetLocalTranslation","z translation set to "+FloatToString(newTranslation.z));
+													break;
+											}
+										}
 										else {
 											dPrintAndLog("NiAVObjectSetLocalTranslation","Array element is not a number. Array must be a 3-vector.\n");
 											return true;
@@ -436,15 +450,18 @@ static bool Cmd_NiAVObjectSetLocalRotation_Execute(COMMAND_ARGS) {
 										NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 										if ( avObj ) {
 											Niflib::Matrix33 newRotation (0,0,0,0,0,0,0,0,0);
-											for ( UInt32 i = 0; i < 4; ++i ) {
-												for ( UInt32 j = 0; j < 4; ++j ) {
-													arrInterface->GetElement(row[i], j, ele);
-													if ( ele.GetType() == OBSEArrayVarInterface::Element::kType_Numeric )
-														newRotation[i][j] = ele.Number();
-													else {
-														dPrintAndLog("NiAVObjectSetLocalRotation","Array element is not a number. Array must be a 3x3 matrix.\n");
-														return true;
+											for ( UInt32 i = 0; i < 3; ++i ) {
+												for ( UInt32 j = 0; j < 3; ++j ) {
+													if ( arrInterface->GetElement(row[i], j, ele) ) {
+														if ( ele.GetType() == OBSEArrayVarInterface::Element::kType_Numeric )
+															newRotation[i][j] = ele.Number();
+														else {
+															dPrintAndLog("NiAVObjectSetLocalRotation","Array element is not a number. Array must be a 3x3 matrix.\n");
+															return true;
+														}
 													}
+													else
+														dPrintAndLog("NiAVObjectSetLocalRotation","Array element could not be gotten.\n");
 												}
 											}
 											avObj->SetLocalRotation(newRotation);
@@ -628,7 +645,7 @@ static bool Cmd_NiAVObjectGetProperties_Execute(COMMAND_ARGS) {
 		dPrintAndLog("NiAVObjectGetProperties","Error extracting arguments.");
 
 	if ( arrInterface->AssignCommandResult(arr, result) )
-		dPrintAndLog("NiAVObjectGetProperties","Returning node's extra data.\n");
+		dPrintAndLog("NiAVObjectGetProperties","Returning node's properties.\n");
 	else
 		dPrintAndLog("NiAVObjectGetProperties","Failed to create and return array.\n");
 	return true;
@@ -803,127 +820,7 @@ DEFINE_CMD_PLUGIN_ALT(
 
 
 UInt32 Util_NiAVObjectAddProperty(NifFile* nifPtr, Niflib::NiAVObjectRef avObj, UInt32 typeID, const string& name) {
-	Niflib::NiPropertyRef nuProp = NULL;
-	switch (typeID) {
-		case kNiflibType_BSDistantTreeShaderProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::BSDistantTreeShaderProperty::Create());
-			break;
-
-		case kNiflibType_BSShaderLightingProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::BSShaderLightingProperty::Create());
-			break;
-
-		case kNiflibType_BSShaderNoLightingProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::BSShaderNoLightingProperty::Create());
-			break;
-
-		case kNiflibType_BSShaderPPLightingProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::BSShaderPPLightingProperty::Create());
-			break;
-
-		case kNiflibType_BSShaderProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::BSShaderProperty::Create());
-			break;
-
-		case kNiflibType_DistantLODShaderProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::DistantLODShaderProperty::Create());
-			break;
-
-		case kNiflibType_HairShaderProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::HairShaderProperty::Create());
-			break;
-
-		case kNiflibType_Lighting30ShaderProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::Lighting30ShaderProperty::Create());
-			break;
-
-		case kNiflibType_NiAlphaProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiAlphaProperty::Create());
-			break;
-
-		case kNiflibType_NiDitherProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiDitherProperty::Create());
-			break;
-
-		case kNiflibType_NiFogProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiFogProperty::Create());
-			break;
-
-		case kNiflibType_NiMaterialProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiMaterialProperty::Create());
-			break;
-
-		case kNiflibType_NiMultiTextureProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiMultiTextureProperty::Create());
-			break;
-
-		case kNiflibType_NiProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiProperty::Create());
-			break;
-
-		case kNiflibType_NiShadeProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiShadeProperty::Create());
-			break;
-
-		case kNiflibType_NiSpecularProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiSpecularProperty::Create());
-			break;
-
-		case kNiflibType_NiStencilProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiStencilProperty::Create());
-			break;
-
-		case kNiflibType_NiTextureModeProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiTextureModeProperty::Create());
-			break;
-
-		case kNiflibType_NiTextureProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiTextureProperty::Create());
-			break;
-
-		case kNiflibType_NiTexturingProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiTexturingProperty::Create());
-			break;
-
-		case kNiflibType_NiTransparentProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiTransparentProperty::Create());
-			break;
-
-		case kNiflibType_NiVertexColorProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiVertexColorProperty::Create());
-			break;
-
-		case kNiflibType_NiWireframeProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiWireframeProperty::Create());
-			break;
-
-		case kNiflibType_NiZBufferProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::NiZBufferProperty::Create());
-			break;
-
-		case kNiflibType_SkyShaderProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::SkyShaderProperty::Create());
-			break;
-
-		case kNiflibType_TallGrassShaderProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::TallGrassShaderProperty::Create());
-			break;
-
-		case kNiflibType_TileShaderProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::TileShaderProperty::Create());
-			break;
-
-		case kNiflibType_VolumetricFogShaderProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::VolumetricFogShaderProperty::Create());
-			break;
-
-		case kNiflibType_WaterShaderProperty:
-			nuProp = Niflib::DynamicCast<Niflib::NiProperty>(Niflib::WaterShaderProperty::Create());
-			break;
-
-		default:
-			throw std::exception("Property type unknown!");
-	}
+	Niflib::NiPropertyRef nuProp = Niflib::DynamicCast<Niflib::NiProperty>(getNiflibType(typeID)->Create());
 
 	if ( nuProp ) {
 		nuProp->SetName(name);
@@ -933,7 +830,7 @@ UInt32 Util_NiAVObjectAddProperty(NifFile* nifPtr, Niflib::NiAVObjectRef avObj, 
 		return nuProp->internal_block_number;
 	}
 	else
-		throw std::exception("New NiProperty not created.");
+		throw std::exception("Passed type is not derived from NiProperty.");
 }
 
 void NifFile::loadChNiAVObject(UInt32 block, UInt32 act, std::string &val) {

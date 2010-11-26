@@ -2,31 +2,13 @@
 
 extern string						g_pluginName	("NifSE");
 extern IDebugLog					g_Log			((g_pluginName+".log").c_str());
-extern UInt32						g_pluginVersion	(getV(0x0001,0x00,0x3,0xF));
+extern UInt32						g_pluginVersion	(CURRENT_VERSION);
 extern PluginHandle					g_pluginHandle	(kPluginHandle_Invalid);
 
 extern OBSEArrayVarInterface*		arrInterface	(NULL);
 extern OBSEMessagingInterface*		msgInterface	(NULL);
 extern OBSESerializationInterface*	serInterface	(NULL);
 extern OBSEStringVarInterface*		strInterface	(NULL);
-
-UInt8  getAlphaV(const UInt32 ver) { return (ver & 0x0000000F) >> alpha; }
-void setAlphaV(UInt8 a, UInt32 ver) { ver = (ver & 0xFFFFFFF0) | ((a & 0xF) << alpha); }
-bool isAlpha(const UInt32 ver) { return (getAlphaV(ver) != 0xF); }
-
-UInt8   getBetaV(const UInt32 ver) { return (ver & 0x000000F0) >> beta; }
-void setBetaV(UInt8 b, UInt32 ver) { ver = (ver & 0xFFFFFF0F) | ((b & 0xF) << beta); }
-bool isBeta(const UInt32 ver) { return (getBetaV(ver) != 0xF) && !isAlpha(); }
-
-UInt8  getMinorV(const UInt32 ver) { return (ver & 0x0000FF00) >> minor; }
-void setMinorV(UInt8 m, UInt32 ver) { ver = (ver & 0xFFFF00FF) | (m << minor); }
-
-UInt16 getMajorV(const UInt32 ver) { return (ver & 0xFFFF0000) >> major; }
-void setMajorV(UInt16 M, UInt32 ver) { ver = (ver & 0x0000FFFF) | (M << major); }
-
-UInt32 getV(const UInt16 majorV, const UInt8 minorV, const UInt8 betaV, const UInt8 alphaV) {
-	return majorV<<major | minorV<<minor | betaV<<beta | alphaV<<alpha;
-}
 
 // some utility functions because I got tired of writing the same stuff for all my debug code
 void PrintAndLog(string func) {
@@ -130,8 +112,33 @@ string VectorToString(vector<float> vec) {
 	return str;
 }
 
+string VectorToString(vector<Niflib::byte> vec) {
+	string str = "[";
+	for ( unsigned int i = 0; i < vec.size(); ++i )
+		str += UIntToString(vec[i])+"|";
+	return str;
+}
+
+string VectorToString(vector<unsigned int> vec) {
+	string str = "[";
+	for ( unsigned int i = 0; i < vec.size(); ++i )
+		str += UIntToString(vec[i])+"|";
+	return str;
+}
+
+string VectorToString(vector<string> vec) {
+	string str = "[";
+	for ( unsigned int i = 0; i < vec.size(); ++i )
+		str += vec[i]+"|";
+	return str;
+}
+
 string VectorToString(Niflib::Vector3 vec) {
 	return "["+FloatToString(vec.x)+"|"+FloatToString(vec.y)+"|"+FloatToString(vec.z)+"|";
+}
+
+string VectorToString(Niflib::TexCoord mat) {
+	return "["+FloatToString(mat.u)+"|"+FloatToString(mat.v)+"|";
 }
 
 vector<float> StringToVector(string str) {
@@ -143,6 +150,67 @@ vector<float> StringToVector(string str) {
 		vec.push_back(StringToFloat(str.substr(posS,posF-posS)));
 		posS = posF + 1;
 	}
+	return vec;
+}
+
+vector<Niflib::byte> StringToVectorB(string str) {
+	vector<Niflib::byte> vec = vector<Niflib::byte>();
+	string::size_type posS = 1;
+	string::size_type posF = str.find("|");
+	while ( posS < str.size() ) {
+		posF = str.find("|", posS);
+		vec.push_back(StringToUInt(str.substr(posS,posF-posS)));
+		posS = posF + 1;
+	}
+	return vec;
+}
+
+vector<unsigned int> StringToVectorU(string str) {
+	vector<unsigned int> vec = vector<unsigned int>();
+	string::size_type posS = 1;
+	string::size_type posF = str.find("|");
+	while ( posS < str.size() ) {
+		posF = str.find("|", posS);
+		vec.push_back(StringToUInt(str.substr(posS,posF-posS)));
+		posS = posF + 1;
+	}
+	return vec;
+}
+
+vector<string> StringToVectorS(string str) {
+	vector<string> vec = vector<string>();
+	string::size_type posS = 1;
+	string::size_type posF = str.find("|");
+	while ( posS < str.size() ) {
+		posF = str.find("|", posS);
+		vec.push_back(str.substr(posS,posF-posS));
+		posS = posF + 1;
+	}
+	return vec;
+}
+
+Niflib::Vector3 StringToVector3(string str) {
+	Niflib::Vector3 vec;
+	string::size_type posS = 1;
+	string::size_type posF = str.find("|",1);
+	vec.x = StringToFloat(str.substr(posS,posF-posS));
+	posS = posF+1;
+	posF = str.find("|",posS);
+	vec.y = StringToFloat(str.substr(posS,posF-posS));
+	posS = posF+1;
+	posF = str.find("|",posS);
+	vec.z = StringToFloat(str.substr(posS,posF-posS));
+	return vec;
+}
+
+Niflib::TexCoord StringToVectorT(string str) {
+	Niflib::TexCoord vec;
+	string::size_type posS = 1;
+	string::size_type posF = str.find("|",1);
+	vec.u = StringToFloat(str.substr(posS,posF-posS));
+	posS = posF+1;
+	posF = str.find("|",posS);
+	vec.v = StringToFloat(str.substr(posS,posF-posS));
 	return vec;
 }
 
@@ -190,6 +258,27 @@ vector< vector<float> > StringToMatrix(string str) {
 		posS = posF + 1;
 	}
 	return mat;
+}
+
+string Color4ToString(Niflib::Color4 color) {
+	return "[" + FloatToString(color.r) + "|" + FloatToString(color.g) + "|" + FloatToString(color.b) + "|" + FloatToString(color.a) + "|";
+}
+
+Niflib::Color4 StringToColor4(string str) {
+	Niflib::Color4 color;
+	string::size_type posS = 1;
+	string::size_type posF = str.find("|",1);
+	color.r = StringToFloat(str.substr(posS,posF-posS));
+	posS = posF+1;
+	posF = str.find("|",posS);
+	color.g = StringToFloat(str.substr(posS,posF-posS));
+	posS = posF+1;
+	posF = str.find("|",posS);
+	color.b = StringToFloat(str.substr(posS,posF-posS));
+	posS = posF+1;
+	posF = str.find("|",posS);
+	color.a = StringToFloat(str.substr(posS,posF-posS));
+	return color;
 }
 
 extern list<string> BSAlist = list<string>();
