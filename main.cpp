@@ -175,7 +175,7 @@ extern "C" {
 		obse->RegisterCommand(		&kCommandInfo_NiNodeGetChildByName								); //0x252B T
 		obse->RegisterCommand(		&kCommandInfo_NiNodeAddChild									); //0x252C T S L
 		obse->RegisterCommand(		&kCommandInfo_NiNodeDeleteChild									); //0x252D T S L
-		obse->RegisterCommand(		&kCommandInfo_NiNodeCopyChild									); //0x252E 
+		obse->RegisterCommand(		&kCommandInfo_NiNodeCopyChild									); //0x252E T S L
 
 		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureCount				); //0x252F T
 
@@ -240,6 +240,9 @@ extern "C" {
 				_MESSAGE(("\t"+(*BSAit)).c_str());
 			}
 			_MESSAGE(("\t\t"+UIntToString(BSAlist.size())+" total.").c_str());
+
+			_MESSAGE("\nRegistering OBSE script interface.");
+			scrInterface = (OBSEScriptInterface*)obse->QueryInterface(kInterface_Script);
 
 			_MESSAGE("\nListening to OBSE dispatches.");
 			msgInterface->RegisterListener(g_pluginHandle, "OBSE", MessageHandler);

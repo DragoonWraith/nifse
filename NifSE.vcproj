@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-D_SCL_SECURE_NO_WARNINGS"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(Niflib_dir)\include&quot;;&quot;$(zlib_dir)\zlib&quot;;&quot;$(BOOST_ROOT)&quot;;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)\..&quot;;&quot;$(SolutionDir)\..\obse\obse&quot;;&quot;$(SolutionDir)\..\obse\&quot;"
+				AdditionalIncludeDirectories="&quot;$(Niflib_dir)\include&quot;;&quot;$(zlib_dir)&quot;;&quot;$(BOOST_ROOT)&quot;;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)\..&quot;;&quot;$(SolutionDir)\..\obse\obse&quot;;&quot;$(SolutionDir)\..\obse\&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;OBLIVION_VERSION=0x010201A0;OBLIVION;NIFLIB_STATIC_LINK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -65,9 +65,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib niflib_static_debug.lib Psapi.lib dzlib.lib"
+				AdditionalDependencies="ws2_32.lib niflib_static_debug.lib Psapi.lib zlib.lib"
 				LinkIncremental="0"
-				AdditionalLibraryDirectories="&quot;$(Niflib_dir)\lib&quot;;&quot;$(zlib_dir)\lib&quot;;&quot;$(BOOST_ROOT)\Libs&quot;"
+				AdditionalLibraryDirectories="&quot;$(Niflib_dir)\lib&quot;;&quot;$(zlib_dir)\debug&quot;;&quot;$(BOOST_ROOT)\Libs&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT"
 				ModuleDefinitionFile="exports.def"
@@ -127,7 +127,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(Niflib_dir)\include&quot;;&quot;$(zlib_dir)\zlib&quot;;&quot;$(BOOST_ROOT)&quot;;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)\..&quot;;&quot;$(SolutionDir)\..\obse\obse&quot;;&quot;$(SolutionDir)\..\obse\&quot;"
+				AdditionalIncludeDirectories="&quot;$(Niflib_dir)\include&quot;;&quot;$(zlib_dir)\release&quot;;&quot;$(BOOST_ROOT)&quot;;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)\..&quot;;&quot;$(SolutionDir)\..\obse\obse&quot;;&quot;$(SolutionDir)\..\obse\&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;OBLIVION_VERSION=0x010201A0;OBLIVION;NIFLIB_STATIC_LINK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -152,7 +152,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="ws2_32.lib niflib_static.lib Psapi.lib zlib.lib"
 				LinkIncremental="0"
-				AdditionalLibraryDirectories="&quot;$(Niflib_dir)\lib&quot;;&quot;$(zlib_dir)\lib&quot;;&quot;$(BOOST_ROOT)\Libs&quot;"
+				AdditionalLibraryDirectories="&quot;$(Niflib_dir)\lib&quot;;&quot;$(zlib_dir)\release&quot;;&quot;$(BOOST_ROOT)\Libs&quot;"
 				IgnoreDefaultLibraryNames="LIBCMTD;MSVCRT"
 				ModuleDefinitionFile="exports.def"
 				GenerateDebugInformation="true"
@@ -401,14 +401,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\obse\obse\GameExtraData.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\obse\obse\GameExtraData.h"
-				>
-			</File>
-			<File
 				RelativePath="..\obse\obse\GameForms.cpp"
 				>
 			</File>
@@ -458,6 +450,10 @@
 			</File>
 			<File
 				RelativePath="..\obse\obse\GameTypes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\obse\obse\Hooks_Gameplay.h"
 				>
 			</File>
 			<File
@@ -516,34 +512,6 @@
 				RelativePath="..\obse\obse\Utilities.h"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="BSA Browser"
-			>
-			<Filter
-				Name="Header Files"
-				>
-				<File
-					RelativePath=".\BSA Browser\include\tes4_bsa.h"
-					>
-				</File>
-				<File
-					RelativePath=".\BSA Browser\include\tes_bsa.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Source Files"
-				>
-				<File
-					RelativePath=".\BSA Browser\src\tes4_bsa.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\BSA Browser\src\tes_bsa.cpp"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Commands"
@@ -640,6 +608,10 @@
 		<Filter
 			Name="Backbone"
 			>
+			<File
+				RelativePath=".\BSfile.h"
+				>
+			</File>
 			<File
 				RelativePath=".\Hooks_NifSE.cpp"
 				>

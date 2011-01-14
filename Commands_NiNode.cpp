@@ -8,7 +8,7 @@
 // returns the number of Children in the NifFile associated
 // with given nifID.
 static bool Cmd_NiNodeGetNumChildren_Execute(COMMAND_ARGS) {
-	*result = 0;
+	*result = -1;
 
 	int nifID = -1;
 	UInt32 blockID = 0;
@@ -21,8 +21,14 @@ static bool Cmd_NiNodeGetNumChildren_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiNodeRef node = Niflib::DynamicCast<Niflib::NiNode>(nifPtr->nifList[blockID]);
 					if ( node ) {
-						*result = node->GetChildren().size();
-						dPrintAndLog("NiNodeGetNumChildren","Returning "+UIntToString(*result)+" Children nodes.\n");
+						try {
+							*result = node->GetChildren().size();
+							dPrintAndLog("NiNodeGetNumChildren","Returning "+UIntToString(*result)+" Children nodes.\n");
+						}
+						catch (std::exception e) {
+							*result = -1;
+							dPrintAndLog("NiNodeGetNumChildren","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiNodeGetNumChildren","Not NiNode.\n");
@@ -67,11 +73,17 @@ static bool Cmd_NiNodeGetChildren_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiNodeRef node = Niflib::DynamicCast<Niflib::NiNode>(nifPtr->nifList[blockID]);
 					if ( node ) {
-						vector<OBSEElement> chvec = vector<OBSEElement>();
-						vector<Niflib::NiAVObjectRef> chs = node->GetChildren();
-						for ( vector<Niflib::NiAVObjectRef>::iterator i = chs.begin(); i != chs.end(); ++i )
-							chvec.push_back((*i)->internal_block_number);
-						arr = ArrayFromStdVector(chvec, scriptObj);
+						try {
+							vector<OBSEElement> chvec = vector<OBSEElement>();
+							vector<Niflib::NiAVObjectRef> chs = node->GetChildren();
+							for ( vector<Niflib::NiAVObjectRef>::iterator i = chs.begin(); i != chs.end(); ++i )
+								chvec.push_back((*i)->internal_block_number);
+							arr = ArrayFromStdVector(chvec, scriptObj);
+						}
+						catch (std::exception e) {
+							arr = NULL;
+							dPrintAndLog("NiNodeGetChildren","Exception \""+string(e.what())+"\" thrown.");
+						}
 					}
 					else
 						dPrintAndLog("NiNodeGetChildren","Not NiNode.");
@@ -118,17 +130,23 @@ static bool Cmd_NiNodeGetChildByName_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiNodeRef node = Niflib::DynamicCast<Niflib::NiNode>(nifPtr->nifList[blockID]);
 					if ( node ) {
-						vector<Niflib::NiAVObjectRef> chs = node->GetChildren();
-						for ( vector<Niflib::NiAVObjectRef>::iterator i = chs.begin(); i != chs.end(); ++i ) {
-							if ( (*i)->GetName().compare(chName) == 0 ) {
-								*result = (*i)->internal_block_number;
-								break;
+						try {
+							vector<Niflib::NiAVObjectRef> chs = node->GetChildren();
+							for ( vector<Niflib::NiAVObjectRef>::iterator i = chs.begin(); i != chs.end(); ++i ) {
+								if ( (*i)->GetName().compare(chName) == 0 ) {
+									*result = (*i)->internal_block_number;
+									break;
+								}
 							}
+							if ( *result == -1 )
+								dPrintAndLog("NiNodeGetChildByName","Child not found.\n");
+							else
+								dPrintAndLog("NiNodeGetChildByName","Child found; returning "+UIntToString(*result)+".\n");
 						}
-						if ( *result == -1 )
-							dPrintAndLog("NiNodeGetChildByName","Child not found.\n");
-						else
-							dPrintAndLog("NiNodeGetChildByName","Child found; returning "+UIntToString(*result)+".\n");
+						catch (std::exception e) {
+							*result = -1;
+							dPrintAndLog("NiNodeGetChildByName","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiNodeGetChildByName","Not NiNode.\n");
@@ -157,7 +175,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 static bool Cmd_NiNodeAddChild_Execute(COMMAND_ARGS) {
-	*result = 0;
+	*result = -1;
 
 	char name[kMaxMessageLength];
 	UInt32 typeID = 0;
@@ -175,12 +193,12 @@ static bool Cmd_NiNodeAddChild_Execute(COMMAND_ARGS) {
 						if ( node ) {
 							try {
 								*result = Util_NiNodeAddChild(nifPtr, node, typeID, name);
-								nifPtr->logChange(node->internal_block_number,kNiflibType_NiNode,kNiNodeAct_AddChild,UIntToString(typeID)+logValType+name);
+								nifPtr->logChange(node->internal_block_number, kNiflibType_NiNode, kNiNodeAct_AddChild, UIntToString(typeID) +logValType+ name);
 								dPrintAndLog("NiNodeAddChild","Addition successful; child is block #"+UIntToString(*result)+".\n");
 							}
 							catch (std::exception e) {
 								*result = -1;
-								dPrintAndLog("NiNodeAddChild","Addition failed; exception \""+string(e.what())+"\" thrown.");
+								dPrintAndLog("NiNodeAddChild","Exception \""+string(e.what())+"\" thrown.");
 							}
 						}
 						else
@@ -231,10 +249,16 @@ static bool Cmd_NiNodeDeleteChild_Execute(COMMAND_ARGS) {
 							vector<Niflib::NiAVObjectRef> chs = node->GetChildren();
 							for ( vector<Niflib::NiAVObjectRef>::iterator i = chs.begin(); i != chs.end(); ++i ) {
 								if ( (*i)->internal_block_number == chID ) {
-									node->RemoveChild(*i);
-									nifPtr->logChange(blockID, kNiflibType_NiNode, kNiNodeAct_DelChild, UIntToString(chID));
-									*result = 1;
-									break;
+									try {
+										node->RemoveChild(*i);
+										nifPtr->logChange(blockID, kNiflibType_NiNode, kNiNodeAct_DelChild, UIntToString(chID));
+										*result = 1;
+										break;
+									}
+									catch (std::exception e) {
+										*result = -1;
+										dPrintAndLog("NiNodeGetDeleteChild","Exception \""+string(e.what())+"\" thrown.\n");
+									}
 								}
 							}
 							if ( *result )
@@ -284,49 +308,18 @@ static bool Cmd_NiNodeCopyChild_Execute(COMMAND_ARGS) {
 		NifFile* nifFromPtr = NULL;
 		NifFile* nifToPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifIDfrom, nifFromPtr) && NifFile::getRegNif(modID, nifIDto, nifToPtr) ) {
-			if ( nifFromPtr->root && nifToPtr->root ) {
-				if ( nifToPtr->editable ) {
-					if ( blockIDfrom < nifFromPtr->nifList.size() && blockIDto < nifToPtr->nifList.size() ) {
-						Niflib::NiObjectRef child = nifFromPtr->nifList[blockIDfrom];
-						Niflib::NiNodeRef node = Niflib::DynamicCast<Niflib::NiNode>(nifToPtr->nifList[blockIDto]);
-						if ( child->GetType().IsDerivedType(Niflib::NiAVObject::TYPE) && node ) {
-							std::stringstream* nifStream = new std::stringstream(std::ios::binary|std::ios::in|std::ios::out);
-							Niflib::WriteNifTree(*nifStream, child, *(nifFromPtr->headerInfo));
-							vector<Niflib::NiObjectRef> copiedBranch = Niflib::ReadNifList(*nifStream, nifFromPtr->headerInfo);
-							if ( !(copiedBranch.empty()) ) {
-								Niflib::NiAVObjectRef childCopy = Niflib::DynamicCast<Niflib::NiAVObject>(copiedBranch[0]);
-								if ( childCopy ) {
-									while ( childCopy->GetParent() ) {
-										childCopy = childCopy->GetParent();
-									}
-									for ( vector<Niflib::NiObjectRef>::iterator i = copiedBranch.begin(); i != copiedBranch.end(); ++i ) {
-										nifToPtr->nifList.push_back(*i);
-										(*i)->internal_block_number = nifToPtr->nifList.size();
-									}
-									node->AddChild(childCopy);
-									*result = 1;
-									dPrintAndLog("NiNodeCopyChild","Branch successfully copied.\n");
-								}
-								else
-									dPrintAndLog("NiNodeCopyChild","Could not find copied child.\n");
-							}
-							else
-								dPrintAndLog("NiNodeCopyChild","Copied branch is empty.\n");
-						}
-						else
-							dPrintAndLog("NiNodeCopyChild","Not a NiNode.\n");
-					}
-					else
-						dPrintAndLog("NiNodeCopyChild","Nif block index out of bounds.\n");
-				}
-				else
-					dPrintAndLog("NiNodeCopyChild","Nif to copy to not editable.\n");
+			try {
+				*result = Util_NiNodeCopyChild(nifFromPtr, blockIDfrom, nifToPtr, blockIDto);
+				nifToPtr->logChange(blockIDto, kNiflibType_NiNode, kNiNodeAct_CopyChild, UIntToString(nifIDfrom) +logValType+ UIntToString(blockIDfrom));
+				dPrintAndLog("NiNodeCopyChild","Branch successfully copied.\n");
 			}
-			else
-				dPrintAndLog("NiNodeCopyChild","Nif not found.\n");
+			catch (std::exception e) {
+				*result = 0;
+				dPrintAndLog("NiNodeCopyChild",e.what());
+			}
 		}
 		else
-			dPrintAndLog("NiNodeCopyChild","Nif not found.\n");
+			dPrintAndLog("NiNodeCopyChild","Nif to copy to not found.\n");
 	}
 	else
 		dPrintAndLog("NiNodeCopyChild","Error extracting arguments.\n");
@@ -354,6 +347,54 @@ UInt32 Util_NiNodeAddChild(NifFile* nifPtr, Niflib::NiNodeRef node, UInt32 typeI
 	}
 	else
 		throw std::exception("Passed type is not derived from NiAVobject.");
+}
+
+UInt32 Util_NiNodeCopyChild(NifFile* nifFromPtr, UInt32 blockIDfrom, NifFile* nifToPtr, UInt32 blockIDto) {
+	try {
+		if ( nifFromPtr->root && nifToPtr->root ) {
+			if ( nifToPtr->editable ) {
+				if ( blockIDfrom < nifFromPtr->nifList.size() && blockIDto < nifToPtr->nifList.size() ) {
+					Niflib::NiNodeRef node = Niflib::DynamicCast<Niflib::NiNode>(nifToPtr->nifList[blockIDto]);
+					Niflib::NiObjectRef child = nifFromPtr->nifList[blockIDfrom];
+					if ( node && child && child->GetType().IsDerivedType(Niflib::NiAVObject::TYPE) ) {
+						std::stringstream* nifStream = new std::stringstream(std::ios::binary|std::ios::in|std::ios::out);
+						Niflib::WriteNifTree(*nifStream, child, *(nifFromPtr->headerInfo));
+						vector<Niflib::NiObjectRef> copiedBranch = Niflib::ReadNifList(*nifStream, nifFromPtr->headerInfo);
+						if ( !(copiedBranch.empty()) ) {
+							Niflib::NiAVObjectRef childCopy = Niflib::DynamicCast<Niflib::NiAVObject>(copiedBranch[0]);
+							if ( childCopy ) {
+								UInt32 copiedStartIndex = nifToPtr->nifList.size();
+								while ( childCopy->GetParent() ) {
+									childCopy = childCopy->GetParent();
+								}
+								for ( vector<Niflib::NiObjectRef>::iterator i = copiedBranch.begin(); i != copiedBranch.end(); ++i ) {
+									nifToPtr->nifList.push_back(*i);
+									(*i)->internal_block_number = nifToPtr->nifList.size();
+								}
+								node->AddChild(childCopy);
+								return copiedStartIndex;
+							}
+							else
+								throw std::exception("Could not find copied child.\n");
+						}
+						else
+							throw std::exception("Copied branch is empty.\n");
+					}
+					else
+						throw std::exception("Not a NiNode.\n");
+				}
+				else
+					throw std::exception("Nif block index out of bounds.\n");
+			}
+			else
+				throw std::exception("Nif to copy to not editable.\n");
+		}
+		else
+			throw std::exception("Nif not found.\n");
+	}
+	catch (std::exception e) {
+		throw std::exception(("Exception \""+string(e.what())+"\" thrown\n").c_str());
+	}
 }
 
 void NifFile::loadChNiNode(UInt32 block, UInt32 act, string& val) {
@@ -386,6 +427,24 @@ void NifFile::loadChNiNode(UInt32 block, UInt32 act, string& val) {
 						}
 						else
 							dPrintAndLog("NifLoad - NiNode","\n\n\t\tBlock #"+val+" out of range! Loaded nif will be incorrect!\n");
+					}
+					break;
+
+				case kNiNodeAct_CopyChild:
+					try {
+						string::size_type i = val.find(logValType);
+						UInt32 nifIDfrom = StringToUInt(val.substr(0, i));
+						NifFile* nifFromPtr = NULL;
+						if ( NifFile::getRegNif(modID, nifIDfrom, nifFromPtr) ) {
+							UInt32 blockIDfrom = StringToUInt(val.substr(i));
+							Util_NiNodeCopyChild(nifFromPtr, blockIDfrom, this, block);
+							dPrintAndLog("NifLoad - NiNode","Child (block #"+UIntToString(blockIDfrom)+" of nif #"+UIntToString(nifIDfrom)+") copied.");
+						}
+						else
+							dPrintAndLog("NifLoad - NiNode","\n\n\t\tNif to copy from not found! Loaded nif will be incorrect!\n");
+					}
+					catch (std::exception e) {
+						dPrintAndLog("NifLoad - NiNode","\n\n\t\t"+string(e.what())+"\t\tLoaded nif will be incorrect!\n");
 					}
 					break;
 

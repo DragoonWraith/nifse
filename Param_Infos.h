@@ -71,61 +71,15 @@ static ParamInfo kParams_OneString_TwoInts_OneOptionalInt[4] =
 
 static ParamInfo kParams_OneArray_OneInt_OneOptionalInt[3] =
 {
-	{	"array ID",	kParamType_Integer, 0 },
+	{	"array",	kParamType_Array, 0 },
 	{	"integer",	kParamType_Integer,	0 },
 	{	"integer",	kParamType_Integer,	1 },
 };
 
 static ParamInfo kParams_OneArray_TwoInts_OneOptionalInt[4] =
 {
-	{	"array ID",	kParamType_Integer, 0 },
+	{	"array",	kParamType_Array, 0 },
 	{	"integer",	kParamType_Integer,	0 },
 	{	"integer",	kParamType_Integer,	0 },
-	{	"integer",	kParamType_Integer,	1 },
-};
-
-static ParamInfo kParams_Vector3f_OneInt_OneOptionalInt[5] =
-{
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"integer",	kParamType_Integer,	0 },
-	{	"integer",	kParamType_Integer,	1 },
-};
-
-static ParamInfo kParams_Matrix33f_OneInt_OneOptionalInt[11] =
-{
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"integer",	kParamType_Integer, 0 },
-	{	"integer",	kParamType_Integer,	1 },
-};
-
-static ParamInfo kParams_Matrix44f_OneInt_OneOptionalInt[18] =
-{
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"float",	kParamType_Float,	0 },
-	{	"integer",	kParamType_Integer, 0 },
 	{	"integer",	kParamType_Integer,	1 },
 };

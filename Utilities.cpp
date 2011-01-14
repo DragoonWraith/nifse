@@ -5,6 +5,7 @@ extern IDebugLog					g_Log			((g_pluginName+".log").c_str());
 extern UInt32						g_pluginVersion	(CURRENT_VERSION);
 extern PluginHandle					g_pluginHandle	(kPluginHandle_Invalid);
 
+extern OBSEScriptInterface*			scrInterface	(NULL);
 extern OBSEArrayVarInterface*		arrInterface	(NULL);
 extern OBSEMessagingInterface*		msgInterface	(NULL);
 extern OBSESerializationInterface*	serInterface	(NULL);

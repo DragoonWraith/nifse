@@ -16,8 +16,14 @@ static bool Cmd_NiObjectGetType_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiObjectRef obj = nifPtr->nifList[blockID];
 					if ( obj ) {
-						*result = getNiflibTypeIndex(obj->GetType());
-						dPrintAndLog("NiObjectGetType","Returning "+UIntToString(*result)+".\n");
+						try {
+							*result = getNiflibTypeIndex(obj->GetType());
+							dPrintAndLog("NiObjectGetType","Returning "+UIntToString(*result)+".\n");
+						}
+						catch (std::exception e) {
+							*result = 0;
+							dPrintAndLog("NiObjectGetType","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiObjectGetType","Bad object.\n");
@@ -60,8 +66,14 @@ static bool Cmd_NiObjectGetTypeName_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiObjectRef obj = nifPtr->nifList[blockID];
 					if ( obj ) {
-						typeStr = obj->GetType().GetTypeName();
-						dPrintAndLog("NiObjectGetTypeName","Returning \""+typeStr+"\".\n");
+						try {
+							typeStr = obj->GetType().GetTypeName();
+							dPrintAndLog("NiObjectGetTypeName","Returning \""+typeStr+"\".\n");
+						}
+						catch (std::exception e) {
+							*result = 0;
+							dPrintAndLog("NiObjectGetTypeName","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiObjectGetTypeName","Bad object.\n");
@@ -113,7 +125,7 @@ static bool Cmd_NiObjectTypeDerivesFrom_Execute(COMMAND_ARGS) {
 							dPrintAndLog("NiObjectTypeDerivesFrom","Returning "+string(isDeriv?"TRUE":"FALSE")+".\n");
 						}
 						catch (std::exception e) {
-							dPrintAndLog("NiObjectTypeDerivesFrom","Niflib type exception: \""+string(e.what())+"\".\n");
+							dPrintAndLog("NiObjectTypeDerivesFrom","Exception \""+string(e.what())+"\" thrown.\n");
 						}
 					}
 					else
