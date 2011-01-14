@@ -5,7 +5,7 @@
 #include <boost/algorithm/string/find.hpp>
 
 static bool Cmd_NiSourceTextureIsExternal_Execute(COMMAND_ARGS) {
-	*result = 0;
+	*result = -1;
 
 	int nifID = -1;
 	UInt32 blockID = 0;
@@ -18,8 +18,14 @@ static bool Cmd_NiSourceTextureIsExternal_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiSourceTextureRef srcTex = Niflib::DynamicCast<Niflib::NiSourceTexture>(nifPtr->nifList[blockID]);
 					if ( srcTex ) {
-						*result = (srcTex->IsTextureExternal()?1:0);
-						dPrintAndLog("NiSourceTextureIsExternal","Returning "+string(srcTex->IsTextureExternal()?"TRUE":"FALSE")+".\n");
+						try {
+							*result = (srcTex->IsTextureExternal()?1:0);
+							dPrintAndLog("NiSourceTextureIsExternal","Returning "+string(srcTex->IsTextureExternal()?"TRUE":"FALSE")+".\n");
+						}
+						catch (std::exception e) {
+							*result = -1;
+							dPrintAndLog("NiSourceTextureIsExternal","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiSourceTextureIsExternal","Not NiSourceTexture.\n");
@@ -62,13 +68,19 @@ static bool Cmd_NiSourceTextureGetFile_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiSourceTextureRef srcTex = Niflib::DynamicCast<Niflib::NiSourceTexture>(nifPtr->nifList[blockID]);
 					if ( srcTex ) {
-						file = srcTex->GetTextureFileName();
-						string fileSub = "";
-						boost::iterator_range<string::iterator> fileRng (boost::ifind_first(file, "textures\\").end(), file.end());
-						for ( string::iterator i = fileRng.begin(); i != fileRng.end(); ++i )
-							fileSub += *i;
-						file = fileSub;
-						dPrintAndLog("NiSourceTextureGetFile","Returning \""+file+"\".\n");
+						try {
+							file = srcTex->GetTextureFileName();
+							string fileSub = "";
+							boost::iterator_range<string::iterator> fileRng (boost::ifind_first(file, "textures\\").end(), file.end());
+							for ( string::iterator i = fileRng.begin(); i != fileRng.end(); ++i )
+								fileSub += *i;
+							file = fileSub;
+							dPrintAndLog("NiSourceTextureGetFile","Returning \""+file+"\".\n");
+						}
+						catch (std::exception e) {
+							file = "";
+							dPrintAndLog("NiSourceTextureGetFile","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiSourceTextureGetFile","Block #"+UIntToString(blockID)+" is not NiSourceTexture.\n");
@@ -113,10 +125,16 @@ static bool Cmd_NiSourceTextureSetExternalTexture_Execute(COMMAND_ARGS) {
 					if ( blockID < nifPtr->nifList.size() ) {
 						Niflib::NiSourceTextureRef srcTex = Niflib::DynamicCast<Niflib::NiSourceTexture>(nifPtr->nifList[blockID]);
 						if ( srcTex ) {
-							*result = 1;
-							srcTex->SetExternalTexture(string("textures\\")+newFile);
-							nifPtr->logChange(blockID,kNiflibType_NiSourceTexture,kNiSrcTexAct_SetExtTex,newFile,true);
-							dPrintAndLog("NiSourceTextureSetExternalTexture","Setting file name to \""+string(newFile)+"\".\n");
+							try {
+								*result = 1;
+								srcTex->SetExternalTexture(string("textures\\")+newFile);
+								nifPtr->logChange(blockID,kNiflibType_NiSourceTexture,kNiSrcTexAct_SetExtTex,newFile,true);
+								dPrintAndLog("NiSourceTextureSetExternalTexture","Setting file name to \""+string(newFile)+"\".\n");
+							}
+							catch (std::exception e) {
+								*result = 0;
+								dPrintAndLog("NiSourceTextureSetExternalTexture","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiSourceTextureSetExternalTexture","Block #"+UIntToString(blockID)+" is not NiSourceTexture.\n");

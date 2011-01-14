@@ -22,8 +22,14 @@ static bool Cmd_NiObjectNETGetName_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiObjectNETRef objNET = Niflib::DynamicCast<Niflib::NiObjectNET>(nifPtr->nifList[blockID]);
 					if ( objNET ) {
-						nameStr = objNET->GetName();
-						dPrintAndLog("NiObjectNETGetName","Returning \""+nameStr+"\".\n");
+						try {
+							nameStr = objNET->GetName();
+							dPrintAndLog("NiObjectNETGetName","Returning \""+nameStr+"\".\n");
+						}
+						catch (std::exception e) {
+							nameStr = "";
+							dPrintAndLog("NiObjectNETGetName","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiObjectNETGetName","Block is not ObjectNET.\n");
@@ -70,10 +76,16 @@ static bool Cmd_NiObjectNETSetName_Execute(COMMAND_ARGS) {
 					if ( blockID < nifPtr->nifList.size() ) {
 						Niflib::NiObjectNETRef objNET = Niflib::DynamicCast<Niflib::NiObjectNET>(nifPtr->nifList[blockID]);
 						if ( objNET ) {
-							*result = 1;
-							objNET->SetName(nuName);
-							dPrintAndLog("NiObjectNETSetName","ObjectNET name set successfully.\n");
-							nifPtr->logChange(blockID, kNiflibType_NiObjectNET, kNiObjNETAct_SetName, nuName, true);
+							try {
+								*result = 1;
+								objNET->SetName(nuName);
+								dPrintAndLog("NiObjectNETSetName","ObjectNET name set successfully.\n");
+								nifPtr->logChange(blockID, kNiflibType_NiObjectNET, kNiObjNETAct_SetName, nuName, true);
+							}
+							catch (std::exception e) {
+								*result = 0;
+								dPrintAndLog("NiObjectNETSetName","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiObjectNETSetName","Block is not ObjectNET.\n");
@@ -107,7 +119,7 @@ DEFINE_CMD_PLUGIN_ALT(
 // returns the number of ExtraData in the NifFile associated
 // with given nifID.
 static bool Cmd_NiObjectNETGetNumExtraData_Execute(COMMAND_ARGS) {
-	*result = 0;
+	*result = -1;
 
 	int nifID = -1;
 	UInt32 blockID = 0;
@@ -120,8 +132,14 @@ static bool Cmd_NiObjectNETGetNumExtraData_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiObjectNETRef objNET = Niflib::DynamicCast<Niflib::NiObjectNET>(nifPtr->nifList[blockID]);
 					if ( objNET ) {
-						*result = objNET->GetExtraData().size();
-						dPrintAndLog("NiObjectNETGetNumExtraData","Returning "+UIntToString(*result)+".\n");
+						try {
+							*result = objNET->GetExtraData().size();
+							dPrintAndLog("NiObjectNETGetNumExtraData","Returning "+UIntToString(*result)+".\n");
+						}
+						catch (std::exception e) {
+							*result = -1;
+							dPrintAndLog("NiObjectNETGetNumExtraData","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiObjectNETGetNumExtraData","Block is not ObjectNET.\n");
@@ -166,11 +184,17 @@ static bool Cmd_NiObjectNETGetExtraData_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiObjectNETRef objNET = Niflib::DynamicCast<Niflib::NiObjectNET>(nifPtr->nifList[blockID]);
 					if ( objNET ) {
-						vector<OBSEElement> edvec = vector<OBSEElement>();
-						list<Niflib::NiExtraDataRef> eds = objNET->GetExtraData();
-						for ( list<Niflib::NiExtraDataRef>::iterator i = eds.begin(); i != eds.end(); ++i )
-							edvec.push_back((*i)->internal_block_number);
-						arr = ArrayFromStdVector(edvec, scriptObj);
+						try {
+							vector<OBSEElement> edvec = vector<OBSEElement>();
+							list<Niflib::NiExtraDataRef> eds = objNET->GetExtraData();
+							for ( list<Niflib::NiExtraDataRef>::iterator i = eds.begin(); i != eds.end(); ++i )
+								edvec.push_back((*i)->internal_block_number);
+							arr = ArrayFromStdVector(edvec, scriptObj);
+						}
+						catch (std::exception e) {
+							arr = NULL;
+							dPrintAndLog("NiObjectNETGetName","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiObjectNETGetExtraData","Block is not ObjectNET.");
@@ -217,14 +241,20 @@ static bool Cmd_NiObjectNETGetExtraDataByName_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiObjectNETRef objNET = Niflib::DynamicCast<Niflib::NiObjectNET>(nifPtr->nifList[blockID]);
 					if ( objNET ) {
-						list<Niflib::NiExtraDataRef> eds = objNET->GetExtraData();
-						for ( list<Niflib::NiExtraDataRef>::iterator i = eds.begin(); i != eds.end(); ++i )
-							if ( (*i)->GetName().compare(edName) == 0 )
-								*result = (*i)->internal_block_number;
-						if ( *result == -1 )
-							dPrintAndLog("NiObjectNETGetExtraDataByName","ExtraData not found.\n");
-						else
-							dPrintAndLog("NiObjectNETGetExtraDataByName","ExtraData found.\n");
+						try {
+							list<Niflib::NiExtraDataRef> eds = objNET->GetExtraData();
+							for ( list<Niflib::NiExtraDataRef>::iterator i = eds.begin(); i != eds.end(); ++i )
+								if ( (*i)->GetName().compare(edName) == 0 )
+									*result = (*i)->internal_block_number;
+							if ( *result == -1 )
+								dPrintAndLog("NiObjectNETGetExtraDataByName","ExtraData not found.\n");
+							else
+								dPrintAndLog("NiObjectNETGetExtraDataByName","ExtraData found.\n");
+						}
+						catch (std::exception e) {
+							*result = -1;
+							dPrintAndLog("NiObjectNETGetExtraDataByName","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiObjectNETGetExtraDataByName","Block is not ObjectNET.\n");
@@ -327,10 +357,16 @@ static bool Cmd_NiObjectNETDeleteExtraData_Execute(COMMAND_ARGS) {
 							if ( edID < nifPtr->nifList.size() ) {
 								Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifPtr->nifList[edID]);
 								if ( ed ) {
-									objNET->RemoveExtraData(ed);
-									*result = 1;
-									dPrintAndLog("NiObjectNETDeleteExtraData","ExtraData deleted.\n");
-									nifPtr->logChange(blockID, kNiflibType_NiObjectNET, kNiObjNETAct_DelED, UIntToString(edID));
+									try {
+										objNET->RemoveExtraData(ed);
+										*result = 1;
+										dPrintAndLog("NiObjectNETDeleteExtraData","ExtraData deleted.\n");
+										nifPtr->logChange(blockID, kNiflibType_NiObjectNET, kNiObjNETAct_DelED, UIntToString(edID));
+									}
+									catch (std::exception e) {
+										*result = 0;
+										dPrintAndLog("NiObjectNETDeleteExtraData","Exception \""+string(e.what())+"\" thrown.\n");
+									}
 								}
 								else
 									dPrintAndLog("NiObjectNETDeleteExtraData","Block not NiExtraData; not deleted. Block type: \""+nifPtr->nifList[edID]->GetType().GetTypeName()+"\".\n");

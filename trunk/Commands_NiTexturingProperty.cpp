@@ -5,7 +5,7 @@
 #include "obj/NiSourceTexture.h"
 
 static bool Cmd_NiTexturingPropertyGetTextureCount_Execute(COMMAND_ARGS) {
-	*result = 0;
+	*result = -1;
 
 	int nifID = -1;
 	UInt32 blockID = 0;
@@ -18,8 +18,14 @@ static bool Cmd_NiTexturingPropertyGetTextureCount_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 					if ( texPr ) {
-						*result = texPr->GetTextureCount();
-						dPrintAndLog("NiTexturingPropertyGetTextureCount","Returning "+UIntToString(*result)+".\n");
+						try {
+							*result = texPr->GetTextureCount();
+							dPrintAndLog("NiTexturingPropertyGetTextureCount","Returning "+UIntToString(*result)+".\n");
+						}
+						catch (std::exception e) {
+							*result = -1;
+							dPrintAndLog("NiTexturingPropertyGetTextureCount","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiTexturingPropertyGetTextureCount","Not a NiTexturingProperty.\n");
@@ -64,10 +70,16 @@ static bool Cmd_NiTexturingPropertySetTextureCount_Execute(COMMAND_ARGS) {
 						if ( blockID < nifPtr->nifList.size() ) {
 							Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 							if ( texPr ) {
-								texPr->SetTextureCount(texCount);
-								*result = 1;
-								dPrintAndLog("NiTexturingPropertySetTextureCount","Texture count set.\n");
-								nifPtr->logChange(blockID, kNiflibType_NiTexturingProperty, kNiTexingPropAct_SetTexCount, UIntToString(texCount), true);
+								try {
+									texPr->SetTextureCount(texCount);
+									*result = 1;
+									dPrintAndLog("NiTexturingPropertySetTextureCount","Texture count set.\n");
+									nifPtr->logChange(blockID, kNiflibType_NiTexturingProperty, kNiTexingPropAct_SetTexCount, UIntToString(texCount), true);
+								}
+								catch (std::exception e) {
+									*result = 0;
+									dPrintAndLog("NiTexturingPropertySetTextureCount","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 							}
 							else
 								dPrintAndLog("NiTexturingPropertySetTextureCount","Not a NiTexturingProperty.\n");
@@ -102,7 +114,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 static bool Cmd_NiTexturingPropertyHasTexture_Execute(COMMAND_ARGS) {
-	*result = 0;
+	*result = -1;
 
 	int texSlot = -1;
 	int nifID = -1;
@@ -117,8 +129,14 @@ static bool Cmd_NiTexturingPropertyHasTexture_Execute(COMMAND_ARGS) {
 					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 					if ( texPr ) {
 						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-							*result = texPr->HasTexture(texSlot);
-							dPrintAndLog("NiTexturingPropertyHasTexture","Returning "+string((*result)!=0?"TRUE":"FALSE")+".\n");
+							try {
+								*result = texPr->HasTexture(texSlot);
+								dPrintAndLog("NiTexturingPropertyHasTexture","Returning "+string((*result)!=0?"TRUE":"FALSE")+".\n");
+							}
+							catch (std::exception e) {
+								*result = -1;
+								dPrintAndLog("NiTexturingPropertyHasTexture","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiTexturingPropertyHasTexture","Texture slot out of range.\n");
@@ -150,7 +168,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 static bool Cmd_NiTexturingPropertyGetTextureSource_Execute(COMMAND_ARGS) {
-	*result = 0;
+	*result = -1;
 
 	int texSlot = -1;
 	int nifID = -1;
@@ -166,14 +184,20 @@ static bool Cmd_NiTexturingPropertyGetTextureSource_Execute(COMMAND_ARGS) {
 					if ( texPr ) {
 						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
 							if ( texPr->HasTexture(texSlot) ) {
-								Niflib::TexDesc texDesc = texPr->GetTexture(texSlot);
-								Niflib::NiSourceTextureRef texSrc = texDesc.source;
-								if ( texSrc ) {
-									*result = texSrc->internal_block_number;
-									dPrintAndLog("NiTexturingPropertyGetTextureSource","Returning block #"+UIntToString(*result)+".\n");
+								try {
+									Niflib::TexDesc texDesc = texPr->GetTexture(texSlot);
+									Niflib::NiSourceTextureRef texSrc = texDesc.source;
+									if ( texSrc ) {
+										*result = texSrc->internal_block_number;
+										dPrintAndLog("NiTexturingPropertyGetTextureSource","Returning block #"+UIntToString(*result)+".\n");
+									}
+									else
+										dPrintAndLog("NiTexturingPropertyGetTextureSource","Bad texture source.\n");
 								}
-								else
-									dPrintAndLog("NiTexturingPropertyGetTextureSource","Bad texture source.\n");
+								catch (std::exception e) {
+									*result = -1;
+									dPrintAndLog("NiTexturingPropertyGetTextureSource","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 							}
 							else
 								dPrintAndLog("NiTexturingPropertyGetTextureSource","Texture slot is empty.\n");
@@ -228,13 +252,19 @@ static bool Cmd_NiTexturingPropertyAddTextureSource_Execute(COMMAND_ARGS) {
 								Niflib::TexDesc desc;
 								desc.source = Niflib::DynamicCast<Niflib::NiSourceTexture>(Niflib::NiSourceTexture::Create());
 								if ( desc.source ) {
-									desc.source->SetExternalTexture(string("textures\\")+file);
-									desc.source->internal_block_number = nifPtr->nifList.size();
-									texPr->SetTexture(texSlot, desc);
-									nifPtr->nifList.push_back(Niflib::StaticCast<Niflib::NiObject>(desc.source));
-									nifPtr->logChange(texPr->internal_block_number, kNiflibType_NiTexturingProperty, kNiTexingPropAct_AddTex, UIntToString(texSlot)+logValType+file);
-									*result = desc.source->internal_block_number;
-									dPrintAndLog("NiTexturingPropertyAddTextureSource","Added new texture.\n");
+									try {
+										desc.source->SetExternalTexture(string("textures\\")+file);
+										desc.source->internal_block_number = nifPtr->nifList.size();
+										texPr->SetTexture(texSlot, desc);
+										nifPtr->nifList.push_back(Niflib::StaticCast<Niflib::NiObject>(desc.source));
+										nifPtr->logChange(texPr->internal_block_number, kNiflibType_NiTexturingProperty, kNiTexingPropAct_AddTex, UIntToString(texSlot)+logValType+file);
+										*result = desc.source->internal_block_number;
+										dPrintAndLog("NiTexturingPropertyAddTextureSource","Added new texture.\n");
+									}
+									catch (std::exception e) {
+										*result = -1;
+										dPrintAndLog("NiTexturingPropertyAddTextureSource","Exception \""+string(e.what())+"\" thrown.\n");
+									}
 								}
 								else
 									dPrintAndLog("NiTexturingPropertyAddTextureSource","Could not create new texture source block.\n");
@@ -288,10 +318,16 @@ static bool Cmd_NiTexturingPropertyDeleteTextureSource_Execute(COMMAND_ARGS) {
 					if ( texPr ) {
 						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
 							if ( texPr->HasTexture(texSlot) ) {
-								texPr->ClearTexture(texSlot);
-								*result = 1;
-								dPrintAndLog("NiTexturingPropertyDeleteTextureSource","Texture source deleted.\n");
-								nifPtr->logChange(blockID, kNiflibType_NiTexturingProperty, kNiTexingPropAct_DelTex, UIntToString(texSlot));
+								try {
+									texPr->ClearTexture(texSlot);
+									*result = 1;
+									dPrintAndLog("NiTexturingPropertyDeleteTextureSource","Texture source deleted.\n");
+									nifPtr->logChange(blockID, kNiflibType_NiTexturingProperty, kNiTexingPropAct_DelTex, UIntToString(texSlot));
+								}
+								catch (std::exception e) {
+									*result = 0;
+									dPrintAndLog("NiTexturingPropertyDeleteTextureSource","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 							}
 							else
 								dPrintAndLog("NiTexturingPropertyDeleteTextureSource","Texture slot empty.\n");
@@ -326,7 +362,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 static bool Cmd_NiTexturingPropertyGetTextureClampMode_Execute(COMMAND_ARGS) {
-	*result = 0;
+	*result = -1;
 
 	int texSlot = -1;
 	int nifID = -1;
@@ -341,8 +377,14 @@ static bool Cmd_NiTexturingPropertyGetTextureClampMode_Execute(COMMAND_ARGS) {
 					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 					if ( texPr ) {
 						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-							*result = texPr->GetTexture(texSlot).clampMode;
-							dPrintAndLog("NiTexturingPropertyGetTextureClampMode","Returning "+UIntToString(*result)+".\n");
+							try {
+								*result = texPr->GetTexture(texSlot).clampMode;
+								dPrintAndLog("NiTexturingPropertyGetTextureClampMode","Returning "+UIntToString(*result)+".\n");
+							}
+							catch (std::exception e) {
+								*result = -1;
+								dPrintAndLog("NiTexturingPropertyGetTextureClampMode","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiTexturingPropertyGetTextureClampMode","Texture slot out of range.\n");
@@ -374,7 +416,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 static bool Cmd_NiTexturingPropertyGetTextureFilterMode_Execute(COMMAND_ARGS) {
-	*result = 0;
+	*result = -1;
 
 	int texSlot = -1;
 	int nifID = -1;
@@ -389,8 +431,14 @@ static bool Cmd_NiTexturingPropertyGetTextureFilterMode_Execute(COMMAND_ARGS) {
 					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 					if ( texPr ) {
 						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-							*result = texPr->GetTexture(texSlot).filterMode;
-							dPrintAndLog("NiTexturingPropertyGetTextureFilterMode","Returning "+UIntToString(*result)+".\n");
+							try {
+								*result = texPr->GetTexture(texSlot).filterMode;
+								dPrintAndLog("NiTexturingPropertyGetTextureFilterMode","Returning "+UIntToString(*result)+".\n");
+							}
+							catch (std::exception e) {
+								*result = -1;
+								dPrintAndLog("NiTexturingPropertyGetTextureFilterMode","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiTexturingPropertyGetTextureFilterMode","Texture slot out of range.\n");
@@ -422,7 +470,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 static bool Cmd_NiTexturingPropertyGetTextureUVSet_Execute(COMMAND_ARGS) {
-	*result = 0;
+	*result = -1;
 
 	int texSlot = -1;
 	int nifID = -1;
@@ -437,8 +485,14 @@ static bool Cmd_NiTexturingPropertyGetTextureUVSet_Execute(COMMAND_ARGS) {
 					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 					if ( texPr ) {
 						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-							*result = texPr->GetTexture(texSlot).uvSet;
-							dPrintAndLog("NiTexturingPropertyGetTextureUVSet","Returning "+UIntToString(*result)+".\n");
+							try {
+								*result = texPr->GetTexture(texSlot).uvSet;
+								dPrintAndLog("NiTexturingPropertyGetTextureUVSet","Returning "+UIntToString(*result)+".\n");
+							}
+							catch (std::exception e) {
+								*result = -1;
+								dPrintAndLog("NiTexturingPropertyGetTextureUVSet","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiTexturingPropertyGetTextureUVSet","Texture slot out of range.\n");
@@ -470,7 +524,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 static bool Cmd_NiTexturingPropertyTextureHasTransform_Execute(COMMAND_ARGS) {
-	*result = 0;
+	*result = -1;
 
 	int texSlot = -1;
 	int nifID = -1;
@@ -485,8 +539,14 @@ static bool Cmd_NiTexturingPropertyTextureHasTransform_Execute(COMMAND_ARGS) {
 					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 					if ( texPr ) {
 						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-							*result = texPr->GetTexture(texSlot).hasTextureTransform;
-							dPrintAndLog("NiTexturingPropertyTextureHasTransform","Returning "+string((*result)!=0?"TRUE":"FALSE")+".\n");
+							try {
+								*result = texPr->GetTexture(texSlot).hasTextureTransform;
+								dPrintAndLog("NiTexturingPropertyTextureHasTransform","Returning "+string((*result)!=0?"TRUE":"FALSE")+".\n");
+							}
+							catch (std::exception e) {
+								*result = -1;
+								dPrintAndLog("NiTexturingPropertyTextureHasTransform","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiTexturingPropertyTextureHasTransform","Texture slot out of range.\n");
@@ -534,10 +594,16 @@ static bool Cmd_NiTexturingPropertyGetTextureTranslation_Execute(COMMAND_ARGS) {
 					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 					if ( texPr ) {
 						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-							map<string,OBSEElement> omap;
-							omap[string("u")] = texPr->GetTexture(texSlot).translation.u;
-							omap[string("v")] = texPr->GetTexture(texSlot).translation.v;
-							arr = StringMapFromStdMap(omap, scriptObj);
+							try {
+								map<string,OBSEElement> omap;
+								omap[string("u")] = texPr->GetTexture(texSlot).translation.u;
+								omap[string("v")] = texPr->GetTexture(texSlot).translation.v;
+								arr = StringMapFromStdMap(omap, scriptObj);
+							}
+							catch (std::exception e) {
+								arr = NULL;
+								dPrintAndLog("NiTexturingPropertyGetTextureTranslation","Exception \""+string(e.what())+"\" thrown.");
+							}
 						}
 						else
 							dPrintAndLog("NiTexturingPropertyGetTextureTranslation","Texture slot out of range.");
@@ -589,10 +655,16 @@ static bool Cmd_NiTexturingPropertyGetTextureTiling_Execute(COMMAND_ARGS) {
 					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 					if ( texPr ) {
 						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-							map<string,OBSEElement> omap;
-							omap[string("u")] = texPr->GetTexture(texSlot).tiling.u;
-							omap[string("v")] = texPr->GetTexture(texSlot).tiling.v;
-							arr = StringMapFromStdMap(omap, scriptObj);
+							try {
+								map<string,OBSEElement> omap;
+								omap[string("u")] = texPr->GetTexture(texSlot).tiling.u;
+								omap[string("v")] = texPr->GetTexture(texSlot).tiling.v;
+								arr = StringMapFromStdMap(omap, scriptObj);
+							}
+							catch (std::exception e) {
+								arr = NULL;
+								dPrintAndLog("NiTexturingPropertyGetTextureFilterMode","Exception \""+string(e.what())+"\" thrown.");
+							}
 						}
 						else
 							dPrintAndLog("NiTexturingPropertyGetTextureTiling","Texture slot out of range.");
@@ -643,8 +715,14 @@ static bool Cmd_NiTexturingPropertyGetTextureRotation_Execute(COMMAND_ARGS) {
 					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 					if ( texPr ) {
 						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-							*result = texPr->GetTexture(texSlot).wRotation;
-							dPrintAndLog("NiTexturingPropertyGetTextureRotation","Returning "+FloatToString(*result)+".\n");
+							try {
+								*result = texPr->GetTexture(texSlot).wRotation;
+								dPrintAndLog("NiTexturingPropertyGetTextureRotation","Returning "+FloatToString(*result)+".\n");
+							}
+							catch (std::exception e) {
+								*result = 0;
+								dPrintAndLog("NiTexturingPropertyGetTextureRotation","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiTexturingPropertyGetTextureRotation","Texture slot out of range.\n");
@@ -692,10 +770,16 @@ static bool Cmd_NiTexturingPropertyGetTextureCenterOffset_Execute(COMMAND_ARGS) 
 					Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 					if ( texPr ) {
 						if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-							map<string,OBSEElement> omap;
-							omap[string("u")] = texPr->GetTexture(texSlot).centerOffset.u;
-							omap[string("v")] = texPr->GetTexture(texSlot).centerOffset.v;
-							arr = StringMapFromStdMap(omap, scriptObj);
+							try {
+								map<string,OBSEElement> omap;
+								omap[string("u")] = texPr->GetTexture(texSlot).centerOffset.u;
+								omap[string("v")] = texPr->GetTexture(texSlot).centerOffset.v;
+								arr = StringMapFromStdMap(omap, scriptObj);
+							}
+							catch (std::exception e) {
+								arr = NULL;
+								dPrintAndLog("NiTexturingPropertyGetTextureCenterOffset","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiTexturingPropertyGetTextureCenterOffset","Texture slot out of range.");
@@ -749,12 +833,18 @@ static bool Cmd_NiTexturingPropertySetTextureClampMode_Execute(COMMAND_ARGS) {
 							Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 							if ( texPr ) {
 								if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-									Niflib::TexDesc desc = texPr->GetTexture(texSlot);
-									desc.clampMode = (Niflib::TexClampMode)clampMode;
-									texPr->SetTexture(texSlot, desc);
-									*result = 1;
-									nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetClampMode,UIntToString(texSlot)+logValType+UIntToString(clampMode),true);
-									dPrintAndLog("NiTexturingPropertySetTextureClampMode","Clamp mode set.\n");
+									try {
+										Niflib::TexDesc desc = texPr->GetTexture(texSlot);
+										desc.clampMode = (Niflib::TexClampMode)clampMode;
+										texPr->SetTexture(texSlot, desc);
+										*result = 1;
+										nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetClampMode,UIntToString(texSlot)+logValType+UIntToString(clampMode),true);
+										dPrintAndLog("NiTexturingPropertySetTextureClampMode","Clamp mode set.\n");
+									}
+									catch (std::exception e) {
+										*result = 0;
+										dPrintAndLog("NiTexturingPropertySetTextureClampMode","Exception \""+string(e.what())+"\" thrown.\n");
+									}
 								}
 								else
 									dPrintAndLog("NiTexturingPropertySetTextureClampMode","Texture slot out of range.\n");
@@ -810,12 +900,18 @@ static bool Cmd_NiTexturingPropertySetTextureFilterMode_Execute(COMMAND_ARGS) {
 							Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 							if ( texPr ) {
 								if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-									Niflib::TexDesc desc = texPr->GetTexture(texSlot);
-									desc.filterMode = (Niflib::TexFilterMode)filterMode;
-									texPr->SetTexture(texSlot, desc);
-									*result = 1;
-									nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetFilterMode,UIntToString(texSlot)+logValType+UIntToString(filterMode),true);
-									dPrintAndLog("NiTexturingPropertySetTextureFilterMode","Filter mode set.\n");
+									try {
+										Niflib::TexDesc desc = texPr->GetTexture(texSlot);
+										desc.filterMode = (Niflib::TexFilterMode)filterMode;
+										texPr->SetTexture(texSlot, desc);
+										*result = 1;
+										nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetFilterMode,UIntToString(texSlot)+logValType+UIntToString(filterMode),true);
+										dPrintAndLog("NiTexturingPropertySetTextureFilterMode","Filter mode set.\n");
+									}
+									catch (std::exception e) {
+										*result = 0;
+										dPrintAndLog("NiTexturingPropertySetTextureFilterMode","Exception \""+string(e.what())+"\" thrown.\n");
+									}
 								}
 								else
 									dPrintAndLog("NiTexturingPropertySetTextureFilterMode","Texture slot out of range.\n");
@@ -871,12 +967,18 @@ static bool Cmd_NiTexturingPropertySetTextureUVSet_Execute(COMMAND_ARGS) {
 							Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 							if ( texPr ) {
 								if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-									Niflib::TexDesc desc = texPr->GetTexture(texSlot);
-									desc.uvSet = uvSet;
-									texPr->SetTexture(texSlot, desc);
-									*result = 1;
-									nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetUVSet,UIntToString(texSlot)+logValType+UIntToString(uvSet),true);
-									dPrintAndLog("NiTexturingPropertySetTextureUVSet","UV Set set.\n");
+									try {
+										Niflib::TexDesc desc = texPr->GetTexture(texSlot);
+										desc.uvSet = uvSet;
+										texPr->SetTexture(texSlot, desc);
+										*result = 1;
+										nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetUVSet,UIntToString(texSlot)+logValType+UIntToString(uvSet),true);
+										dPrintAndLog("NiTexturingPropertySetTextureUVSet","UV Set set.\n");
+									}
+									catch (std::exception e) {
+										*result = 0;
+										dPrintAndLog("NiTexturingPropertySetTextureUVSet","Exception \""+string(e.what())+"\" thrown.\n");
+									}
 								}
 								else
 									dPrintAndLog("NiTexturingPropertySetTextureUVSet","Texture slot out of range.\n");
@@ -931,12 +1033,18 @@ static bool Cmd_NiTexturingPropertySetTextureHasTransform_Execute(COMMAND_ARGS) 
 						Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 						if ( texPr ) {
 							if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-								Niflib::TexDesc desc = texPr->GetTexture(texSlot);
-								desc.hasTextureTransform = (hasTransf!=0);
-								texPr->SetTexture(texSlot, desc);
-								*result = 1;
-								nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetHasTransf,UIntToString(texSlot)+logValType+UIntToString(hasTransf),true);
-								dPrintAndLog("NiTexturingPropertySetTextureHasTransform","Transform use set.\n");
+								try {
+									Niflib::TexDesc desc = texPr->GetTexture(texSlot);
+									desc.hasTextureTransform = (hasTransf!=0);
+									texPr->SetTexture(texSlot, desc);
+									*result = 1;
+									nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetHasTransf,UIntToString(texSlot)+logValType+UIntToString(hasTransf),true);
+									dPrintAndLog("NiTexturingPropertySetTextureHasTransform","Transform use set.\n");
+								}
+								catch (std::exception e) {
+									*result = 0;
+									dPrintAndLog("NiTexturingPropertySetTextureHasTransform","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 							}
 							else
 								dPrintAndLog("NiTexturingPropertySetTextureHasTransform","Texture slot out of range.\n");
@@ -972,16 +1080,14 @@ DEFINE_CMD_PLUGIN_ALT(
 
 static bool Cmd_NiTexturingPropertySetTextureTranslation_Execute(COMMAND_ARGS) {
 	*result = 0;
-	OBSEArray* arr = NULL;
 
-	int arrID = -1;
+	OBSEArray* arr = NULL;
 	int texSlot = -1;
 	int nifID = -1;
 	UInt32 blockID = 0;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &texSlot, &nifID, &blockID)) {
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arr, &texSlot, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
 		dPrintAndLog("NiTexturingPropertySetTextureTranslation","Setting the translation of texture #"+UIntToString(texSlot)+" of the NiTexturingProperty (nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+").");
-		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
 		if ( arr ) {
 			UInt32 arrSize = arrInterface->GetArraySize(arr);
 			if ( arrSize == 2 ) {
@@ -993,15 +1099,21 @@ static bool Cmd_NiTexturingPropertySetTextureTranslation_Execute(COMMAND_ARGS) {
 								Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 								if ( texPr ) {
 									if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-										OBSEElement ele;
-										arrInterface->GetElement(arr, (double)0, ele);
-										double u = ele.Number();
-										arrInterface->GetElement(arr, (double)1, ele);
-										double v = ele.Number();
-										texPr->GetTexture(texSlot).translation.Set(u, v);
-										*result = 1;
-										nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetTransl,UIntToString(texSlot)+logValType+VectorToString(texPr->GetTexture(texSlot).translation),true);
-										dPrintAndLog("NiTexturingPropertySetTextureTranslation","Texture translation set.\n");
+										try {
+											OBSEElement ele;
+											arrInterface->GetElement(arr, (double)0, ele);
+											double u = ele.Number();
+											arrInterface->GetElement(arr, (double)1, ele);
+											double v = ele.Number();
+											texPr->GetTexture(texSlot).translation.Set(u, v);
+											*result = 1;
+											nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetTransl,UIntToString(texSlot)+logValType+VectorToString(texPr->GetTexture(texSlot).translation),true);
+											dPrintAndLog("NiTexturingPropertySetTextureTranslation","Texture translation set.\n");
+										}
+										catch (std::exception e) {
+											*result = 0;
+											dPrintAndLog("NiTexturingPropertySetTextureTranslation","Exception \""+string(e.what())+"\" thrown.\n");
+										}
 									}
 									else
 										dPrintAndLog("NiTexturingPropertySetTextureTranslation","Texture slot out of range.\n");
@@ -1043,16 +1155,14 @@ DEFINE_CMD_PLUGIN_ALT(
 
 static bool Cmd_NiTexturingPropertySetTextureTiling_Execute(COMMAND_ARGS) {
 	*result = 0;
-	OBSEArray* arr = NULL;
 
-	int arrID = -1;
+	OBSEArray* arr = NULL;
 	int texSlot = -1;
 	int nifID = -1;
 	UInt32 blockID = 0;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &texSlot, &nifID, &blockID)) {
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arr, &texSlot, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
 		dPrintAndLog("NiTexturingPropertySetTextureTiling","Setting the tiling of texture #"+UIntToString(texSlot)+" of the NiTexturingProperty (nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+").");
-		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
 		if ( arr ) {
 			UInt32 arrSize = arrInterface->GetArraySize(arr);
 			if ( arrSize == 2 ) {
@@ -1064,15 +1174,21 @@ static bool Cmd_NiTexturingPropertySetTextureTiling_Execute(COMMAND_ARGS) {
 								Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 								if ( texPr ) {
 									if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-										OBSEElement ele;
-										arrInterface->GetElement(arr, (double)0, ele);
-										double u = ele.Number();
-										arrInterface->GetElement(arr, (double)1, ele);
-										double v = ele.Number();
-										texPr->GetTexture(texSlot).tiling.Set(u, v);
-										*result = 1;
-										nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetTiling,UIntToString(texSlot)+logValType+VectorToString(texPr->GetTexture(texSlot).translation),true);
-										dPrintAndLog("NiTexturingPropertySetTextureTiling","Texture tiling set.\n");
+										try {
+											OBSEElement ele;
+											arrInterface->GetElement(arr, (double)0, ele);
+											double u = ele.Number();
+											arrInterface->GetElement(arr, (double)1, ele);
+											double v = ele.Number();
+											texPr->GetTexture(texSlot).tiling.Set(u, v);
+											*result = 1;
+											nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetTiling,UIntToString(texSlot)+logValType+VectorToString(texPr->GetTexture(texSlot).translation),true);
+											dPrintAndLog("NiTexturingPropertySetTextureTiling","Texture tiling set.\n");
+										}
+										catch (std::exception e) {
+											*result = 0;
+											dPrintAndLog("NiTexturingPropertySetTextureTiling","Exception \""+string(e.what())+"\" thrown.\n");
+										}
 									}
 									else
 										dPrintAndLog("NiTexturingPropertySetTextureTiling","Texture slot out of range.\n");
@@ -1130,12 +1246,18 @@ static bool Cmd_NiTexturingPropertySetTextureRotation_Execute(COMMAND_ARGS) {
 						Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 						if ( texPr ) {
 							if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-								Niflib::TexDesc desc = texPr->GetTexture(texSlot);
-								desc.wRotation = rotation;
-								texPr->SetTexture(texSlot, desc);
-								*result = 1;
-								nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetRot,UIntToString(texSlot)+logValType+FloatToString(rotation),true);
-								dPrintAndLog("NiTexturingPropertySetTextureRotation","Texture rotation set.\n");
+								try {
+									Niflib::TexDesc desc = texPr->GetTexture(texSlot);
+									desc.wRotation = rotation;
+									texPr->SetTexture(texSlot, desc);
+									*result = 1;
+									nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetRot,UIntToString(texSlot)+logValType+FloatToString(rotation),true);
+									dPrintAndLog("NiTexturingPropertySetTextureRotation","Texture rotation set.\n");
+								}
+								catch (std::exception e) {
+									*result = 0;
+									dPrintAndLog("NiTexturingPropertySetTextureRotation","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 							}
 							else
 								dPrintAndLog("NiTexturingPropertySetTextureRotation","Texture slot out of range.\n");
@@ -1171,16 +1293,14 @@ DEFINE_CMD_PLUGIN_ALT(
 
 static bool Cmd_NiTexturingPropertySetTextureCenterOffset_Execute(COMMAND_ARGS) {
 	*result = 0;
-	OBSEArray* arr = NULL;
 
-	int arrID = -1;
+	OBSEArray* arr = NULL;
 	int texSlot = -1;
 	int nifID = -1;
 	UInt32 blockID = 0;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &texSlot, &nifID, &blockID)) {
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arr, &texSlot, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
 		dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Setting the center offset of texture #"+UIntToString(texSlot)+" of the NiTexturingProperty (nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+").");
-		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
 		if ( arr ) {
 			UInt32 arrSize = arrInterface->GetArraySize(arr);
 			if ( arrSize == 2 ) {
@@ -1192,15 +1312,21 @@ static bool Cmd_NiTexturingPropertySetTextureCenterOffset_Execute(COMMAND_ARGS) 
 								Niflib::NiTexturingPropertyRef texPr = Niflib::DynamicCast<Niflib::NiTexturingProperty>(nifPtr->nifList[blockID]);
 								if ( texPr ) {
 									if ( Niflib::BASE_MAP <= texSlot && texSlot <= texPr->GetTextureCount() ) {
-										OBSEElement ele;
-										arrInterface->GetElement(arr, (double)0, ele);
-										double u = ele.Number();
-										arrInterface->GetElement(arr, (double)1, ele);
-										double v = ele.Number();
-										texPr->GetTexture(texSlot).centerOffset.Set(u, v);
-										*result = 1;
-										nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetCenOff,UIntToString(texSlot)+logValType+VectorToString(texPr->GetTexture(texSlot).translation),true);
-										dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Texture center offset set.\n");
+										try {
+											OBSEElement ele;
+											arrInterface->GetElement(arr, (double)0, ele);
+											double u = ele.Number();
+											arrInterface->GetElement(arr, (double)1, ele);
+											double v = ele.Number();
+											texPr->GetTexture(texSlot).centerOffset.Set(u, v);
+											*result = 1;
+											nifPtr->logChange(blockID,kNiflibType_NiTexturingProperty,kNiTexingPropAct_SetCenOff,UIntToString(texSlot)+logValType+VectorToString(texPr->GetTexture(texSlot).translation),true);
+											dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Texture center offset set.\n");
+										}
+										catch (std::exception e) {
+											*result = 0;
+											dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Exception \""+string(e.what())+"\" thrown.\n");
+										}
 									}
 									else
 										dPrintAndLog("NiTexturingPropertySetTextureCenterOffset","Texture slot out of range.\n");

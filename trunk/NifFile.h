@@ -29,7 +29,6 @@ public:
 	Niflib::NifInfo* headerInfo;
 
 
-
 	NifFile();
 	NifFile(const string& file, UInt8 modIndex = 255, bool editable = false);
 	NifFile(const string& oriPath, const string& altPath);
@@ -38,6 +37,7 @@ public:
 	~NifFile();
 
 	void loadNif();
+	void readNif();
 	Niflib::NiNodeRef findRoot();
 
 	string getAbsPath() const;
@@ -78,9 +78,3 @@ const char logType = '-';
 const char logAction = '=';
 const char logValType = '|';
 const char logValue = '\n';
-
-// Utility function, determines if Nif is (0) missing, (1) in a folder, (2) in an archive, or (3) in RegList
-UInt32 CheckFileLocation(string path, NifFile* nifPtr = NULL);
-
-// Utility function for reading nif out of a file, a BSA archive, or the RegList
-void WriteNifToStream(string path, UInt32& loc, std::iostream* stream);

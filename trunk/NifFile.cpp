@@ -1,4 +1,5 @@
 #include "NifFile.h"
+#include "BSfile.h"
 
 map < UInt8, map < UInt32, NifFile* > > NifFile::RegList = map < UInt8, map < UInt32, NifFile* > >();
 map <string, pair<UInt8, UInt32>* > NifFile::RegListByFilename = map <string, pair<UInt8, UInt32>* >();
@@ -23,10 +24,6 @@ NifFile::NifFile(const string& file, UInt8 modIndex, bool forEdit) : filePath(fi
 			basePath = filePath;
 			filePath = string(s_nifSEPath) + string((*g_dataHandler)->GetNthModName(modID)).substr(0,string((*g_dataHandler)->GetNthModName(modID)).length()-4) + string("_") + UIntToString(nifID) + ".nif";
 			RegListByFilename[filePath.substr(s_nifSEPathLen,filePath.length()-s_nifSEPathLen)] = new pair<UInt8, UInt32>(modID, nifID);
-
-			string firstTest = filePath.substr(s_nifSEPathLen);
-			firstTest.insert(firstTest.length()-4,"_first");
-			Niflib::WriteNifTree(getAbsPath(firstTest),root,*headerInfo);
 		}
 		else
 			RegListByFilename[filePath] = new pair<UInt8, UInt32>(modID, nifID);
@@ -118,7 +115,7 @@ NifFile::~NifFile() {
 	if ( RegList.find(modID) != RegList.end() ) {
 		if ( RegList[modID].find(nifID) != RegList[modID].end() ) {
 			RegListByFilename.erase(RegList[modID][nifID]->filePath);
-			RegList[modID].erase(nifID);
+			RegList[modID][nifID] = NULL;
 		}
 		if ( RegList[modID].empty() )
 			RegList.erase(modID);
@@ -127,14 +124,11 @@ NifFile::~NifFile() {
 		delete headerInfo;
 }
 
-// this actually reads the Nif in.
+// this calls readNif and then sets up the NifFile with the result
 void NifFile::loadNif() {
 	dPrintAndLog("NifFile.loadNif","Loading \""+filePath+"\"!");
-	std::stringstream* nifStream = new std::stringstream(std::ios::binary|std::ios::in|std::ios::out);
 	try {
-		WriteNifToStream(filePath, loc, nifStream);
-		nifList = Niflib::ReadNifList(*nifStream,headerInfo);
-		nifSize = nifList.size();
+		readNif();
 		try {
 			findRoot();
 			nifVersion = headerInfo->version;
@@ -149,20 +143,74 @@ void NifFile::loadNif() {
 		dPrintAndLog("NifFile.loadNif","Nif cannot be read. Exception \""+string(except.what())+"\" thrown.");
 		nifID = -1;
 	}
-	delete nifStream;
+}
+
+// this actually reads the nif in.
+void NifFile::readNif() {
+	std::stringstream* stream = new std::stringstream(std::ios::binary|std::ios::in|std::ios::out);
+	BSfile* nifBSfile = loadBSfile(("Data\\Meshes\\"+filePath).c_str(), 0, 0x2800);
+	NifFile* nifPtr = NULL;
+	std::exception* e = NULL;
+	if ( nifBSfile ) {
+		const char* buffer = NULL;
+		try {
+			UInt32 size = nifBSfile->GetSize();
+			buffer = new const char[size];
+			UInt32 readCount = nifBSfile->Read((void*)buffer, size);
+			dPrintAndLog("NifFile.readNif", "Read "+UIntToString(readCount)+" of "+UIntToString(size)+" bytes.");
+			stream->write(buffer, size);
+		}
+		catch (std::exception except) {
+			e = new std::exception(except);
+		}
+		if ( nifBSfile )
+			nifBSfile->Destructor(true);
+		if ( buffer )
+			delete [] buffer;
+	}
+	else if ( NifFile::getRegNif(filePath, nifPtr) ) {
+		if ( nifPtr->root ) {
+			try {
+				Niflib::WriteNifTree(*stream, nifPtr->root, *(nifPtr->headerInfo));
+			}
+			catch (std::exception except) {
+				e = new std::exception(except);
+			}
+		}
+		else {
+			e = new std::exception("Nif root bad.");
+		}
+	}
+	else {
+		e = new std::exception("Nif not found.");
+	}
+	if ( e ) {
+		std::exception except = *e;
+		delete e;
+		throw except;
+	}
+	try {
+		nifList = Niflib::ReadNifList(*stream, headerInfo);
+		nifSize = nifList.size();
+	}
+	catch (std::exception except) {
+		throw except;
+	}
 }
 
 // returns NifFile associated with given mod and index.
 bool NifFile::getRegNif(UInt8 modID, UInt32 nifID, NifFile* &nifPtr) {
 	if ( RegList.find(modID) != RegList.end() ) {
 		if ( RegList[modID].find(nifID) != RegList[modID].end() ) {
-			if ( RegList[modID][nifID]->root ) {
-				dPrintAndLog("NifFile::getRegNif","Nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" found.");
+	//		if ( RegList[modID][nifID]->root ) {
+	//			dPrintAndLog("NifFile::getRegNif","Nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+"'s root is good.");
+			if ( RegList[modID][nifID] ) {
 				nifPtr = RegList[modID][nifID];
 				return true;
 			}
 			else {
-				dPrintAndLog("NifFile::getRegNif","Nif root is no good.");
+	//			dPrintAndLog("NifFile::getRegNif","Nif root is no good.");
+				dPrintAndLog("NifFile::getRegNif","Nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" has been deleted.");
 				return false;
 			}
 		}
@@ -360,119 +408,4 @@ void NifFile::clrChange(const UInt32 &block, const UInt32 &type, const UInt32 &a
 	UInt32 changePos = delta.find(UIntToString(block)+logNode+UIntToString(type)+logType+UIntToString(action)+logAction);
 	if ( changePos != delta.npos )
 		delta.erase(changePos, delta.find(logValue,changePos)+1-changePos);
-}
-
-// Extended version of FindFile that also checks RegList.
-// To avoid going through RegList twice, can store the nif
-// in a pointer, if passed.
-UInt32 CheckFileLocation(string path, NifFile* nifPtr) {
-	UInt32 loc = (*g_FileFinder)->FindFile(("Data\\Meshes\\"+path).c_str(),0,0,-1);
-	if ( loc == 0 ) {
-		if ( NifFile::getRegNif(path, nifPtr) )
-			if ( nifPtr->root )
-				loc = 3;
-			else
-				dPrintAndLog("CheckFileLocation","Nif root bad!");
-	}
-	dPrintAndLog("CheckFileLocation","File \""+path+"\" "+(loc==0?("not found!"):(loc==1?("found in folders!"):(loc==2?("found in BSA!"):(loc==3?("found in RegList!"):("returned unknown location!"))))));
-	return loc;
-}
-
-void WriteNifToStream(string path, UInt32& loc, std::iostream* stream) {
-	loc = CheckFileLocation(path);
-	if ( loc == 0 ) {
-		throw exception(string("Nif \""+path+"\" not found.").c_str());
-	}
-	else if ( loc == 1 ) {
-		std::ifstream file ((GetOblivionDirectory()+"Data\\Meshes\\"+path).c_str(), std::ios::in|std::ios::out|std::ios::binary);
-		if ( file.is_open() )
-			*stream << file.rdbuf();
-		else
-			dPrintAndLog("WriteNifToStream","File \""+path+"\" could not be read.");
-		file.close();
-	}
-	else if ( loc == 2 ) {
-		UInt32 fileNum = 0;
-		unsigned int size = 0;
-		TES4BSA_Archive * BSA = NULL;
-		char* buf = NULL;
-		for ( BSAit = BSAlist.begin(); BSAit != BSAlist.end(); ++BSAit ) {
-			try {
-				BSA = new TES4BSA_Archive((*BSAit).c_str());
-				if ( BSA->GetFileCount() > 0 ) {
-					try {
-						fileNum = BSA->FindFileNumber(("Meshes\\"+path).c_str());
-						try {
-							size = BSA->GetFileSize(fileNum);
-							buf = new char[size];
-						}
-						catch (std::bad_alloc& ba) {
-							try {
-								dPrintAndLog("WriteNifToStream","Failed to allocate enough memory - size may be wrong. Going to try flipping the compression bit and recalculating.");
-								BSA->CompressionBitWrong(fileNum);
-								size = BSA->GetFileSize(fileNum);
-								buf = new char[size];
-							}
-							catch (exception& except) {
-								dPrintAndLog("WriteNifToStream","Failed to determine nif file size in BSA \""+(*BSAit)+"\". Exceptions \""+string(ba.what())+"\" and \""+string(except.what())+"\" thrown.");
-								continue;
-							}
-						}
-						catch (std::exception& except) {
-							dPrintAndLog("WriteNifToStream","Failed to determine nif file size in BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
-							continue;
-						}
-						try {
-							BSA->GetFileData(fileNum, buf);
-						}
-						catch (exception& exceptOne) {
-							try {
-								dPrintAndLog("WriteNifToStream","Failed to read data; going to try flipping the compression bit and recalculating.");
-								BSA->CompressionBitWrong(fileNum);
-								size = BSA->GetFileSize(fileNum);
-								delete [] buf;
-								buf = new char[size];
-								BSA->GetFileData(fileNum, buf);
-							}
-							catch (std::exception& exceptTwo) {
-								dPrintAndLog("WriteNifToStream","Failed to read nif data in BSA \""+(*BSAit)+"\". Exceptions \""+string(exceptOne.what())+"\" and \""+string(exceptTwo.what())+"\" thrown.");
-								delete [] buf;
-								continue;
-							}
-						}
-						stream->write(buf, size);
-						dPrintAndLog("WriteNifToStream","Successfully read nif data in BSA \""+(*BSAit)+"\". Buffer length is "+UIntToString(size)+".");
-						delete [] buf;
-						break;
-					}
-					catch (...) {
-						continue;
-					}
-				}
-				else
-					continue;
-				delete BSA;
-			}
-			catch (exception& except) {
-				dPrintAndLog("WriteNifToStream","Failed to open BSA \""+(*BSAit)+"\". Exception \""+string(except.what())+"\" thrown.");
-				continue;
-			}
-		}
-		if ( size == 0 )
-			throw exception("Nif not found in BSAs.");
-	}
-	else if ( loc == 3 ) {
-		NifFile* nifPtr = NULL;
-		NifFile::getRegNif(path, nifPtr);
-		if ( nifPtr->root ) {
-			std::stringstream ostr (std::ios::binary|std::ios::in|std::ios::out);
-			try { Niflib::WriteNifTree(ostr, nifPtr->root, *(nifPtr->headerInfo)); } catch (std::exception except) { throw except; }
-			std::ofstream newFile ((GetOblivionDirectory()+"Data\\Meshes\\DW\\NifSE\\"+path).c_str(), std::ios::binary|std::ios::out);
-			*stream << ostr.str();
-		}
-		else
-			throw exception("Nif root bad!");
-	}
-	else
-		throw exception(string("Nif location unknown. CheckLocation return value is "+UIntToString(loc)+".").c_str());
 }

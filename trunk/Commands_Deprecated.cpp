@@ -51,12 +51,28 @@ string ToggleTag(string path, string element, string newVal) {
 	return path;
 }
 
+// Extended version of FindFile that also checks RegList.
+// To avoid going through RegList twice, can store the nif
+// in a pointer, if passed.
+UInt32 CheckFileLocation(string path, NifFile* nifPtr = NULL) {
+        UInt32 loc = (*g_FileFinder)->FindFile(("Data\\Meshes\\"+path).c_str(),0,0,-1);
+        if ( loc == 0 ) {
+                if ( NifFile::getRegNif(path, nifPtr) )
+                        if ( nifPtr->root )
+                                loc = 3;
+                        else
+                                dPrintAndLog("CheckFileLocation","Nif root bad!");
+        }
+        dPrintAndLog("CheckFileLocation","File \""+path+"\" "+(loc==0?("not found!"):(loc==1?("found in folders!"):(loc==2?("found in BSA!"):(loc==3?("found in RegList!"):("returned unknown location!"))))));
+        return loc;
+}
+
 static bool Cmd_NifGetAltGrip_Execute(COMMAND_ARGS) { // returns path to model using opposite number of hands
 	dPrintAndLog("NifGetAltGrip");
 	TESForm* form = NULL;
 	string altPath = " ";
 
-	if (ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form))
+	if (scrInterface->ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form))
 	{
 		if ( !form )
 			if ( thisObj )
@@ -136,7 +152,7 @@ static bool Cmd_NifGetOffHand_Execute(COMMAND_ARGS) {
 	string altPath = " ";
 
 	TESForm* form = NULL;
-	if (ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form))
+	if (scrInterface->ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form))
 	{
 		if ( !form )
 			if ( thisObj )
@@ -221,7 +237,7 @@ static bool Cmd_NifGetBackShield_Execute(COMMAND_ARGS) {
 	string altPath = " ";
 
 	TESForm * form = NULL;
-	if ( ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form) ) {
+	if ( scrInterface->ExtractArgsEx(paramInfo, arg1, opcodeOffsetPtr, scriptObj, eventList, &form) ) {
 		if ( !form )
 			if ( thisObj )
 				form = thisObj->baseForm;

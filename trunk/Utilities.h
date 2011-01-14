@@ -35,10 +35,6 @@ using std::exception;
 using std::iostream;
 #include <sstream>
 
-#include "BSA Browser\include\tes_bsa.h"
-#include "BSA Browser\include\tes4_bsa.h"
-using TES_BSA::TES4BSA_Archive;
-
 #include "Versioning.h"
 
 extern string				g_pluginName;
@@ -47,6 +43,7 @@ extern UInt32				g_pluginVersion;
 extern PluginHandle			g_pluginHandle;
 
 // various OBSE interfaces
+extern OBSEScriptInterface * scrInterface;
 extern OBSEArrayVarInterface* arrInterface;
 extern OBSEMessagingInterface* msgInterface;
 extern OBSESerializationInterface* serInterface;

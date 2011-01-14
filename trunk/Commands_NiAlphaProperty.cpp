@@ -16,8 +16,14 @@ static bool Cmd_NiAlphaPropertyGetBlendState_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 					if ( alphaPr ) {
-						*result = alphaPr->GetBlendState();
-						dPrintAndLog("NiAlphaPropertyGetBlendState","Returning "+string(*result!=0?"TRUE":"FALSE")+".\n");
+						try {
+							*result = alphaPr->GetBlendState();
+							dPrintAndLog("NiAlphaPropertyGetBlendState","Returning "+string(*result!=0?"TRUE":"FALSE")+".\n");
+						}
+						catch (std::exception e) {
+							*result = 0;
+							dPrintAndLog("NiAlphaPropertyGetBlendState","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiAlphaPropertyGetBlendState","Not a NiAlphaProperty.\n");
@@ -59,8 +65,14 @@ static bool Cmd_NiAlphaPropertyGetSourceBlendFunction_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 					if ( alphaPr ) {
-						*result = alphaPr->GetSourceBlendFunc();
-						dPrintAndLog("NiAlphaPropertyGetSourceBlendFunction","Returning "+UIntToString(*result)+".\n");
+						try {
+							*result = alphaPr->GetSourceBlendFunc();
+							dPrintAndLog("NiAlphaPropertyGetSourceBlendFunction","Returning "+UIntToString(*result)+".\n");
+						}
+						catch (std::exception e) {
+							*result = 0;
+							dPrintAndLog("NiAlphaPropertyGetSourceBlendFunction","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiAlphaPropertyGetSourceBlendFunction","Not a NiAlphaProperty.\n");
@@ -102,8 +114,14 @@ static bool Cmd_NiAlphaPropertyGetDestinationBlendFunction_Execute(COMMAND_ARGS)
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 					if ( alphaPr ) {
-						*result = alphaPr->GetDestBlendFunc();
-						dPrintAndLog("NiAlphaPropertyGetDestinationBlendFunction","Returning "+UIntToString(*result)+".\n");
+						try {
+							*result = alphaPr->GetDestBlendFunc();
+							dPrintAndLog("NiAlphaPropertyGetDestinationBlendFunction","Returning "+UIntToString(*result)+".\n");
+						}
+						catch (std::exception e) {
+							*result = 0;
+							dPrintAndLog("NiAlphaPropertyGetDestinationBlendFunction","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiAlphaPropertyGetDestinationBlendFunction","Not a NiAlphaProperty.\n");
@@ -145,8 +163,14 @@ static bool Cmd_NiAlphaPropertyGetTestState_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 					if ( alphaPr ) {
-						*result = alphaPr->GetTestState();
-						dPrintAndLog("NiAlphaPropertyGetTestState","Returning "+UIntToString(*result)+".\n");
+						try {
+							*result = alphaPr->GetTestState();
+							dPrintAndLog("NiAlphaPropertyGetTestState","Returning "+UIntToString(*result)+".\n");
+						}
+						catch (std::exception e) {
+							*result = 0;
+							dPrintAndLog("NiAlphaPropertyGetTestState","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiAlphaPropertyGetTestState","Not a NiAlphaProperty.\n");
@@ -188,8 +212,14 @@ static bool Cmd_NiAlphaPropertyGetTestFunction_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 					if ( alphaPr ) {
-						*result = alphaPr->GetTestFunc();
-						dPrintAndLog("NiAlphaPropertyGetTestFunction","Returning "+UIntToString(*result)+".\n");
+						try {
+							*result = alphaPr->GetTestFunc();
+							dPrintAndLog("NiAlphaPropertyGetTestFunction","Returning "+UIntToString(*result)+".\n");
+						}
+						catch (std::exception e) {
+							*result = 0;
+							dPrintAndLog("NiAlphaPropertyGetTestFunction","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiAlphaPropertyGetTestFunction","Not a NiAlphaProperty.\n");
@@ -231,8 +261,14 @@ static bool Cmd_NiAlphaPropertyGetTestThreshold_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 					if ( alphaPr ) {
-						*result = alphaPr->GetTestThreshold();
-						dPrintAndLog("NiAlphaPropertyGetTestThreshold","Returning "+UIntToString(*result)+".\n");
+						try {
+							*result = alphaPr->GetTestThreshold();
+							dPrintAndLog("NiAlphaPropertyGetTestThreshold","Returning "+UIntToString(*result)+".\n");
+						}
+						catch (std::exception e) {
+							*result = 0;
+							dPrintAndLog("NiAlphaPropertyGetTestThreshold","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiAlphaPropertyGetTestThreshold","Not a NiAlphaProperty.\n");
@@ -274,8 +310,14 @@ static bool Cmd_NiAlphaPropertyGetTriangleSortMode_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 					if ( alphaPr ) {
-						*result = alphaPr->GetTriangleSortMode();
-						dPrintAndLog("NiAlphaPropertyGetTriangleSortMode","Returning "+string(*result!=0?"TRUE":"FALSE")+".\n");
+						try {
+							*result = alphaPr->GetTriangleSortMode();
+							dPrintAndLog("NiAlphaPropertyGetTriangleSortMode","Returning "+string(*result!=0?"TRUE":"FALSE")+".\n");
+						}
+						catch (std::exception e) {
+							*result = 0;
+							dPrintAndLog("NiAlphaPropertyGetTriangleSortMode","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiAlphaPropertyGetTriangleSortMode","Not a NiAlphaProperty.\n");
@@ -319,10 +361,16 @@ static bool Cmd_NiAlphaPropertySetBlendState_Execute(COMMAND_ARGS) {
 					if ( blockID < nifPtr->nifList.size() ) {
 						Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 						if ( alphaPr ) {
-							alphaPr->SetBlendState(blend!=0);
-							*result = 1;
-							nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetBlendState, UIntToString(blend), true);
-							dPrintAndLog("NiAlphaPropertySetBlendState","Blend state set.\n");
+							try {
+								alphaPr->SetBlendState(blend!=0);
+								*result = 1;
+								nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetBlendState, UIntToString(blend), true);
+								dPrintAndLog("NiAlphaPropertySetBlendState","Blend state set.\n");
+							}
+							catch (std::exception e) {
+								*result = 0;
+								dPrintAndLog("NiAlphaPropertySetBlendState","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiAlphaPropertySetBlendState","Not a NiAlphaProperty.\n");
@@ -370,10 +418,16 @@ static bool Cmd_NiAlphaPropertySetSourceBlendFunction_Execute(COMMAND_ARGS) {
 						if ( blockID < nifPtr->nifList.size() ) {
 							Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 							if ( alphaPr ) {
-								alphaPr->SetSourceBlendFunc((Niflib::NiAlphaProperty::BlendFunc)blendFunc);
-								*result = 1;
-								nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetSrcBlendFunc, UIntToString(blendFunc), true);
-								dPrintAndLog("NiAlphaPropertySetSourceBlendFunction","Source blend function set.\n");
+								try {
+									alphaPr->SetSourceBlendFunc((Niflib::NiAlphaProperty::BlendFunc)blendFunc);
+									*result = 1;
+									nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetSrcBlendFunc, UIntToString(blendFunc), true);
+									dPrintAndLog("NiAlphaPropertySetSourceBlendFunction","Source blend function set.\n");
+								}
+								catch (std::exception e) {
+									*result = 0;
+									dPrintAndLog("NiAlphaPropertySetSourceBlendFunction","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 							}
 							else
 								dPrintAndLog("NiAlphaPropertySetSourceBlendFunction","Not a NiAlphaProperty.\n");
@@ -424,10 +478,16 @@ static bool Cmd_NiAlphaPropertySetDestinationBlendFunction_Execute(COMMAND_ARGS)
 						if ( blockID < nifPtr->nifList.size() ) {
 							Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 							if ( alphaPr ) {
-								alphaPr->SetDestBlendFunc((Niflib::NiAlphaProperty::BlendFunc)blendFunc);
-								*result = 1;
-							nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetDestBlendFunc, UIntToString(blendFunc), true);
-								dPrintAndLog("NiAlphaPropertyGetDestinationBlendFunction","Destination blend function set.\n");
+								try {
+									alphaPr->SetDestBlendFunc((Niflib::NiAlphaProperty::BlendFunc)blendFunc);
+									*result = 1;
+									nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetDestBlendFunc, UIntToString(blendFunc), true);
+									dPrintAndLog("NiAlphaPropertyGetDestinationBlendFunction","Destination blend function set.\n");
+								}
+								catch (std::exception e) {
+									*result = 0;
+									dPrintAndLog("NiAlphaPropertyGetDestinationBlendFunction","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 							}
 							else
 								dPrintAndLog("NiAlphaPropertyGetDestinationBlendFunction","Not a NiAlphaProperty.\n");
@@ -477,10 +537,16 @@ static bool Cmd_NiAlphaPropertySetTestState_Execute(COMMAND_ARGS) {
 					if ( blockID < nifPtr->nifList.size() ) {
 						Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 						if ( alphaPr ) {
-							alphaPr->SetTestState(test!=0);
-							*result = 1;
-							nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetTestState, UIntToString(test), true);
-							dPrintAndLog("NiAlphaPropertySetTestState","Test state set.\n");
+							try {
+								alphaPr->SetTestState(test!=0);
+								*result = 1;
+								nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetTestState, UIntToString(test), true);
+								dPrintAndLog("NiAlphaPropertySetTestState","Test state set.\n");
+							}
+							catch (std::exception e) {
+								*result = 0;
+								dPrintAndLog("NiAlphaPropertySetTestState","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiAlphaPropertySetTestState","Not a NiAlphaProperty.\n");
@@ -528,10 +594,16 @@ static bool Cmd_NiAlphaPropertySetTestFunction_Execute(COMMAND_ARGS) {
 						if ( blockID < nifPtr->nifList.size() ) {
 							Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 							if ( alphaPr ) {
-								alphaPr->SetTestFunc((Niflib::NiAlphaProperty::TestFunc)testFunc);
-								*result = 1;
-							nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetTestFunc, UIntToString(testFunc), true);
-								dPrintAndLog("NiAlphaPropertySetTestFunction","Test function set.\n");
+								try {
+									alphaPr->SetTestFunc((Niflib::NiAlphaProperty::TestFunc)testFunc);
+									*result = 1;
+									nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetTestFunc, UIntToString(testFunc), true);
+									dPrintAndLog("NiAlphaPropertySetTestFunction","Test function set.\n");
+								}
+								catch (std::exception e) {
+									*result = 0;
+									dPrintAndLog("NiAlphaPropertySetTestFunction","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 							}
 							else
 								dPrintAndLog("NiAlphaPropertySetTestFunction","Not a NiAlphaProperty.\n");
@@ -581,10 +653,16 @@ static bool Cmd_NiAlphaPropertySetTestThreshold_Execute(COMMAND_ARGS) {
 					if ( blockID < nifPtr->nifList.size() ) {
 						Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 						if ( alphaPr ) {
-							alphaPr->SetTestThreshold(thresh);
-							*result = 1;
-							nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetTestThreshold, UIntToString(thresh), true);
-							dPrintAndLog("NiAlphaPropertySetTestThreshold","Test threshold set.\n");
+							try {
+								alphaPr->SetTestThreshold(thresh);
+								*result = 1;
+								nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetTestThreshold, UIntToString(thresh), true);
+								dPrintAndLog("NiAlphaPropertySetTestThreshold","Test threshold set.\n");
+							}
+							catch (std::exception e) {
+								*result = 0;
+								dPrintAndLog("NiAlphaPropertySetTestThreshold","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiAlphaPropertySetTestThreshold","Not a NiAlphaProperty.\n");
@@ -631,10 +709,16 @@ static bool Cmd_NiAlphaPropertySetTriangleSortMode_Execute(COMMAND_ARGS) {
 					if ( blockID < nifPtr->nifList.size() ) {
 						Niflib::NiAlphaPropertyRef alphaPr = Niflib::DynamicCast<Niflib::NiAlphaProperty>(nifPtr->nifList[blockID]);
 						if ( alphaPr ) {
-							alphaPr->SetTriangleSortMode(tri!=0);
-							*result = 1;
-							nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetTriSort, UIntToString(tri), true);
-							dPrintAndLog("NiAlphaPropertySetTriangleSortMode","Triangle sort mode set.\n");
+							try {
+								alphaPr->SetTriangleSortMode(tri!=0);
+								*result = 1;
+								nifPtr->logChange(blockID, kNiflibType_NiAlphaProperty, kNiAlphaPropAct_SetTriSort, UIntToString(tri), true);
+								dPrintAndLog("NiAlphaPropertySetTriangleSortMode","Triangle sort mode set.\n");
+							}
+							catch (std::exception e) {
+								*result = 0;
+								dPrintAndLog("NiAlphaPropertySetTriangleSortMode","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiAlphaPropertySetTriangleSortMode","Not a NiAlphaProperty.\n");

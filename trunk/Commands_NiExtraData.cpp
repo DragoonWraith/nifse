@@ -21,8 +21,14 @@ static bool Cmd_NiExtraDataGetName_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifPtr->nifList[blockID]);
 					if ( ed ) {
-						edName = ed->GetName();
-						dPrintAndLog("NiExtraDataGetName","Returning \""+edName+"\".\n");
+						try {
+							edName = ed->GetName();
+							dPrintAndLog("NiExtraDataGetName","Returning \""+edName+"\".\n");
+						}
+						catch (std::exception e) {
+							edName = "";
+							dPrintAndLog("NiExtraDataGetName","Exception \""+string(e.what())+"\" thrown.");
+						}
 					}
 					else
 						dPrintAndLog("NiExtraDataGetName","Block #"+UIntToString(blockID)+" is not NiExtraData; block type is \""+nifPtr->nifList[blockID]->GetType().GetTypeName()+"\".\n");
@@ -69,10 +75,16 @@ static bool Cmd_NiExtraDataSetName_Execute(COMMAND_ARGS) {
 					if ( blockID < nifPtr->nifList.size() ) {
 						Niflib::NiExtraDataRef ed = Niflib::DynamicCast<Niflib::NiExtraData>(nifPtr->nifList[blockID]);
 						if ( ed ) {
-							*result = 1;
-							ed->SetName(newName);
-							dPrintAndLog("NiExtraDataSetName","ExtraData value set successfully.\n");
-							nifPtr->logChange(blockID, kNiflibType_NiStringExtraData, kNiEDAct_SetName, newName, true);
+							try {
+								*result = 1;
+								ed->SetName(newName);
+								dPrintAndLog("NiExtraDataSetName","ExtraData value set successfully.\n");
+								nifPtr->logChange(blockID, kNiflibType_NiStringExtraData, kNiEDAct_SetName, newName, true);
+							}
+							catch (std::exception e) {
+								*result = 0;
+								dPrintAndLog("NiExtraDataSetName","Exception \""+string(e.what())+"\" thrown.");
+							}
 						}
 						else
 							dPrintAndLog("NiExtraDataSetName","Block #"+UIntToString(blockID)+" is not NiExtraData; block type is \""+nifPtr->nifList[blockID]->GetType().GetTypeName()+"\".\n");
@@ -106,7 +118,7 @@ DEFINE_CMD_PLUGIN_ALT(
 // returns the number stored in the specified ExtraData
 // in the NifFile associated with the given nifID.
 static bool Cmd_NiExtraDataGetNumber_Execute(COMMAND_ARGS) {
-	*result = 0;
+	*result = -1;
 
 	int nifID = -1;
 	UInt32 blockID = 0;
@@ -122,27 +134,51 @@ static bool Cmd_NiExtraDataGetNumber_Execute(COMMAND_ARGS) {
 						UInt32 edType = getNiflibTypeIndex(ed->TYPE);
 						switch (edType) {
 							case kNiflibType_NiBooleanExtraData:
-								*result = Niflib::DynamicCast<Niflib::NiBooleanExtraData>(ed)->GetData();
-								dPrintAndLog("NiExtraDataGetNumber","Returning "+string((*result)!=0?"TRUE":"FALSE")+".\n");
+								try {
+									*result = Niflib::DynamicCast<Niflib::NiBooleanExtraData>(ed)->GetData();
+									dPrintAndLog("NiExtraDataGetNumber","Returning "+string((*result)!=0?"TRUE":"FALSE")+".\n");
+								}
+								catch (std::exception e) {
+									*result = -1;
+									dPrintAndLog("NiExtraDataGetNumber","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 								break;
 
 							case kNiflibType_NiFloatExtraData:
-								*result = Niflib::DynamicCast<Niflib::NiFloatExtraData>(ed)->GetData();
-								dPrintAndLog("NiExtraDataGetNumber","Returning "+FloatToString(*result)+".\n");
+								try {
+									*result = Niflib::DynamicCast<Niflib::NiFloatExtraData>(ed)->GetData();
+									dPrintAndLog("NiExtraDataGetNumber","Returning "+FloatToString(*result)+".\n");
+								}
+								catch (std::exception e) {
+									*result = -1;
+									dPrintAndLog("NiExtraDataGetNumber","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 								break;
 
 							case kNiflibType_NiIntegerExtraData:
-								*result = Niflib::DynamicCast<Niflib::NiIntegerExtraData>(ed)->GetData();
-								dPrintAndLog("NiExtraDataGetNumber","Returning "+UIntToString(*result)+".\n");
+								try {
+									*result = Niflib::DynamicCast<Niflib::NiIntegerExtraData>(ed)->GetData();
+									dPrintAndLog("NiExtraDataGetNumber","Returning "+UIntToString(*result)+".\n");
+								}
+								catch (std::exception e) {
+									*result = -1;
+									dPrintAndLog("NiExtraDataGetNumber","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 								break;
 
 							case kNiflibType_BSXFlags:
-								*result = Niflib::DynamicCast<Niflib::BSXFlags>(ed)->GetData();
-								dPrintAndLog("NiExtraDataGetNumber","Returning "+UIntToString(*result)+".\n");
+								try {
+									*result = Niflib::DynamicCast<Niflib::BSXFlags>(ed)->GetData();
+									dPrintAndLog("NiExtraDataGetNumber","Returning "+UIntToString(*result)+".\n");
+								}
+								catch (std::exception e) {
+									*result = -1;
+									dPrintAndLog("NiExtraDataGetNumber","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 								break;
 
 							default:
-								dPrintAndLog("NiExtraDataGetNumber","ExtraData is not a numerical type!\n");
+								dPrintAndLog("NiExtraDataGetNumber","ExtraData is not a supported numerical type!\n");
 								break;
 						}
 					}
@@ -193,31 +229,55 @@ static bool Cmd_NiExtraDataSetNumber_Execute(COMMAND_ARGS) {
 							UInt32 edType = getNiflibTypeIndex(ed->GetType());
 							switch (edType) {
 								case kNiflibType_NiBooleanExtraData:
-									Niflib::DynamicCast<Niflib::NiBooleanExtraData>(ed)->SetData(newVal!=0);
-									*result = 1;
-									dPrintAndLog("NiExtraDataSetNumber","ExtraData value set successfully.\n");
-									nifPtr->logChange(blockID, kNiflibType_NiBooleanExtraData, kNiEDAct_SetNum, string(newVal!=0?"1":"0"), true);
+									try {
+										Niflib::DynamicCast<Niflib::NiBooleanExtraData>(ed)->SetData(newVal!=0);
+										*result = 1;
+										dPrintAndLog("NiExtraDataSetNumber","ExtraData value set successfully.\n");
+										nifPtr->logChange(blockID, kNiflibType_NiBooleanExtraData, kNiEDAct_SetNum, string(newVal!=0?"1":"0"), true);
+									}
+									catch (std::exception e) {
+										*result = 0;
+										dPrintAndLog("NiExtraDataSetNumber","Exception \""+string(e.what())+"\" thrown.\n");
+									}
 									break;
 
 								case kNiflibType_NiFloatExtraData:
-									Niflib::DynamicCast<Niflib::NiFloatExtraData>(ed)->SetData(newVal);
-									*result = 1;
-									dPrintAndLog("NiExtraDataSetNumber","ExtraData value set successfully.\n");
-									nifPtr->logChange(blockID, kNiflibType_NiFloatExtraData, kNiEDAct_SetNum, FloatToString(newVal), true);
+									try {
+										Niflib::DynamicCast<Niflib::NiFloatExtraData>(ed)->SetData(newVal);
+										*result = 1;
+										dPrintAndLog("NiExtraDataSetNumber","ExtraData value set successfully.\n");
+										nifPtr->logChange(blockID, kNiflibType_NiFloatExtraData, kNiEDAct_SetNum, FloatToString(newVal), true);
+									}
+									catch (std::exception e) {
+										*result = 0;
+										dPrintAndLog("NiExtraDataSetNumber","Exception \""+string(e.what())+"\" thrown.\n");
+									}
 									break;
 
 								case kNiflibType_NiIntegerExtraData:
-									Niflib::DynamicCast<Niflib::NiIntegerExtraData>(ed)->SetData(newVal);
-									*result = 1;
-									dPrintAndLog("NiExtraDataSetNumber","ExtraData value set successfully.\n");
-									nifPtr->logChange(blockID, kNiflibType_NiIntegerExtraData, kNiEDAct_SetNum, SIntToString(newVal), true);
+									try {
+										Niflib::DynamicCast<Niflib::NiIntegerExtraData>(ed)->SetData(newVal);
+										*result = 1;
+										dPrintAndLog("NiExtraDataSetNumber","ExtraData value set successfully.\n");
+										nifPtr->logChange(blockID, kNiflibType_NiIntegerExtraData, kNiEDAct_SetNum, SIntToString(newVal), true);
+									}
+									catch (std::exception e) {
+										*result = 0;
+										dPrintAndLog("NiExtraDataSetNumber","Exception \""+string(e.what())+"\" thrown.\n");
+									}
 									break;
 
 								case kNiflibType_BSXFlags:
-									Niflib::DynamicCast<Niflib::BSXFlags>(ed)->SetData(newVal);
-									*result = 1;
-									dPrintAndLog("NiExtraDataSetNumber","ExtraData value set successfully.\n");
-									nifPtr->logChange(blockID, kNiflibType_BSXFlags, kNiEDAct_SetNum, SIntToString(newVal), true);
+									try {
+										Niflib::DynamicCast<Niflib::BSXFlags>(ed)->SetData(newVal);
+										*result = 1;
+										dPrintAndLog("NiExtraDataSetNumber","ExtraData value set successfully.\n");
+										nifPtr->logChange(blockID, kNiflibType_BSXFlags, kNiEDAct_SetNum, SIntToString(newVal), true);
+									}
+									catch (std::exception e) {
+										*result = 0;
+										dPrintAndLog("NiExtraDataSetNumber","Exception \""+string(e.what())+"\" thrown.\n");
+									}
 									break;
 
 								default:
@@ -271,8 +331,14 @@ static bool Cmd_NiExtraDataGetString_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiStringExtraDataRef ed = Niflib::DynamicCast<Niflib::NiStringExtraData>(nifPtr->nifList[blockID]);
 					if ( ed ) {
-						edStr = ed->GetData();
-						dPrintAndLog("NiExtraDataGetString","Returning \""+edStr+"\".\n");
+						try {
+							edStr = ed->GetData();
+							dPrintAndLog("NiExtraDataGetString","Returning \""+edStr+"\".\n");
+						}
+						catch (std::exception e) {
+							edStr = "";
+							dPrintAndLog("NiExtraDataGetString","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiExtraDataGetString","Block is not NiStringExtraData.\n");
@@ -319,10 +385,16 @@ static bool Cmd_NiExtraDataSetString_Execute(COMMAND_ARGS) {
 					if ( blockID < nifPtr->nifList.size() ) {
 						Niflib::NiStringExtraDataRef ed = Niflib::DynamicCast<Niflib::NiStringExtraData>(nifPtr->nifList[blockID]);
 						if ( ed ) {
-							*result = 1;
-							ed->SetData(newStr);
-							dPrintAndLog("NiExtraDataSetString","ExtraData value set successfully.\n");
-							nifPtr->logChange(blockID, kNiflibType_NiStringExtraData, kNiEDAct_SetStr, newStr, true);
+							try {
+								*result = 1;
+								ed->SetData(newStr);
+								dPrintAndLog("NiExtraDataSetString","ExtraData value set successfully.\n");
+								nifPtr->logChange(blockID, kNiflibType_NiStringExtraData, kNiEDAct_SetStr, newStr, true);
+							}
+							catch (std::exception e) {
+								*result = 0;
+								dPrintAndLog("NiExtraDataGetString","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiExtraDataSetString","Block is not NiStringExtraData.\n");
@@ -372,58 +444,87 @@ static bool Cmd_NiExtraDataGetArray_Execute(COMMAND_ARGS) {
 					if ( ed ) {
 						UInt32 edType = getNiflibTypeIndex(ed->GetType());
 						dPrintAndLog("NiExtraDataGetArray","ExtraData type: \""+ed->GetType().GetTypeName()+"\" (#"+UIntToString(edType)+").");
-						vector<Niflib::byte> binData;
-						Niflib::Color4 colorData;
-						vector<float> floatData;
-						vector<unsigned int> intData;
-						vector<string> strData;
-						Niflib::Vector3 vecData;
-
 						vector<OBSEElement> ovec;
 						map<string,OBSEElement> omap;
 						switch (edType) {
 							case kNiflibType_NiBinaryExtraData:
-								binData = Niflib::DynamicCast<Niflib::NiBinaryExtraData>(ed)->GetData();
-								for ( vector<Niflib::byte>::iterator i = binData.begin(); i != binData.end(); ++i )
-									ovec.push_back(*i);
+								try {
+									vector<Niflib::byte> binData = Niflib::DynamicCast<Niflib::NiBinaryExtraData>(ed)->GetData();
+									for ( vector<Niflib::byte>::iterator i = binData.begin(); i != binData.end(); ++i )
+										ovec.push_back(*i);
+								}
+								catch (std::exception e) {
+									ovec.clear();
+									dPrintAndLog("NiExtraDataGetArray","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 								break;
 
 							case kNiflibType_NiColorExtraData:
-								colorData = Niflib::DynamicCast<Niflib::NiColorExtraData>(ed)->GetData();
-								omap[string("r")] = colorData.r;
-								omap[string("g")] = colorData.g;
-								omap[string("b")] = colorData.b;
-								omap[string("a")] = colorData.a;
+								try {
+									Niflib::Color4 colorData = Niflib::DynamicCast<Niflib::NiColorExtraData>(ed)->GetData();
+									omap[string("r")] = colorData.r;
+									omap[string("g")] = colorData.g;
+									omap[string("b")] = colorData.b;
+									omap[string("a")] = colorData.a;
+								}
+								catch (std::exception e) {
+									omap.clear();
+									dPrintAndLog("NiExtraDataGetArray","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 								break;
 
 							case kNiflibType_NiFloatsExtraData:
 							case kNiflibType_NiVertWeightsExtraData:
-								floatData = Niflib::DynamicCast<Niflib::NiFloatsExtraData>(ed)->GetData();
-								for ( vector<float>::iterator i = floatData.begin(); i != floatData.end(); ++i )
-									ovec.push_back(*i);
+								try {
+									vector<float> floatData = Niflib::DynamicCast<Niflib::NiFloatsExtraData>(ed)->GetData();
+									for ( vector<float>::iterator i = floatData.begin(); i != floatData.end(); ++i )
+										ovec.push_back(*i);
+								}
+								catch (std::exception e) {
+									ovec.clear();
+									dPrintAndLog("NiExtraDataGetArray","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 								break;
 
 							case kNiflibType_NiIntegersExtraData:
-								intData = Niflib::DynamicCast<Niflib::NiIntegersExtraData>(ed)->GetData();
-								for ( vector<unsigned int>::iterator i = intData.begin(); i != intData.end(); ++i )
-									ovec.push_back(*i);
+								try {
+									vector<unsigned int> intData = Niflib::DynamicCast<Niflib::NiIntegersExtraData>(ed)->GetData();
+									for ( vector<unsigned int>::iterator i = intData.begin(); i != intData.end(); ++i )
+										ovec.push_back(*i);
+								}
+								catch (std::exception e) {
+									ovec.clear();
+									dPrintAndLog("NiExtraDataGetArray","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 								break;
 
 							case kNiflibType_NiStringsExtraData:
-								strData = Niflib::DynamicCast<Niflib::NiStringsExtraData>(ed)->GetData();
-								for ( vector<string>::iterator i = strData.begin(); i != strData.end(); ++i )
-									ovec.push_back(i->c_str());
+								try {
+									vector<string> strData = Niflib::DynamicCast<Niflib::NiStringsExtraData>(ed)->GetData();
+									for ( vector<string>::iterator i = strData.begin(); i != strData.end(); ++i )
+										ovec.push_back(i->c_str());
+								}
+								catch (std::exception e) {
+									ovec.clear();
+									dPrintAndLog("NiExtraDataGetArray","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 								break;
 
 							case kNiflibType_NiVectorExtraData:
-								vecData = Niflib::DynamicCast<Niflib::NiVectorExtraData>(ed)->GetData();
-								ovec.push_back(vecData.x);
-								ovec.push_back(vecData.y);
-								ovec.push_back(vecData.z);
+								try {
+									Niflib::Vector3 vecData = Niflib::DynamicCast<Niflib::NiVectorExtraData>(ed)->GetData();
+									ovec.push_back(vecData.x);
+									ovec.push_back(vecData.y);
+									ovec.push_back(vecData.z);
+								}
+								catch (std::exception e) {
+									ovec.clear();
+									dPrintAndLog("NiExtraDataGetArray","Exception \""+string(e.what())+"\" thrown.\n");
+								}
 								break;
 
 							default:
-								dPrintAndLog("NiExtraDataGetArray","ExtraData is not an array-holding type.");
+								dPrintAndLog("NiExtraDataGetArray","ExtraData is not a supported array-holding type.");
 						}
 						if ( !(ovec.empty()) )
 							arr = ArrayFromStdVector(ovec, scriptObj);
@@ -463,14 +564,13 @@ DEFINE_CMD_PLUGIN_ALT(
 static bool Cmd_NiExtraDataSetArray_Execute(COMMAND_ARGS) {
 	*result = 0;
 
-	int arrID = -1;
+	OBSEArray* arr = NULL;
 	int nifID = -1;
 	UInt32 blockID = 0;
 	UInt8 modID;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &nifID, &blockID)) {
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arr, &nifID, &blockID)) {
 		modID = scriptObj->GetModIndex();
 		dPrintAndLog("NiExtraDataSetArray","Setting the array value of ExtraData #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
-		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
 		if ( arr ) {
 			NifFile* nifPtr = NULL;
 			if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
@@ -510,9 +610,15 @@ static bool Cmd_NiExtraDataSetArray_Execute(COMMAND_ARGS) {
 											if ( dataGood ) {
 												Niflib::NiBinaryExtraDataRef binED = Niflib::DynamicCast<Niflib::NiBinaryExtraData>(ed);
 												if ( binED ) {
-													binED->SetData(data);
-													dPrintAndLog("NiExtraDataSetArray","NiBinaryExtraData block set.\n");
-													change = VectorToString(data);
+													try {
+														binED->SetData(data);
+														dPrintAndLog("NiExtraDataSetArray","NiBinaryExtraData block set.\n");
+														change = VectorToString(data);
+													}
+													catch (std::exception e) {
+														change.clear();
+														dPrintAndLog("NiExtraDataSetArray","Exception \""+string(e.what())+"\" thrown.\n");
+													}
 												}
 												else
 													dPrintAndLog("NiExtraDataSetArray","ExtraData block indicated is not NiBinaryExtraData.\n");
@@ -578,9 +684,15 @@ static bool Cmd_NiExtraDataSetArray_Execute(COMMAND_ARGS) {
 													break;
 												}
 
-												colorED->SetData(data);
-												dPrintAndLog("NiExtraDataSetArray","NiColorExtraData block set.\n");
-												change = Color4ToString(data);
+												try {
+													colorED->SetData(data);
+													dPrintAndLog("NiExtraDataSetArray","NiColorExtraData block set.\n");
+													change = Color4ToString(data);
+												}
+												catch (std::exception e) {
+													change.clear();
+													dPrintAndLog("NiExtraDataSetArray","Exception \""+string(e.what())+"\" thrown.\n");
+												}
 											}
 											else
 												dPrintAndLog("NiExtraDataSetArray","ExtraData block indicated is not a NiColorExtraData.\n");
@@ -616,9 +728,15 @@ static bool Cmd_NiExtraDataSetArray_Execute(COMMAND_ARGS) {
 											if ( dataGood ) {
 												Niflib::NiFloatsExtraDataRef fltsED = Niflib::DynamicCast<Niflib::NiFloatsExtraData>(ed);
 												if ( fltsED ) {
-													fltsED->SetData(data);
-													dPrintAndLog("NiExtraDataSetArray","NiFloatsExtraData block set.\n");
-													change = VectorToString(data);
+													try {
+														fltsED->SetData(data);
+														dPrintAndLog("NiExtraDataSetArray","NiFloatsExtraData block set.\n");
+														change = VectorToString(data);
+													}
+													catch (std::exception e) {
+														change.clear();
+														dPrintAndLog("NiExtraDataSetArray","Exception \""+string(e.what())+"\" thrown.\n");
+													}
 												}
 												else
 													dPrintAndLog("NiExtraDataSetArray","ExtraData block indicated is not NiFloatsExtraData.\n");
@@ -660,9 +778,15 @@ static bool Cmd_NiExtraDataSetArray_Execute(COMMAND_ARGS) {
 											if ( dataGood ) {
 												Niflib::NiIntegersExtraDataRef intsED = Niflib::DynamicCast<Niflib::NiIntegersExtraData>(ed);
 												if ( intsED ) {
-													intsED->SetData(data);
-													dPrintAndLog("NiExtraDataSetArray","NiIntegersExtraData block set.\n");
-													change = VectorToString(data);
+													try {
+														intsED->SetData(data);
+														dPrintAndLog("NiExtraDataSetArray","NiIntegersExtraData block set.\n");
+														change = VectorToString(data);
+													}
+													catch (std::exception e) {
+														change.clear();
+														dPrintAndLog("NiExtraDataSetArray","Exception \""+string(e.what())+"\" thrown.\n");
+													}
 												}
 												else
 													dPrintAndLog("NiExtraDataSetArray","ExtraData block indicated is not NiIntegersExtraData.\n");
@@ -697,9 +821,15 @@ static bool Cmd_NiExtraDataSetArray_Execute(COMMAND_ARGS) {
 											if ( dataGood ) {
 												Niflib::NiStringsExtraDataRef strsED = Niflib::DynamicCast<Niflib::NiStringsExtraData>(ed);
 												if ( strsED ) {
-													strsED->SetData(data);
-													dPrintAndLog("NiExtraDataSetArray","NiStringsExtraData block set.\n");
-													change = VectorToString(data);
+													try {
+														strsED->SetData(data);
+														dPrintAndLog("NiExtraDataSetArray","NiStringsExtraData block set.\n");
+														change = VectorToString(data);
+													}
+													catch (std::exception e) {
+														change.clear();
+														dPrintAndLog("NiExtraDataSetArray","Exception \""+string(e.what())+"\" thrown.\n");
+													}
 												}
 												else
 													dPrintAndLog("NiExtraDataSetArray","ExtraData block indicated is not NiStringsExtraData.\n");
@@ -752,9 +882,15 @@ static bool Cmd_NiExtraDataSetArray_Execute(COMMAND_ARGS) {
 													break;
 												}
 
-												vecED->SetData(data);
-												dPrintAndLog("NiExtraDataSetArray","NiVectorExtraData block set.\n");
-												change = VectorToString(data);
+												try {
+													vecED->SetData(data);
+													dPrintAndLog("NiExtraDataSetArray","NiVectorExtraData block set.\n");
+													change = VectorToString(data);
+												}
+												catch (std::exception e) {
+													change.clear();
+													dPrintAndLog("NiExtraDataSetArray","Exception \""+string(e.what())+"\" thrown.\n");
+												}
 											}
 											else
 												dPrintAndLog("NiExtraDataSetArray","ExtraData block indicated is not a NiVectorExtraData.\n");

@@ -25,17 +25,24 @@ static bool Cmd_NiAVObjectGetLocalTransform_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 					if ( avObj ) {
-						vector<vector<OBSEElement> > vrow;
-						OBSEArray* orow = NULL;
-						for ( int i = 0; i < 4; ++i ) {
-							vrow.push_back(vector<OBSEElement>());
-							for ( int j = 0; j < 4; ++j ) {
-								vrow[i].push_back(avObj->GetLocalTransform().rows[i][j]);
+						try {
+							Niflib::Matrix44 nmatrix = avObj->GetLocalTransform();
+							vector<vector<OBSEElement> > vrow;
+							OBSEArray* orow = NULL;
+							for ( int i = 0; i < 4; ++i ) {
+								vrow.push_back(vector<OBSEElement>());
+								for ( int j = 0; j < 4; ++j ) {
+									vrow[i].push_back(nmatrix.rows[i][j]);
+								}
+								orow = ArrayFromStdVector(vrow[i], scriptObj);
+								vmatrix.push_back(orow);
 							}
-							orow = ArrayFromStdVector(vrow[i], scriptObj);
-							vmatrix.push_back(orow);
+							omatrix = ArrayFromStdVector(vmatrix, scriptObj);
 						}
-						omatrix = ArrayFromStdVector(vmatrix, scriptObj);
+						catch (std::exception e) {
+							omatrix = NULL;
+							dPrintAndLog("NiAVObjectGetLocalTransform","Exception \""+string(e.what())+"\" thrown.");
+						}
 					}
 					else
 						dPrintAndLog("NiAVObjectGetLocalTransform","Not NiAVObject.");
@@ -85,11 +92,18 @@ static bool Cmd_NiAVObjectGetLocalTranslation_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 					if ( avObj ) {
-						vector<OBSEElement> translation;
-						translation.push_back(avObj->GetLocalTranslation().x);
-						translation.push_back(avObj->GetLocalTranslation().y);
-						translation.push_back(avObj->GetLocalTranslation().z);
-						arr = ArrayFromStdVector(translation, scriptObj);
+						try {
+							Niflib::Vector3 ntransl = avObj->GetLocalTranslation();
+							vector<OBSEElement> vtransl;
+							vtransl.push_back(ntransl.x);
+							vtransl.push_back(ntransl.y);
+							vtransl.push_back(ntransl.z);
+							arr = ArrayFromStdVector(vtransl, scriptObj);
+						}
+						catch (std::exception e) {
+							arr = NULL;
+							dPrintAndLog("NiAVObjectGetLocalTranslation","Exception \""+string(e.what())+"\" thrown.");
+						}
 					}
 					else
 						dPrintAndLog("NiAVObjectGetLocalTranslation","Not NiAVObject.");
@@ -140,17 +154,24 @@ static bool Cmd_NiAVObjectGetLocalRotation_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 					if ( avObj ) {
-						vector<vector<OBSEElement> > vrow;
-						OBSEArray* orow = NULL;
-						for ( int i = 0; i < 3; ++i ) {
-							vrow.push_back(vector<OBSEElement>());
-							for ( int j = 0; j < 3; ++j ) {
-								vrow[i].push_back(avObj->GetLocalRotation().rows[i][j]);
+						try {
+							Niflib::Matrix33 nmatrix = avObj->GetLocalRotation();
+							vector<vector<OBSEElement> > vrow;
+							OBSEArray* orow = NULL;
+							for ( int i = 0; i < 3; ++i ) {
+								vrow.push_back(vector<OBSEElement>());
+								for ( int j = 0; j < 3; ++j ) {
+									vrow[i].push_back(nmatrix.rows[i][j]);
+								}
+								orow = ArrayFromStdVector(vrow[i], scriptObj);
+								vmatrix.push_back(orow);
 							}
-							orow = ArrayFromStdVector(vrow[i], scriptObj);
-							vmatrix.push_back(orow);
+							omatrix = ArrayFromStdVector(vmatrix, scriptObj);
 						}
-						omatrix = ArrayFromStdVector(vmatrix, scriptObj);
+						catch (std::exception e) {
+							omatrix = NULL;
+							dPrintAndLog("NiAVObjectGetLocalRotation","Exception \""+string(e.what())+"\" thrown.");
+						}
 					}
 					else
 						dPrintAndLog("NiAVObjectGetLocalRotation","Selected block is not an AV Object.");
@@ -199,23 +220,29 @@ static bool Cmd_NiAVObjectGetLocalScale_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 					if ( avObj ) {
-						*result = avObj->GetLocalScale();
-						dPrintAndLog("NiAVObjectGetLocalScale","Returning "+FloatToString(*result)+".\n");
+						try {
+							*result = avObj->GetLocalScale();
+							dPrintAndLog("NiAVObjectGetLocalScale","Returning "+FloatToString(*result)+".\n");
+						}
+						catch (std::exception e) {
+							*result = 0;
+							dPrintAndLog("NiAVObjectGetLocalTransform","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
-						dPrintAndLog("NiAVObjectGetLocalScale","Not NiAVObject.");
+						dPrintAndLog("NiAVObjectGetLocalScale","Not NiAVObject.\n");
 				}
 				else
-					dPrintAndLog("NiAVObjectGetLocalScale","Block index out of range.");
+					dPrintAndLog("NiAVObjectGetLocalScale","Block index out of range.\n");
 			}
 			else
-				dPrintAndLog("NiAVObjectGetLocalScale","Nif root bad.");
+				dPrintAndLog("NiAVObjectGetLocalScale","Nif root bad.\n");
 		}
 		else
-			dPrintAndLog("NiAVObjectGetLocalScale","Could not find Nif.");
+			dPrintAndLog("NiAVObjectGetLocalScale","Could not find Nif.\n");
 	}
 	else
-		dPrintAndLog("NiAVObjectGetLocalScale","Error extracting arguments");
+		dPrintAndLog("NiAVObjectGetLocalScale","Error extracting arguments\n");
 
 	return true;
 }
@@ -233,14 +260,13 @@ DEFINE_CMD_PLUGIN_ALT(
 static bool Cmd_NiAVObjectSetLocalTransform_Execute(COMMAND_ARGS) {
 	*result = 0;
 
-	int arrID = -1;
+	OBSEArray* arr = NULL;
 	int nifID = -1;
 	UInt32 blockID = 0;
 	UInt8 modID;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &nifID, &blockID)) {
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arr, &nifID, &blockID)) {
 		modID = scriptObj->GetModIndex();
 		dPrintAndLog("NiAVObjectSetLocalTransform","Setting local Transform of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
-		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
 		if ( arr ) {
 			UInt32 arrSize = arrInterface->GetArraySize(arr);
 			if ( arrSize == 4 ) {
@@ -279,10 +305,16 @@ static bool Cmd_NiAVObjectSetLocalTransform_Execute(COMMAND_ARGS) {
 													}
 												}
 											}
-											avObj->SetLocalTransform(newTransform);
-											*result = 1;
-											nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocTransf,MatrixToString(newTransform),true);
-											dPrintAndLog("NiAVObjectSetLocalTransform","Local transform set.\n");
+											try {
+												avObj->SetLocalTransform(newTransform);
+												*result = 1;
+												nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocTransf,MatrixToString(newTransform),true);
+												dPrintAndLog("NiAVObjectSetLocalTransform","Local transform set.\n");
+											}
+											catch (std::exception e) {
+												*result = 0;
+												dPrintAndLog("NiAVObjectSetLocalTransform","Exception \""+string(e.what())+"\" thrown.\n");
+											}
 										}
 										else
 											dPrintAndLog("NiAVObjectSetLocalTransform","Not NiAVObject.\n");
@@ -330,14 +362,13 @@ DEFINE_CMD_PLUGIN_ALT(
 static bool Cmd_NiAVObjectSetLocalTranslation_Execute(COMMAND_ARGS) {
 	*result = 0;
 
-	int arrID = -1;
+	OBSEArray* arr = NULL;
 	int nifID = -1;
 	UInt32 blockID = 0;
 	UInt8 modID;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &nifID, &blockID)) {
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arr, &nifID, &blockID)) {
 		modID = scriptObj->GetModIndex();
 		dPrintAndLog("NiAVObjectSetLocalTranslation","Setting local Translation of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
-		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
 		if ( arr ) {
 			UInt32 arrSize = arrInterface->GetArraySize(arr);
 			if ( arrSize == 3 ) {
@@ -373,10 +404,16 @@ static bool Cmd_NiAVObjectSetLocalTranslation_Execute(COMMAND_ARGS) {
 											return true;
 										}
 									}
-									avObj->SetLocalTranslation(newTranslation);
-									*result = 1;
-									nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocTransl,VectorToString(newTranslation),true);
-									dPrintAndLog("NiAVObjectSetLocalTranslation","Local translation set.\n");
+									try {
+										avObj->SetLocalTranslation(newTranslation);
+										*result = 1;
+										nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocTransl,VectorToString(newTranslation),true);
+										dPrintAndLog("NiAVObjectSetLocalTranslation","Local translation set.\n");
+									}
+									catch (std::exception e) {
+										*result = 0;
+										dPrintAndLog("NiAVObjectSetLocalTranslation","Exception \""+string(e.what())+"\" thrown.\n");
+									}
 								}
 								else
 									dPrintAndLog("NiAVObjectSetLocalTranslation","Not NiAVObject.\n");
@@ -418,14 +455,13 @@ DEFINE_CMD_PLUGIN_ALT(
 static bool Cmd_NiAVObjectSetLocalRotation_Execute(COMMAND_ARGS) {
 	*result = 0;
 
-	int arrID = -1;
+	OBSEArray* arr = NULL;
 	int nifID = -1;
 	UInt32 blockID = 0;
 	UInt8 modID;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &arrID, &nifID, &blockID)) {
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &arr, &nifID, &blockID)) {
 		modID = scriptObj->GetModIndex();
 		dPrintAndLog("NiAVObjectSetLocalRotation","Setting local Rotation of Child #"+UIntToString(blockID)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
-		OBSEArray* arr = arrInterface->LookupArrayByID(arrID);
 		if ( arr ) {
 			UInt32 arrSize = arrInterface->GetArraySize(arr);
 			if ( arrSize == 3 ) {
@@ -464,10 +500,16 @@ static bool Cmd_NiAVObjectSetLocalRotation_Execute(COMMAND_ARGS) {
 														dPrintAndLog("NiAVObjectSetLocalRotation","Array element could not be gotten.\n");
 												}
 											}
-											avObj->SetLocalRotation(newRotation);
-											*result = 1;
-											nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocRot,MatrixToString(newRotation),true);
-											dPrintAndLog("NiAVObjectSetLocalRotation","Local rotation set.\n");
+											try {
+												avObj->SetLocalRotation(newRotation);
+												*result = 1;
+												nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocRot,MatrixToString(newRotation),true);
+												dPrintAndLog("NiAVObjectSetLocalRotation","Local rotation set.\n");
+											}
+											catch (std::exception e) {
+												*result = 0;
+												dPrintAndLog("NiAVObjectSetLocalRotation","Exception \""+string(e.what())+"\" thrown.\n");
+											}
 										}
 										else
 											dPrintAndLog("NiAVObjectSetLocalRotation","Child not found.\n");
@@ -529,10 +571,16 @@ static bool Cmd_NiAVObjectSetLocalScale_Execute(COMMAND_ARGS) {
 					if ( blockID < nifPtr->nifList.size() ) {
 						NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 						if ( avObj ) {
-							avObj->SetLocalScale(nuScale);
-							*result = 1;
-							nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocScale,FloatToString(nuScale),true);
-							dPrintAndLog("NiAVObjectSetLocalScale","Local scale set.\n");
+							try {
+								avObj->SetLocalScale(nuScale);
+								*result = 1;
+								nifPtr->logChange(blockID,kNiflibType_NiAVObject,kNiAVObjAct_SetLocScale,FloatToString(nuScale),true);
+								dPrintAndLog("NiAVObjectSetLocalScale","Local scale set.\n");
+							}
+							catch (std::exception e) {
+								*result = 0;
+								dPrintAndLog("NiAVObjectSetLocalScale","Exception \""+string(e.what())+"\" thrown.\n");
+							}
 						}
 						else
 							dPrintAndLog("NiAVObjectSetLocalScale","Not NiAVObject.\n");
@@ -578,8 +626,14 @@ static bool Cmd_NiAVObjectGetNumProperties_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 					if ( avObj ) {
-						*result = avObj->GetProperties().size();
-						dPrintAndLog("NiAVObjectGetNumProperties","Returning "+UIntToString(*result)+".");
+						try {
+							*result = avObj->GetProperties().size();
+							dPrintAndLog("NiAVObjectGetNumProperties","Returning "+UIntToString(*result)+".");
+						}
+						catch (std::exception e) {
+							*result = 0;
+							dPrintAndLog("NiAVObjectGetNumProperties","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiAVObjectGetNumProperties","Not NiAVObject.\n");
@@ -623,11 +677,17 @@ static bool Cmd_NiAVObjectGetProperties_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 					if ( avObj ) {
-						vector<OBSEElement> prvec = vector<OBSEElement>();
-						vector<Niflib::NiPropertyRef> prs = avObj->GetProperties();
-						for ( vector<Niflib::NiPropertyRef>::iterator i = prs.begin(); i != prs.end(); ++i )
-							prvec.push_back((*i)->internal_block_number);
-						arr = ArrayFromStdVector(prvec, scriptObj);
+						try {
+							vector<OBSEElement> prvec = vector<OBSEElement>();
+							vector<Niflib::NiPropertyRef> prs = avObj->GetProperties();
+							for ( vector<Niflib::NiPropertyRef>::iterator i = prs.begin(); i != prs.end(); ++i )
+								prvec.push_back((*i)->internal_block_number);
+							arr = ArrayFromStdVector(prvec, scriptObj);
+						}
+						catch (std::exception e) {
+							arr = NULL;
+							dPrintAndLog("NiAVObjectGetProperties","Exception \""+string(e.what())+"\" thrown.");
+						}
 					}
 					else
 						dPrintAndLog("NiAVObjectGetProperties","Not NiAVObject.");
@@ -674,8 +734,14 @@ static bool Cmd_NiAVObjectGetPropertyByType_Execute(COMMAND_ARGS) {
 				if ( blockID < nifPtr->nifList.size() ) {
 					Niflib::NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 					if ( avObj ) {
-						*result = avObj->GetPropertyByType(*(getNiflibType(prType)))->internal_block_number;
-						dPrintAndLog("NiAVObjectGetPropertyByType","Returning "+UIntToString(blockID)+".\n");
+						try {
+							*result = avObj->GetPropertyByType(*(getNiflibType(prType)))->internal_block_number;
+							dPrintAndLog("NiAVObjectGetPropertyByType","Returning "+UIntToString(blockID)+".\n");
+						}
+						catch (std::exception e) {
+							*result = -1;
+							dPrintAndLog("NiAVObjectGetPropertyByType","Exception \""+string(e.what())+"\" thrown.\n");
+						}
 					}
 					else
 						dPrintAndLog("NiAVObjectGetPropertyByType","Not NiAVObject.\n");
