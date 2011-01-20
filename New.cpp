@@ -3,4 +3,5 @@
 void NifSE_NewCallback(void * reserved) {
 	NifFile::RegList.clear();
 	NifFile::RegListByFilename.clear();
+	NifFile::delta.clear();
 }

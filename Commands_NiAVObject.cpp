@@ -735,8 +735,14 @@ static bool Cmd_NiAVObjectGetPropertyByType_Execute(COMMAND_ARGS) {
 					Niflib::NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 					if ( avObj ) {
 						try {
-							*result = avObj->GetPropertyByType(*(getNiflibType(prType)))->internal_block_number;
-							dPrintAndLog("NiAVObjectGetPropertyByType","Returning "+UIntToString(blockID)+".\n");
+							if ( avObj->GetProperties().size() ) {
+								*result = avObj->GetPropertyByType(*(getNiflibType(prType)))->internal_block_number;
+								dPrintAndLog("NiAVObjectGetPropertyByType","Returning "+UIntToString(*result)+".\n");
+							}
+							else {
+								*result = -1;
+								dPrintAndLog("NiAVObjectGetPropertyByType","Block has no properties.\n");
+							}
 						}
 						catch (std::exception e) {
 							*result = -1;

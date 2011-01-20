@@ -3,12 +3,13 @@
 
 map < UInt8, map < UInt32, NifFile* > > NifFile::RegList = map < UInt8, map < UInt32, NifFile* > >();
 map <string, pair<UInt8, UInt32>* > NifFile::RegListByFilename = map <string, pair<UInt8, UInt32>* >();
+vector<changeLog> NifFile::delta = vector<changeLog>();
 
-NifFile::NifFile() : filePath(""), basePath(""), root(NULL), modID(255), nifID(-1), delta("") {
+NifFile::NifFile() : filePath(""), basePath(""), root(NULL), modID(255), nifID(-1) {
 	dPrintAndLog("NifFile c'tor","Default constructor");
 }
 
-NifFile::NifFile(const string& file, UInt8 modIndex, bool forEdit) : filePath(file), basePath(""), nifSEversion(g_pluginVersion), editable(forEdit), modID(modIndex), nifID(0), delta("") {
+NifFile::NifFile(const string& file, UInt8 modIndex, bool forEdit) : filePath(file), basePath(""), nifSEversion(g_pluginVersion), editable(forEdit), modID(modIndex), nifID(0) {
 	dPrintAndLog("NifFile c'tor","NifFile created"+string(editable?" for editing.":" without editing."));
 	headerInfo = new Niflib::NifInfo();
 	loadNif();
@@ -33,7 +34,7 @@ NifFile::NifFile(const string& file, UInt8 modIndex, bool forEdit) : filePath(fi
 		throw exception("Nif root not set; construction failed.");
 }
 
-NifFile::NifFile(const string& oriPath, const string& altPath) : filePath(oriPath), nifSEversion(0x0000001F), editable(true), modID(0xFF), nifID(0), delta("") {
+NifFile::NifFile(const string& oriPath, const string& altPath) : filePath(oriPath), nifSEversion(0x0000001F), editable(true), modID(0xFF), nifID(0) {
 	dPrintAndLog("NifFile c'tor","NifFile created from deprecated function.");
 	headerInfo = new Niflib::NifInfo();
 	loadNif();
@@ -61,7 +62,7 @@ NifFile::NifFile(const string& oriPath, const string& altPath) : filePath(oriPat
 		throw exception("Nif root not set; construction failed.");
 }
 
-NifFile::NifFile(const string& file, UInt8 modIndex, UInt32 nifIndex, bool forEdit, UInt32 nifSEv) : filePath(file), nifSEversion(nifSEv), editable(forEdit), modID(modIndex), nifID(nifIndex), delta("") {
+NifFile::NifFile(const string& file, UInt8 modIndex, UInt32 nifIndex, bool forEdit, UInt32 nifSEv) : filePath(file), nifSEversion(nifSEv), editable(forEdit), modID(modIndex), nifID(nifIndex) {
 	dPrintAndLog("NifFile c'tor","Load constructor");
 	headerInfo = new Niflib::NifInfo();
 	loadNif();
@@ -85,7 +86,7 @@ NifFile::NifFile(const string& file, UInt8 modIndex, UInt32 nifIndex, bool forEd
 		throw exception("Nif root not set; construction failed.");
 }
 
-NifFile::NifFile(const string& oriPath, const string& altPath, UInt32 nifIndex) : filePath(oriPath), nifSEversion(0x0000001F), editable(true), modID(0xFF), nifID(0), delta("") {
+NifFile::NifFile(const string& oriPath, const string& altPath, UInt32 nifIndex) : filePath(oriPath), nifSEversion(0x0000001F), editable(true), modID(0xFF), nifID(0) {
 	dPrintAndLog("NifFile c'tor","NifFile created from deprecated function.");
 	headerInfo = new Niflib::NifInfo();
 	loadNif();
@@ -172,6 +173,7 @@ void NifFile::readNif() {
 		if ( nifPtr->root ) {
 			try {
 				Niflib::WriteNifTree(*stream, nifPtr->root, *(nifPtr->headerInfo));
+				nifPtr->frzChange(this);
 			}
 			catch (std::exception except) {
 				e = new std::exception(except);
@@ -401,11 +403,42 @@ void NifFile::write(string path) {
 void NifFile::logChange(const UInt32 &block, const UInt32 &type, const UInt32 &action, const string &value, const bool &clrPrev) {
 	if ( clrPrev )
 		clrChange(block, type, action);
-	delta += UIntToString(block)+logNode+UIntToString(type)+logType+UIntToString(action)+logAction+value+logValue;
+	NifFile::delta.push_back(changeLog(modID, nifID, filePath, basePath, nifSEversion, editable, type, block, action, value));
 }
 
 void NifFile::clrChange(const UInt32 &block, const UInt32 &type, const UInt32 &action) {
-	UInt32 changePos = delta.find(UIntToString(block)+logNode+UIntToString(type)+logType+UIntToString(action)+logAction);
-	if ( changePos != delta.npos )
-		delta.erase(changePos, delta.find(logValue,changePos)+1-changePos);
+	for ( vector<changeLog>::iterator i = NifFile::delta.begin(); i != NifFile::delta.end(); ++i ) {
+		if ( i->mod == modID && i->nif == nifID && i->block == block && i->type == type && i->act == action && i->required.empty() ) {
+			NifFile::delta.erase(i);
+			break;
+		}
+	}
+}
+
+void NifFile::frzChange(NifFile* depends) {
+	for ( vector<changeLog>::iterator i = NifFile::delta.begin(); i!= NifFile::delta.end(); ++i )
+		if ( i->mod == modID && i->nif == nifID )
+			i->required.push_back(depends);
+}
+
+bool NifFile::delChange() {
+	changeLog* logPtr = NULL;
+	for ( vector<changeLog>::size_type i = NifFile::delta.size(); i > 0; --i ) {
+		logPtr = &(NifFile::delta[i-1]);
+		if ( logPtr->mod == modID && logPtr->nif == nifID ) {
+			if ( logPtr->required.empty() )
+				NifFile::delta.erase(NifFile::delta.begin()+i);
+			else
+				return false;
+		}
+		else if ( !logPtr->required.empty() ) {
+			for ( vector<NifFile*>::size_type j = 0; j < logPtr->required.size(); ++j ) {
+				if ( logPtr->required[j] == this ) {
+					logPtr->required.erase(logPtr->required.begin()+j);
+					--j;
+				}
+			}
+		}
+	}
+	return true;
 }

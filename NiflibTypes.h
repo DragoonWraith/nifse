@@ -352,6 +352,7 @@ enum {
 	kNiflibType_TileShaderProperty,
 	kNiflibType_VolumetricFogShaderProperty,
 	kNiflibType_WaterShaderProperty,
+	kNiflibType_NifFile
 };
 
 UInt32 getNiflibTypeIndex(const Niflib::Type& type);

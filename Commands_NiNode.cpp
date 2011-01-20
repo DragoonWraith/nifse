@@ -310,6 +310,7 @@ static bool Cmd_NiNodeCopyChild_Execute(COMMAND_ARGS) {
 		if ( NifFile::getRegNif(modID, nifIDfrom, nifFromPtr) && NifFile::getRegNif(modID, nifIDto, nifToPtr) ) {
 			try {
 				*result = Util_NiNodeCopyChild(nifFromPtr, blockIDfrom, nifToPtr, blockIDto);
+				nifFromPtr->frzChange(nifToPtr);
 				nifToPtr->logChange(blockIDto, kNiflibType_NiNode, kNiNodeAct_CopyChild, UIntToString(nifIDfrom) +logValType+ UIntToString(blockIDfrom));
 				dPrintAndLog("NiNodeCopyChild","Branch successfully copied.\n");
 			}
@@ -375,22 +376,22 @@ UInt32 Util_NiNodeCopyChild(NifFile* nifFromPtr, UInt32 blockIDfrom, NifFile* ni
 								return copiedStartIndex;
 							}
 							else
-								throw std::exception("Could not find copied child.\n");
+								throw std::exception("Could not find copied child.");
 						}
 						else
-							throw std::exception("Copied branch is empty.\n");
+							throw std::exception("Copied branch is empty.");
 					}
 					else
-						throw std::exception("Not a NiNode.\n");
+						throw std::exception("Not a NiNode.");
 				}
 				else
-					throw std::exception("Nif block index out of bounds.\n");
+					throw std::exception("Nif block index out of bounds.");
 			}
 			else
-				throw std::exception("Nif to copy to not editable.\n");
+				throw std::exception("Nif to copy to not editable.");
 		}
 		else
-			throw std::exception("Nif not found.\n");
+			throw std::exception("Nif not found.");
 	}
 	catch (std::exception e) {
 		throw std::exception(("Exception \""+string(e.what())+"\" thrown\n").c_str());
@@ -436,9 +437,9 @@ void NifFile::loadChNiNode(UInt32 block, UInt32 act, string& val) {
 						UInt32 nifIDfrom = StringToUInt(val.substr(0, i));
 						NifFile* nifFromPtr = NULL;
 						if ( NifFile::getRegNif(modID, nifIDfrom, nifFromPtr) ) {
-							UInt32 blockIDfrom = StringToUInt(val.substr(i));
+							UInt32 blockIDfrom = StringToUInt(val.substr(i+1));
 							Util_NiNodeCopyChild(nifFromPtr, blockIDfrom, this, block);
-							dPrintAndLog("NifLoad - NiNode","Child (block #"+UIntToString(blockIDfrom)+" of nif #"+UIntToString(nifIDfrom)+") copied.");
+							dPrintAndLog("NifLoad - NiNode","Child (block #"+UIntToString(blockIDfrom)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifIDfrom)+") copied.");
 						}
 						else
 							dPrintAndLog("NifLoad - NiNode","\n\n\t\tNif to copy from not found! Loaded nif will be incorrect!\n");

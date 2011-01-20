@@ -73,6 +73,9 @@ void dPrintAndLog(string func);
 void dPrintAndLog(string func, string msg);
 
 // Utility conversion functions
+string BoolToString(bool b);
+bool StringToBool(string str);
+
 string UIntToString(UInt32 uint);
 UInt32 StringToUInt(string str);
 
@@ -88,12 +91,17 @@ string VectorToString(vector<unsigned int> vec);
 string VectorToString(vector<string> vec);
 string VectorToString(Niflib::Vector3 vec);
 string VectorToString(Niflib::TexCoord mat);
+string VectorToString(Niflib::Color3 color);
+string VectorToString(Niflib::Color4 color);
+
 vector<float> StringToVector(string str);
 vector<Niflib::byte> StringToVectorB(string str);
 vector<unsigned int> StringToVectorU(string str);
 vector<string> StringToVectorS(string str);
 Niflib::Vector3 StringToVector3(string str);
 Niflib::TexCoord StringToVectorT(string str);
+Niflib::Color3 StringToVectorC3(string str);
+Niflib::Color4 StringToVectorC4(string str);
 
 string MatrixToString(vector< vector<float> > mat);
 string MatrixToString(Niflib::Matrix33 mat);

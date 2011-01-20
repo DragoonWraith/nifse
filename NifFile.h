@@ -1,12 +1,17 @@
 #pragma once
 
 #include "Utilities.h"
-
+#include "changeLog.h"
 #include "NiflibTypes.h"
 
 #include "niflib.h"
 #include "obj/NiObject.h"
 #include "obj/NiNode.h"
+
+enum {
+	kBasicAct_Open,
+	kBasicAct_Close
+};
 
 class NifFile{
 public:
@@ -56,25 +61,49 @@ public:
 
 
 	// save/load data
-	string delta;
+	static vector<changeLog> delta;
 
 	// save functions
 	void logChange(const UInt32 &block, const UInt32 &type, const UInt32 &action, const string &value = "", const bool &clrPrev = false);
 	void clrChange(const UInt32 &block, const UInt32 &type, const UInt32 &action);
+	void frzChange(NifFile* depends);
+	bool delChange();
 
 	// load functions
+	void loadChNifFile(UInt32 act);
 	void loadChNiExtraData(UInt32 block, UInt32 act, UInt32 type, string& val);
 	void loadChNiObjectNET(UInt32 block, UInt32 act, string& val);
 	void loadChNiAVObject(UInt32 block, UInt32 act, string& val);
 	void loadChNiNode(UInt32 block, UInt32 act, string& val);
+	void loadChNiNodeDefer(UInt32 block, UInt32 act, string& val);
 	void loadChNiAlphaProperty(UInt32 block, UInt32 act, string& val);
+	void loadChNiMatProperty(UInt32 block, UInt32 act, string& val);
+	void loadChNiStenProperty(UInt32 block, UInt32 act, string& val);
 	void loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val);
 	void loadChNiSourceTexture(UInt32 block, UInt32 act, string& val);
 };
 
-const char logNode = ':';
-const char logNumber = '#';
-const char logType = '-';
-const char logAction = '=';
-const char logValType = '|';
-const char logValue = '\n';
+template <class T>
+Niflib::Ref<T> getNifBlock(NifFile*& nifPtr, UInt8 modID, UInt32 nifID, UInt32 blockID, bool mustBeEditable = false) {
+	if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+		if ( nifPtr->root ) {
+			if ( nifPtr->editable || !mustBeEditable ) {
+				if ( blockID < nifPtr->nifList.size() ) {
+					Niflib::Ref<T> block = Niflib::DynamicCast<T>(nifPtr->nifList[blockID]);
+					if ( block )
+						return block;
+					else
+						throw std::exception("Block is not of expected type.");
+				}
+				else
+					throw std::exception("Block index is out of range.");
+			}
+			else
+				throw std::exception("Nif must be editable and is not.");
+		}
+		else
+			throw std::exception("Nif root bad.");
+	}
+	else
+		throw std::exception("Could not find nif.");
+}

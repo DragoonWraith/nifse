@@ -699,7 +699,7 @@ static bool Cmd_NiAlphaPropertySetTriangleSortMode_Execute(COMMAND_ARGS) {
 	int tri = -1;
 	int nifID = -1;
 	UInt32 blockID = 0;
-	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifID, &blockID)) {
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &tri, &nifID, &blockID)) {
 		UInt8 modID = scriptObj->GetModIndex();
 		dPrintAndLog("NiAlphaPropertySetTriangleSortMode","Setting the triangle sort mode of NiAlphaProperty (nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" block #"+UIntToString(blockID)+").");
 		NifFile* nifPtr = NULL;

@@ -51,7 +51,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4996"
+				DisableSpecificWarnings="4996; 4800"
 				ForcedIncludeFiles="obse_common/obse_prefix.h"
 			/>
 			<Tool
@@ -517,6 +517,10 @@
 			Name="Commands"
 			>
 			<File
+				RelativePath=".\Command_Macros.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Commands_Basic.cpp"
 				>
 			</File>
@@ -565,6 +569,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Commands_NiMaterialProperty.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiMaterialProperty.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Commands_NiNode.cpp"
 				>
 			</File>
@@ -597,6 +609,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Commands_NiStencilProperty.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiStencilProperty.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Commands_NiTexturingProperty.cpp"
 				>
 			</File>
@@ -610,6 +630,14 @@
 			>
 			<File
 				RelativePath=".\BSfile.h"
+				>
+			</File>
+			<File
+				RelativePath=".\changeLog.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\changeLog.h"
 				>
 			</File>
 			<File

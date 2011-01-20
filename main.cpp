@@ -99,15 +99,15 @@ extern "C" {
 	// ----------------------------------------------- NifScript Beta ----------------------------------------------- //
 
 		// Deprecated Functions //
-		obse->RegisterTypedCommand(	&kCommandInfo_NifGetAltGrip,					kRetnType_String); //0x24F0 T S
-		obse->RegisterTypedCommand(	&kCommandInfo_NifGetOffHand,					kRetnType_String); //0x24F1 T S
-		obse->RegisterTypedCommand(	&kCommandInfo_NifGetBackShield,					kRetnType_String); //0x24F2   S
+		obse->RegisterTypedCommand(	&kCommandInfo_NifGetAltGrip,					kRetnType_String); //0x24F0 T S L
+		obse->RegisterTypedCommand(	&kCommandInfo_NifGetOffHand,					kRetnType_String); //0x24F1 T S L
+		obse->RegisterTypedCommand(	&kCommandInfo_NifGetBackShield,					kRetnType_String); //0x24F2   S L
 
 	// ------------------------------------------------- NifSE v1.0 ------------------------------------------------- //
 
 		// Debug Function //
 #ifdef _DEBUG
-		obse->RegisterCommand(		&kCommandInfo_NifWriteToDisk									); //0x25F3
+		obse->RegisterCommand(		&kCommandInfo_NifWriteToDisk									); //0x25F3 T
 #else
 		obse->SetOpcodeBase(0x24F4);
 #endif	
@@ -170,6 +170,7 @@ extern "C" {
 		obse->RegisterCommand(		&kCommandInfo_NiAVObjectAddProperty								); //0x2527 T S L
 		obse->RegisterCommand(		&kCommandInfo_NiAVObjectDeleteProperty							); //0x2528 T S L
 
+		// NiNode //
 		obse->RegisterCommand(		&kCommandInfo_NiNodeGetNumChildren								); //0x2529 T
 		obse->RegisterTypedCommand(	&kCommandInfo_NiNodeGetChildren,				kRetnType_Array	); //0x252A T
 		obse->RegisterCommand(		&kCommandInfo_NiNodeGetChildByName								); //0x252B T
@@ -177,6 +178,7 @@ extern "C" {
 		obse->RegisterCommand(		&kCommandInfo_NiNodeDeleteChild									); //0x252D T S L
 		obse->RegisterCommand(		&kCommandInfo_NiNodeCopyChild									); //0x252E T S L
 
+		// NiTexturingProperty //
 		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureCount				); //0x252F T
 
 		/* 0x2530 out of range */	obse->SetOpcodeBase(0x25C0);	// to 25CF (inclusive)
@@ -184,8 +186,8 @@ extern "C" {
 		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureCount				); //0x25C0 T S L
 		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyHasTexture						); //0x25C1 T
 		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureSource				); //0x25C2 T
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyAddTextureSource				); //0x25C3   S L
-		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyDeleteTextureSource			); //0x25C4   S L
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyAddTextureSource				); //0x25C3 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyDeleteTextureSource			); //0x25C4 T S L
 
 		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureClampMode			); //0x25C5 T
 		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertyGetTextureFilterMode			); //0x25C6 T
@@ -211,25 +213,64 @@ extern "C" {
 		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureRotation				); //0x2663 T S L
 		obse->RegisterCommand(		&kCommandInfo_NiTexturingPropertySetTextureCenterOffset			); //0x2664 T S L
 
+		// NiSourceTexture //
 		obse->RegisterCommand(		&kCommandInfo_NiSourceTextureIsExternal							); //0x2665 T
 		obse->RegisterTypedCommand(	&kCommandInfo_NiSourceTextureGetFile,			kRetnType_String); //0x2666 T
 		obse->RegisterCommand(		&kCommandInfo_NiSourceTextureSetExternalTexture					); //0x2667 T S L
 
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetBlendState						); //0x2668   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetSourceBlendFunction				); //0x2669   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetDestinationBlendFunction		); //0x266A   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetTestState						); //0x266B   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetTestFunction					); //0x266C   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetTestThreshold					); //0x266D   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetTriangleSortMode				); //0x266E   S L
+		// NiAlphaProperty //
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetBlendState						); //0x2668 T
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetSourceBlendFunction				); //0x2669 T
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetDestinationBlendFunction		); //0x266A T
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetTestState						); //0x266B T
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetTestFunction					); //0x266C T
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetTestThreshold					); //0x266D T
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertyGetTriangleSortMode				); //0x266E T
 
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetBlendState						); //0x266F   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetSourceBlendFunction				); //0x2670   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetDestinationBlendFunction		); //0x2671   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetTestState						); //0x2672   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetTestFunction					); //0x2673   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetTestThreshold					); //0x2674   S L
-		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetTriangleSortMode				); //0x2675   S L
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetBlendState						); //0x266F T S L
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetSourceBlendFunction				); //0x2670 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetDestinationBlendFunction		); //0x2671 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetTestState						); //0x2672 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetTestFunction					); //0x2673 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetTestThreshold					); //0x2674 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiAlphaPropertySetTriangleSortMode				); //0x2675 T S L
+
+		// NiMaterialProperty //
+		obse->RegisterCommand(		&kCommandInfo_NiMaterialPropertyGetTransparency					); //0x2676 T
+		obse->RegisterTypedCommand(	&kCommandInfo_NiMaterialPropertyGetAmbientColor, kRetnType_Array); //0x2677 T
+		obse->RegisterTypedCommand(	&kCommandInfo_NiMaterialPropertyGetDiffuseColor, kRetnType_Array); //0x2678 T
+		obse->RegisterTypedCommand(	&kCommandInfo_NiMaterialPropertyGetEmissiveColor,kRetnType_Array); //0x2679 T
+		obse->RegisterTypedCommand(	&kCommandInfo_NiMaterialPropertyGetSpecularColor,kRetnType_Array); //0x267A T
+		obse->RegisterCommand(		&kCommandInfo_NiMaterialPropertyGetGlossiness					); //0x267B T
+		
+		obse->RegisterCommand(		&kCommandInfo_NiMaterialPropertySetTransparency					); //0x267C T S L
+		obse->RegisterCommand(		&kCommandInfo_NiMaterialPropertySetAmbientColor					); //0x267D T S L
+		obse->RegisterCommand(		&kCommandInfo_NiMaterialPropertySetDiffuseColor					); //0x267E T S L
+		obse->RegisterCommand(		&kCommandInfo_NiMaterialPropertySetEmissiveColor				); //0x267F T S L
+
+		/* 0x2680 out of range */	obse->SetOpcodeBase(0x26D0);	// to 26FF (inclusive)
+
+		obse->RegisterCommand(		&kCommandInfo_NiMaterialPropertySetSpecularColor				); //0x2680 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiMaterialPropertySetGlossiness					); //0x2681 T S L
+
+		// NiStencilProperty //	
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertyGetStencilState					); //0x26D2 T
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertyGetStencilFunction				); //0x26D3 T
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertyGetStencilRef					); //0x26D4 T
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertyGetStencilMask					); //0x26D5 T
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertyGetFailAction					); //0x26D6 T
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertyGetZFailAction					); //0x26D7 T
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertyGetPassAction					); //0x26D8 T
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertyGetFaceDrawMode					); //0x26D9 T
+
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertySetStencilState					); //0x26DA T S L
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertySetStencilFunction				); //0x26DB T S L
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertySetStencilRef					); //0x26DC T S L
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertySetStencilMask					); //0x26DD T S L
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertySetFailAction					); //0x26DE T S L
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertySetZFailAction					); //0x26DF T S L
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertySetPassAction					); //0x26E1 T S L
+		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertySetFaceDrawMode					); //0x26E2 T S L
 
 		// set up serialization callbacks when running in the runtime
 		if(!obse->isEditor)
