@@ -10,6 +10,8 @@
 #include "Commands_NiAVObject.h"
 #include "Commands_NiNode.h"
 #include "Commands_NiAlphaProperty.h"
+#include "Commands_NiMaterialProperty.h"
+#include "Commands_NiStencilProperty.h"
 #include "Commands_NiTexturingProperty.h"
 #include "Commands_NiSourceTexture.h"
 #include "Commands_Deprecated.h"

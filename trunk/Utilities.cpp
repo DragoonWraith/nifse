@@ -67,6 +67,14 @@ OBSEArray* ArrayFromStdVector(const vector<OBSEElement>& data, Script* callingSc
 	return arr;
 }
 
+string BoolToString(bool b) {
+	return b?"TRUE":"FALSE";
+}
+
+bool StringToBool(string str) {
+	return str.compare("TRUE") == 0;
+}
+
 string UIntToString(UInt32 uint) {
 	std::stringstream buf;
 	buf << uint;
@@ -142,6 +150,14 @@ string VectorToString(Niflib::TexCoord mat) {
 	return "["+FloatToString(mat.u)+"|"+FloatToString(mat.v)+"|";
 }
 
+string VectorToString(Niflib::Color3 color) {
+	return "["+FloatToString(color.r)+"|"+FloatToString(color.g)+"|"+FloatToString(color.b)+"|";
+}
+
+string VectorToString(Niflib::Color4 color) {
+	return "["+FloatToString(color.r)+"|"+FloatToString(color.g)+"|"+FloatToString(color.b)+"|"+FloatToString(color.a)+"|";
+}
+
 vector<float> StringToVector(string str) {
 	vector<float> vec = vector<float>();
 	string::size_type posS = 1;
@@ -213,6 +229,37 @@ Niflib::TexCoord StringToVectorT(string str) {
 	posF = str.find("|",posS);
 	vec.v = StringToFloat(str.substr(posS,posF-posS));
 	return vec;
+}
+
+Niflib::Color3 StringToVectorC3(string str) {
+	Niflib::Color3 color;
+	string::size_type posS = 1;
+	string::size_type posF = str.find("|",1);
+	color.r = StringToFloat(str.substr(posS,posF-posS));
+	posS = posF+1;
+	posF = str.find("|", posS);
+	color.g = StringToFloat(str.substr(posS,posF-posS));
+	posS = posF+1;
+	posF = str.find("|", posS);
+	color.b = StringToFloat(str.substr(posS,posF-posS));
+	return color;
+}
+
+Niflib::Color4 StringToVectorC4(string str) {
+	Niflib::Color4 color;
+	string::size_type posS = 1;
+	string::size_type posF = str.find("|",1);
+	color.r = StringToFloat(str.substr(posS,posF-posS));
+	posS = posF+1;
+	posF = str.find("|", posS);
+	color.g = StringToFloat(str.substr(posS,posF-posS));
+	posS = posF+1;
+	posF = str.find("|", posS);
+	color.b = StringToFloat(str.substr(posS,posF-posS));
+	posS = posF+1;
+	posF = str.find("|", posS);
+	color.a = StringToFloat(str.substr(posS,posF-posS));
+	return color;
 }
 
 string MatrixToString(vector< vector <float> > mat) {

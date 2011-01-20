@@ -18,6 +18,7 @@ static bool Cmd_NifOpen_Execute(COMMAND_ARGS) {
 		if ( nifPtr ) {
 			if ( nifPtr->nifID >= 0 ) {
 				*result = nifPtr->nifID;
+				nifPtr->logChange(0, kNiflibType_NifFile, kBasicAct_Open);
 				dPrintAndLog("NifOpen", "\""+string(oriPath)+"\" registered as #"+UIntToString(nifPtr->modID)+"-"+UIntToString(*result)+".\n");
 			}
 			else
@@ -55,6 +56,8 @@ static bool Cmd_NifClose_Execute(COMMAND_ARGS) {
 	dPrintAndLog("NifClose","Closing nif #"+UIntToString(modID)+"-"+UIntToString(nifID));
 	NifFile* nifPtr = NULL;
 	if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+		if ( !nifPtr->delChange() )
+			nifPtr->logChange(0, kNiflibType_NifFile, kBasicAct_Close);
 		delete nifPtr;
 		dPrintAndLog("NifClose","NifFile successfully closed.\n");
 	}
@@ -202,3 +205,27 @@ DEFINE_COMMAND_PLUGIN(
 	1,
 	kParams_OneString
 );
+
+void NifFile::loadChNifFile(UInt32 act) {
+	NifFile* nifPtr = NULL;
+	switch (act) {
+		case kBasicAct_Open:
+			if ( !NifFile::getRegNif(modID, nifID, nifPtr) )
+				dPrintAndLog("NifLoad - NifFiles","\n\n\t\tCalled for opening unknown nif! Behavior indeterminate.\n");
+			break;
+
+		case kBasicAct_Close:
+			if ( NifFile::getRegNif(modID, nifID, nifPtr) ) {
+				if ( !nifPtr->delChange() )
+					nifPtr->logChange(0, kNiflibType_NifFile, kBasicAct_Close, "");
+				delete nifPtr;
+				dPrintAndLog("NifLoad - NifFiles","NifFile successfully closed.\n");
+			}
+			else
+				dPrintAndLog("NifLoad - NifFiles","\n\n\t\tCalled for closing unknown nif! Behavior indeterminate.\n");
+			break;
+
+		default:
+			dPrintAndLog("NifLoad - NifFiles","\n\n\t\tUnknown change type! Loaded nif will be incorrect!\n");
+	}
+}

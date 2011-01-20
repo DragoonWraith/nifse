@@ -131,7 +131,7 @@ std::list<string> GetBSAfiles() {
 				BSAfiles.push_back((GetOblivionDirectory()+"Data\\"+bsaSearch.cFileName));
 		} while (FindNextFile(h, &bsaSearch));
 		if (GetLastError() != ERROR_NO_MORE_FILES)
-			PrintAndLog("GetBSAfiles","Unknown error during BSA search - some Nif files inside archives may be unaccessible.");
+			PrintAndLog("GetBSAfiles","Unknown error during BSA search - some Nif files inside archives may be inaccessible.");
 	}
 	else
 	{
@@ -142,6 +142,7 @@ std::list<string> GetBSAfiles() {
 }
 
 void NifSE_PreloadCallback(void * reserved) {
+	dPrintAndLog("NifLoad","Loading NifSE data.");
 	UInt32 type, version, length;
 
 	UInt32 modID;
@@ -161,6 +162,7 @@ void NifSE_PreloadCallback(void * reserved) {
 	dPrintAndLog("NifLoad","Clearing previous RegList.");
 	NifFile::RegList.clear();
 	NifFile::RegListByFilename.clear();
+	NifFile::delta.clear();
 
 	while( serInterface->GetNextRecordInfo(&type, &version, &length) ) {
 		dPrintAndLog("NifLoad",string("Type '")+((char*)&type)[3]+((char*)&type)[2]+((char*)&type)[1]+((char*)&type)[0]+"'\tVersion "+UIntToString(version)+"\tLength "+UIntToString(length));
@@ -204,6 +206,7 @@ void NifSE_PreloadCallback(void * reserved) {
 					}
 					else {
 						nifPtr = new NifFile(ReadString(length), nifPath);
+						nifPtr->logChange(0, kNiflibType_NifFile, kBasicAct_Open);
 						dPrintAndLog("NifLoad","New deprecated nif created.");
 					}
 				}
@@ -218,16 +221,20 @@ void NifSE_PreloadCallback(void * reserved) {
 					}
 					else {
 						nifPtr = new NifFile(nifPath, ReadString(length));
+						nifPtr->logChange(0, kNiflibType_NifFile, kBasicAct_Open);
 						dPrintAndLog("NifLoad","New deprecated nif created.");
 					}
 				}
 				break;
 
 			case 'niRe':
-				dPrintAndLog("NifLoad","'niRe' record - new filename, editable.");
+				dPrintAndLog("NifLoad","'niRe' record - new NifFile, editable.");
 				if ( modLoaded ) {
 					nifPath = ReadString(length);
-					nifPtr = new NifFile(nifPath, modID, nifID, true, nifSEv);
+					if ( !NifFile::getRegNif(modID, nifID, nifPtr) ) {
+						nifPtr = new NifFile(nifPath, modID, nifID, true, nifSEv);
+						nifPtr->logChange(0, kNiflibType_NifFile, kBasicAct_Open);
+					}
 					dPrintAndLog("NifLoad","Filename is \""+nifPath+"\".");
 				}
 				break;
@@ -236,7 +243,10 @@ void NifSE_PreloadCallback(void * reserved) {
 				dPrintAndLog("NifLoad","'niRc' record - new filename, const.");
 				if ( modLoaded ) {
 					nifPath = ReadString(length);
-					nifPtr = new NifFile(nifPath, modID, nifID, false, nifSEv);
+					if ( !NifFile::getRegNif(modID, nifID, nifPtr) ) {
+						nifPtr = new NifFile(nifPath, modID, nifID, false, nifSEv);
+						nifPtr->logChange(0, kNiflibType_NifFile, kBasicAct_Open);
+					}
 					dPrintAndLog("NifLoad","Filename is \""+nifPath+"\".");
 				}
 				break;
@@ -245,12 +255,16 @@ void NifSE_PreloadCallback(void * reserved) {
 				dPrintAndLog("NifLoad","'niCh' record - new changes.");
 				if ( modLoaded ) {
 					changes = ReadString(length);
-					nifPtr->delta = changes;
-					dPrintAndLog("NifLoad","ChangeLog loaded.");
+					dPrintAndLog("NifLoad","Changes loaded.");
 					while ( changes.length() != 0 ) {
 						LoadChangelog(changes, chNode, chType, chAct, chVal);
+						nifPtr->logChange(chNode, chType, chAct, chVal);
 						dPrintAndLog("NifLoad","Changes loaded; parsing.");
 						switch (chType) {
+							case kNiflibType_NifFile:
+								nifPtr->loadChNifFile(chAct);
+								break;
+
 							case kNiflibType_NiExtraData:
 							case kNiflibType_BSBound:
 							case kNiflibType_BSDecalPlacementVectorExtraData:
@@ -292,6 +306,14 @@ void NifSE_PreloadCallback(void * reserved) {
 
 							case kNiflibType_NiAlphaProperty:
 								nifPtr->loadChNiAlphaProperty(chNode, chAct, chVal);
+								break;
+
+							case kNiflibType_NiMaterialProperty:
+								nifPtr->loadChNiMatProperty(chNode, chAct, chVal);
+								break;
+
+							case kNiflibType_NiStencilProperty:
+								nifPtr->loadChNiStenProperty(chNode, chAct, chVal);
 								break;
 
 							case kNiflibType_NiTexturingProperty:
