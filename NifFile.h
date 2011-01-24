@@ -80,6 +80,7 @@ public:
 	void loadChNiMatProperty(UInt32 block, UInt32 act, string& val);
 	void loadChNiStenProperty(UInt32 block, UInt32 act, string& val);
 	void loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val);
+	void loadChNiVertColorProperty(UInt32 block, UInt32 act, string& val);
 	void loadChNiSourceTexture(UInt32 block, UInt32 act, string& val);
 };
 

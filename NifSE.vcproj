@@ -624,6 +624,14 @@
 				RelativePath=".\Commands_NiTexturingProperty.h"
 				>
 			</File>
+			<File
+				RelativePath=".\Commands_NiVertexColorProperty.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_NiVertexColorProperty.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Backbone"
