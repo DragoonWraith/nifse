@@ -304,7 +304,7 @@ static bool Cmd_NiNodeCopyChild_Execute(COMMAND_ARGS) {
 	UInt32 blockIDto = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifIDfrom, &blockIDfrom, &nifIDto, &blockIDto)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiNodeCopyChild","Copying Node (Nif #"+UIntToString(modID)+"-"+UIntToString(nifIDfrom)+" block #"+UIntToString(blockIDfrom)+" as a child of Node (Nif #"+UIntToString(modID)+"-"+UIntToString(nifIDto)+" block #"+UIntToString(blockIDto)+".");
+		dPrintAndLog("NiNodeCopyChild","Copying Node (Nif #"+UIntToString(modID)+"-"+UIntToString(nifIDfrom)+" block #"+UIntToString(blockIDfrom)+" as a child of Node (Nif #"+UIntToString(modID)+"-"+UIntToString(nifIDto)+" block #"+UIntToString(blockIDto)+").");
 		NifFile* nifFromPtr = NULL;
 		NifFile* nifToPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifIDfrom, nifFromPtr) && NifFile::getRegNif(modID, nifIDto, nifToPtr) ) {
@@ -369,8 +369,8 @@ UInt32 Util_NiNodeCopyChild(NifFile* nifFromPtr, UInt32 blockIDfrom, NifFile* ni
 									childCopy = childCopy->GetParent();
 								}
 								for ( vector<Niflib::NiObjectRef>::iterator i = copiedBranch.begin(); i != copiedBranch.end(); ++i ) {
-									nifToPtr->nifList.push_back(*i);
 									(*i)->internal_block_number = nifToPtr->nifList.size();
+									nifToPtr->nifList.push_back(*i);
 								}
 								node->AddChild(childCopy);
 								return copiedStartIndex;

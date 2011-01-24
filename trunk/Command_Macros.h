@@ -39,6 +39,35 @@
 		kParams_OneInt_OneOptionalInt \
 	)
 
+#define STDNIFLIBGETBLOCK(blockType, funcName, cmdName, alias, retnType, desc) \
+	static bool Cmd_ ## cmdName ## _Execute(COMMAND_ARGS) { \
+		*result = 0; \
+		\
+		int nifID = -1; \
+		UInt32 blockID = 0; \
+		if (ExtractArgs(PASS_EXTRACT_ARGS, &nifID, &blockID)) { \
+			UInt8 modID = scriptObj->GetModIndex(); \
+			dPrintAndLog( #cmdName, "Getting the " #desc " of " #blockType " (nif " NIFIDSTR+")."); \
+			try { \
+				GETBLOCK(blockType, block); \
+				*result = block-> ## funcName ## ->internal_block_number; \
+				dPrintAndLog( #cmdName, "Returning "+ ## retnType ## ToString(*result)+".\n"); \
+			} catch (std::exception e) { \
+				*result = 0; \
+				dPrintAndLog( #cmdName, "Exception \""+string(e.what())+"\" thrown.\n"); \
+			} \
+		} else \
+			dPrintAndLog( #cmdName, "Error extracting arguments.\n"); \
+		return true; \
+	} \
+	DEFINE_CMD_PLUGIN_ALT( \
+		cmdName, \
+		alias, \
+		"Gets the " #desc " of the given " #blockType ".", \
+		0, \
+		kParams_OneInt_OneOptionalInt \
+	)
+
 #define STDNIFLIBGET(blockType, funcName, alias, retnType, desc) \
 	STDNIFLIBGETCMD(blockType, funcName, blockType ## funcName, alias, retnType, desc)
 

@@ -13,6 +13,7 @@
 #include "Commands_NiMaterialProperty.h"
 #include "Commands_NiStencilProperty.h"
 #include "Commands_NiTexturingProperty.h"
+#include "Commands_NiVertexColorProperty.h"
 #include "Commands_NiSourceTexture.h"
 #include "Commands_Deprecated.h"
 

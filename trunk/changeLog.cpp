@@ -12,7 +12,7 @@ void changeLog::saveMod() const {
 
 void changeLog::saveNif() const {
 	NifFile* nifPtr;
-	if ( NifFile::getRegNif(mod, nif, nifPtr) || !required.empty() ) {
+	if ( NifFile::getRegNif(mod, nif, nifPtr) || !required.empty() || act == kBasicAct_Close ) {
 		serInterface->WriteRecord('niID', g_pluginVersion, (void *)(&nif), sizeof(UInt32));
 		serInterface->WriteRecord('nSEV', g_pluginVersion, (void *)(&ver), sizeof(UInt32));
 		if ( edit ) {

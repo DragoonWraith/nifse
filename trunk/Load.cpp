@@ -320,6 +320,10 @@ void NifSE_PreloadCallback(void * reserved) {
 								nifPtr->loadChNiTexturingProperty(chNode, chAct, chVal);
 								break;
 
+							case kNiflibType_NiVertexColorProperty:
+								nifPtr->loadChNiVertColorProperty(chNode, chAct, chVal);
+								break;
+
 							case kNiflibType_NiSourceTexture:
 								nifPtr->loadChNiSourceTexture(chNode, chAct, chVal);
 								break;

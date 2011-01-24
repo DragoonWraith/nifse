@@ -15,8 +15,9 @@ enum {
 	kNiAVObjAct_SetFlags,
 	kNiAVObjAct_SetVel,
 	kNiAVObjAct_SetVis,
-	kNiAVObjAct_SetCollObj,
-	kNiAVObjAct_SetCollMode
+	kNiAVObjAct_SetCollMode,
+	kNiAVObjAct_ClrCollObj,
+	kNiAVObjAct_CopyCollObj
 };
 
 extern CommandInfo kCommandInfo_NiAVObjectGetLocalTransform;
@@ -35,4 +36,12 @@ extern CommandInfo kCommandInfo_NiAVObjectGetPropertyByType;
 extern CommandInfo kCommandInfo_NiAVObjectAddProperty;
 extern CommandInfo kCommandInfo_NiAVObjectDeleteProperty;
 
+extern CommandInfo kCommandInfo_NiAVObjectGetCollisionMode;
+extern CommandInfo kCommandInfo_NiAVObjectSetCollisionMode;
+
+extern CommandInfo kCommandInfo_NiAVObjectGetCollisionObject;
+extern CommandInfo kCommandInfo_NiAVObjectClearCollisionObject;
+extern CommandInfo kCommandInfo_NiAVObjectCopyCollisionObject;
+
 extern UInt32 Util_NiAVObjectAddProperty(NifFile* nifPtr, Niflib::NiAVObjectRef avObj, UInt32 typeID, const string& name);
+extern UInt32 Util_NiAVObjectCopyCollision(NifFile* nifFromPtr, UInt32 blockIDfrom, NifFile* nifToPtr, UInt32 blockIDto);

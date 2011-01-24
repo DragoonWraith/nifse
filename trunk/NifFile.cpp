@@ -427,7 +427,7 @@ bool NifFile::delChange() {
 		logPtr = &(NifFile::delta[i-1]);
 		if ( logPtr->mod == modID && logPtr->nif == nifID ) {
 			if ( logPtr->required.empty() )
-				NifFile::delta.erase(NifFile::delta.begin()+i);
+				NifFile::delta.erase(NifFile::delta.begin()+i-1);
 			else
 				return false;
 		}

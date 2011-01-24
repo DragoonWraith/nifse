@@ -6,9 +6,12 @@
 using Niflib::NiAVObjectRef;
 
 #include "NiProperties.h"
+#include "obj/NiCollisionObject.h"
+
+#include "Command_Macros.h"
 
 // gets the local transformation of the
-// specified Child of the given NifFile
+// specified NiAVObject
 static bool Cmd_NiAVObjectGetLocalTransform_Execute(COMMAND_ARGS) {
 	*result = 0;
 	vector<OBSEElement> vmatrix = vector<OBSEElement>();
@@ -76,7 +79,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 // gets the local translation of the
-// specified Child of the given NifFile
+// specified NiAVObject
 static bool Cmd_NiAVObjectGetLocalTranslation_Execute(COMMAND_ARGS) {
 	*result = 0;
 	OBSEArray* arr = NULL;
@@ -137,7 +140,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 // gets the local rotation of the
-// specified Child of the given NifFile
+// specified NiAVObject
 static bool Cmd_NiAVObjectGetLocalRotation_Execute(COMMAND_ARGS) {
 	*result = 0;
 	vector<OBSEElement> vmatrix = vector<OBSEElement>();
@@ -205,7 +208,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 // gets the local scale of the
-// specified Child of the given NifFile
+// specified NiAVObject
 static bool Cmd_NiAVObjectGetLocalScale_Execute(COMMAND_ARGS) {
 	*result = 0;
 
@@ -256,7 +259,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 // sets the local transformation of the
-// specified Child of the given NifFile
+// specified NiAVObject
 static bool Cmd_NiAVObjectSetLocalTransform_Execute(COMMAND_ARGS) {
 	*result = 0;
 
@@ -358,7 +361,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 // sets the local translation of the
-// specified Child of the given NifFile
+// specified NiAVObject
 static bool Cmd_NiAVObjectSetLocalTranslation_Execute(COMMAND_ARGS) {
 	*result = 0;
 
@@ -451,7 +454,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 // sets the local rotation of the
-// specified Child of the given NifFile
+// specified NiAVObject
 static bool Cmd_NiAVObjectSetLocalRotation_Execute(COMMAND_ARGS) {
 	*result = 0;
 
@@ -553,7 +556,7 @@ DEFINE_CMD_PLUGIN_ALT(
 );
 
 // sets the local scale of the
-// specified Child of the given NifFile
+// specified NiAVObject
 static bool Cmd_NiAVObjectSetLocalScale_Execute(COMMAND_ARGS) {
 	*result = 0;
 
@@ -611,7 +614,7 @@ DEFINE_CMD_PLUGIN_ALT(
 	kParams_OneFloat_OneInt_OneOptionalInt
 );
 
-// gets the number of properties that the AVObject has
+// gets the number of properties that the NiAVObject has
 static bool Cmd_NiAVObjectGetNumProperties_Execute(COMMAND_ARGS) {
 	*result = 0;
 
@@ -735,14 +738,13 @@ static bool Cmd_NiAVObjectGetPropertyByType_Execute(COMMAND_ARGS) {
 					Niflib::NiAVObjectRef avObj = Niflib::DynamicCast<Niflib::NiAVObject>(nifPtr->nifList[blockID]);
 					if ( avObj ) {
 						try {
-							if ( avObj->GetProperties().size() ) {
-								*result = avObj->GetPropertyByType(*(getNiflibType(prType)))->internal_block_number;
+							Niflib::NiPropertyRef prRef = avObj->GetPropertyByType(*(getNiflibType(prType)));
+							if ( prRef ) {
+								*result = prRef->internal_block_number;
 								dPrintAndLog("NiAVObjectGetPropertyByType","Returning "+UIntToString(*result)+".\n");
 							}
-							else {
-								*result = -1;
-								dPrintAndLog("NiAVObjectGetPropertyByType","Block has no properties.\n");
-							}
+							else
+								dPrintAndLog("NiAVObjectGetPropertyByType","NiAVObject does not have a property of this type.\n");
 						}
 						catch (std::exception e) {
 							*result = -1;
@@ -890,6 +892,84 @@ DEFINE_CMD_PLUGIN_ALT(
 	kParams_TwoInts_OneOptionalInt
 );
 
+STDNIFLIBGET(NiAVObject, GetCollisionMode, NiAVObjGetCollMode, UInt, collision mode);
+
+STDNIFLIBSETUINTCAST(NiAVObject, SetCollisionMode, NiAVObjSetCollMode, kNiAVObjAct_SetCollMode, true, collision mode, Niflib::NiAVObject::CollisionType);
+
+STDNIFLIBGETBLOCK(NiAVObject, GetCollisionObject(), NiAVObjectGetCollisionObject, NiAVObjGetCollObj, UInt, collision object);
+
+static bool Cmd_NiAVObjectClearCollisionObject_Execute(COMMAND_ARGS) {
+	*result = 0;
+
+	int nifID = -1;
+	UInt32 blockID = 0;
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifID, &blockID)) {
+		UInt8 modID = scriptObj->GetModIndex();
+		dPrintAndLog("NiAVObjectClearCollisionObject", "Clearing the collision object of NiAVObject (nif " NIFIDSTR+").");
+		try {
+			GETBLOCK(NiAVObject, block);
+			if ( block->GetCollisionObject() )
+				block->GetCollisionObject()->SetTarget((Niflib::NiAVObject*)NULL);
+			block->SetCollisionObject((Niflib::NiCollisionObject*)NULL);
+			*result = 1;
+			dPrintAndLog("NiAVObjectClearCollisionObject", "Collision object cleared.\n");
+		} catch (std::exception e) {
+			*result = 0;
+			dPrintAndLog("NiAVObjectClearCollisionObject", "Exception \""+string(e.what())+"\" thrown.\n");
+		}
+	} else
+		dPrintAndLog("NiAVObjectClearCollisionObject", "Error extracting arguments.\n");
+	return true;
+}
+
+DEFINE_CMD_PLUGIN_ALT(
+	NiAVObjectClearCollisionObject,
+	NiAVObjClrCollObj,
+	"Clears the collision object of the given NiAVObject.",
+	0,
+	kParams_OneInt_OneOptionalInt
+);
+
+static bool Cmd_NiAVObjectCopyCollisionObject_Execute(COMMAND_ARGS) {
+	*result = 0;
+
+	int nifIDfrom = -1;
+	int blockIDfrom = -1;
+	int nifIDto = -1;
+	UInt32 blockIDto = 0;
+	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifIDfrom, &blockIDfrom, &nifIDto, &blockIDto)) {
+		UInt8 modID = scriptObj->GetModIndex();
+		dPrintAndLog("NiAVObjectCopyCollisionObject","Copying NiCollisionObject (Nif #"+UIntToString(modID)+"-"+UIntToString(nifIDfrom)+" block #"+UIntToString(blockIDfrom)+" as the collision object of NiAVObject (Nif #"+UIntToString(modID)+"-"+UIntToString(nifIDto)+" block #"+UIntToString(blockIDto)+".");
+		NifFile* nifFromPtr = NULL;
+		NifFile* nifToPtr = NULL;
+		if ( NifFile::getRegNif(modID, nifIDfrom, nifFromPtr) && NifFile::getRegNif(modID, nifIDto, nifToPtr) ) {
+			try {
+				*result = Util_NiAVObjectCopyCollision(nifFromPtr, blockIDfrom, nifToPtr, blockIDto);
+				nifFromPtr->frzChange(nifToPtr);
+				nifToPtr->logChange(blockIDto, kNiflibType_NiAVObject, kNiAVObjAct_CopyCollObj, UIntToString(nifIDfrom) +logValType+ UIntToString(blockIDfrom));
+				dPrintAndLog("NiAVObjectCopyCollisionObject","Collision object successfully copied.\n");
+			}
+			catch (std::exception e) {
+				*result = 0;
+				dPrintAndLog("NiAVObjectCopyCollisionObject",e.what());
+			}
+		}
+		else
+			dPrintAndLog("NiAVObjectCopyCollisionObject","Nif to copy to not found.\n");
+	}
+	else
+		dPrintAndLog("NiAVObjectCopyCollisionObject","Error extracting arguments.\n");
+
+	return true;
+}
+
+DEFINE_CMD_PLUGIN_ALT(
+	NiAVObjectCopyCollisionObject,
+	NiAVObjCopyCollObj,
+	"Copies the collision object of the first Nif as the collision object of the NiAVObject of the second Nif.",
+	0,
+	kParams_ThreeInts_OneOptionalInt
+);
 
 UInt32 Util_NiAVObjectAddProperty(NifFile* nifPtr, Niflib::NiAVObjectRef avObj, UInt32 typeID, const string& name) {
 	Niflib::NiPropertyRef nuProp = Niflib::DynamicCast<Niflib::NiProperty>(getNiflibType(typeID)->Create());
@@ -903,6 +983,53 @@ UInt32 Util_NiAVObjectAddProperty(NifFile* nifPtr, Niflib::NiAVObjectRef avObj, 
 	}
 	else
 		throw std::exception("Passed type is not derived from NiProperty.");
+}
+
+UInt32 Util_NiAVObjectCopyCollision(NifFile* nifFromPtr, UInt32 blockIDfrom, NifFile* nifToPtr, UInt32 blockIDto) {
+	try {
+		if ( nifFromPtr->root && nifToPtr->root ) {
+			if ( nifToPtr->editable ) {
+				if ( blockIDfrom < nifFromPtr->nifList.size() && blockIDto < nifToPtr->nifList.size() ) {
+					Niflib::NiNodeRef avObj = Niflib::DynamicCast<Niflib::NiNode>(nifToPtr->nifList[blockIDto]);
+					Niflib::NiObjectRef coll = nifFromPtr->nifList[blockIDfrom];
+					if ( avObj && coll && coll->GetType().IsDerivedType(Niflib::NiCollisionObject::TYPE) ) {
+						std::stringstream* nifStream = new std::stringstream(std::ios::binary|std::ios::in|std::ios::out);
+						Niflib::WriteNifTree(*nifStream, coll, *(nifFromPtr->headerInfo));
+						vector<Niflib::NiObjectRef> copiedBranch = Niflib::ReadNifList(*nifStream, nifFromPtr->headerInfo);
+						if ( !(copiedBranch.empty()) ) {
+							Niflib::NiCollisionObjectRef collCopy = Niflib::DynamicCast<Niflib::NiCollisionObject>(copiedBranch[0]);
+							if ( collCopy ) {
+								UInt32 copiedStartIndex = nifToPtr->nifList.size();
+								for ( vector<Niflib::NiObjectRef>::iterator i = copiedBranch.begin(); i != copiedBranch.end(); ++i ) {
+									(*i)->internal_block_number = nifToPtr->nifList.size();
+									nifToPtr->nifList.push_back(*i);
+								}
+								if ( avObj->GetCollisionObject() )
+									avObj->GetCollisionObject()->SetTarget((Niflib::NiAVObject*)NULL);
+								avObj->SetCollisionObject(collCopy);
+								return copiedStartIndex;
+							}
+							else
+								throw std::exception("Could not find copied collision object.");
+						}
+						else
+							throw std::exception("Copied branch is empty.");
+					}
+					else
+						throw std::exception("Not a NiAVObject.");
+				}
+				else
+					throw std::exception("Nif block index out of bounds.");
+			}
+			else
+				throw std::exception("Nif to copy to not editable.");
+		}
+		else
+			throw std::exception("Nif not found.");
+	}
+	catch (std::exception e) {
+		throw std::exception(("Exception \""+string(e.what())+"\" thrown\n").c_str());
+	}
 }
 
 void NifFile::loadChNiAVObject(UInt32 block, UInt32 act, std::string &val) {
@@ -992,11 +1119,39 @@ void NifFile::loadChNiAVObject(UInt32 block, UInt32 act, std::string &val) {
 					}
 					break;
 
+				case kNiAVObjAct_SetCollMode:
+					avObj->SetCollisionMode((Niflib::NiAVObject::CollisionType)StringToUInt(val));
+					dPrintAndLog("NifLoad - NiAVObject","NiAVObject collision mode change loaded.");
+					break;
+
+				case kNiAVObjAct_ClrCollObj:
+					if ( avObj->GetCollisionObject() )
+						avObj->GetCollisionObject()->SetTarget((Niflib::NiAVObject*)NULL);
+					avObj->SetCollisionObject((Niflib::NiCollisionObject*)NULL);
+					dPrintAndLog("NifLoad - NiAVObject","NiAVObject collision object cleared.");
+					break;
+
+				case kNiAVObjAct_CopyCollObj:
+					try {
+						string::size_type i = val.find(logValType);
+						UInt32 nifIDfrom = StringToUInt(val.substr(0, i));
+						NifFile* nifFromPtr = NULL;
+						if ( NifFile::getRegNif(modID, nifIDfrom, nifFromPtr) ) {
+							UInt32 blockIDfrom = StringToUInt(val.substr(i+1));
+							Util_NiAVObjectCopyCollision(nifFromPtr, blockIDfrom, this, block);
+							dPrintAndLog("NifLoad - NiAVObject","Collision object (block #"+UIntToString(blockIDfrom)+" of nif #"+UIntToString(modID)+"-"+UIntToString(nifIDfrom)+") copied.");
+						}
+						else
+							dPrintAndLog("NifLoad - NiAVObject","\n\n\t\tNif to copy from not found! Loaded nif will be incorrect!\n");
+					}
+					catch (std::exception e) {
+						dPrintAndLog("NifLoad - NiAVObject","\n\n\t\t"+string(e.what())+"\t\tLoaded nif will be incorrect!\n");
+					}
+					break;
+
 				case kNiAVObjAct_SetFlags:
 				case kNiAVObjAct_SetVel:
 				case kNiAVObjAct_SetVis:
-				case kNiAVObjAct_SetCollObj:
-				case kNiAVObjAct_SetCollMode:
 					dPrintAndLog("NifLoad - NiAVObject","\n\n\t\tThis version of NifSE does not support these changes! Loaded nif will be incorrect!\n");
 
 				default:
