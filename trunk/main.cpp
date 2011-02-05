@@ -273,11 +273,11 @@ extern "C" {
 		obse->RegisterCommand(		&kCommandInfo_NiStencilPropertySetFaceDrawMode					); //0x26E2 T S L D
 
 		// NiVertexColorProperty //
-		obse->RegisterCommand(		&kCommandInfo_NiVertexColorPropertyGetVertexMode				); //0x26E3       
-		obse->RegisterCommand(		&kCommandInfo_NiVertexColorPropertyGetLightingMode				); //0x26E4       
+		obse->RegisterCommand(		&kCommandInfo_NiVertexColorPropertyGetVertexMode				); //0x26E3 T     D
+		obse->RegisterCommand(		&kCommandInfo_NiVertexColorPropertyGetLightingMode				); //0x26E4 T     D
 		
-		obse->RegisterCommand(		&kCommandInfo_NiVertexColorPropertySetVertexMode				); //0x26E5   S L 
-		obse->RegisterCommand(		&kCommandInfo_NiVertexColorPropertySetLightingMode				); //0x26E6   S L 
+		obse->RegisterCommand(		&kCommandInfo_NiVertexColorPropertySetVertexMode				); //0x26E5 T S L D
+		obse->RegisterCommand(		&kCommandInfo_NiVertexColorPropertySetLightingMode				); //0x26E6 T S L D
 
 		// NiAVObject // (again)
 		obse->RegisterCommand(		&kCommandInfo_NiAVObjectGetCollisionMode						); //0x26E7       D

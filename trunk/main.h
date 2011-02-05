@@ -7,6 +7,7 @@
 #include "Commands_NiObject.h"
 #include "Commands_NiObjectNET.h"
 #include "Commands_NiExtraData.h"
+#include "Commands_BSFurnitureMarker.h"
 #include "Commands_NiAVObject.h"
 #include "Commands_NiNode.h"
 #include "Commands_NiAlphaProperty.h"

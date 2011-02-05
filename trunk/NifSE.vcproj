@@ -529,6 +529,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Commands_BSFurnitureMarker.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Commands_BSFurnitureMarker.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Commands_Debug.cpp"
 				>
 			</File>
