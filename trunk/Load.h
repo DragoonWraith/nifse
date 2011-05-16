@@ -3,11 +3,8 @@
 #include "NifFile.h"
 
 // map of where documentation for functions can be found; used by shadeMe's CSE
-extern std::map<const char*, const char*>* FunctionDocMap;
-static string url ("http://cs.elderscrolls.com/constwiki/index.php/");
-static void doc(string func) {
-	FunctionDocMap->insert(pair<const char*,const char*>(func.c_str(), (url+func).c_str()));
-}
+extern std::vector<string>* FunctionDocMap;
+static const string url ("http://cs.elderscrolls.com/constwiki/index.php/");
 
 // Message handlers
 void MessageHandler(OBSEMessagingInterface::Message* msg);

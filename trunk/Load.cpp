@@ -1,6 +1,27 @@
 #include "Load.h"
+#include "CSEAPI.h"
 
-extern std::map<const char*, const char*>* FunctionDocMap (NULL);
+extern std::vector<string>*	FunctionDocMap		= NULL;
+
+CSEIntelliSenseInterface*	g_CSEISIntfc		= NULL;
+CSEConsoleInterface*		g_CSEConsoleIntfc	= NULL;
+
+void ConScribeMessageHandler(OBSEMessagingInterface::Message* Msg)
+{
+	if (Msg->type == 'CSEI') {
+		CSEInterface* Interface = (CSEInterface*)Msg->data;			// CSEInterface is the API class
+
+		g_CSEConsoleIntfc = (CSEConsoleInterface*)Interface->InitializeInterface(CSEInterface::kCSEInterface_Console);
+		g_CSEISIntfc = (CSEIntelliSenseInterface*)Interface->InitializeInterface(CSEInterface::kCSEInterface_IntelliSense);
+
+		_MESSAGE("Received interface from CSE");
+
+		g_CSEConsoleIntfc->PrintToConsole("NifSE", ("Registering " + UIntToString(FunctionDocMap->size()) + " command URLs ...").c_str());
+		for ( std::vector<string>::iterator i = FunctionDocMap->begin(); i != FunctionDocMap->end(); ++i )
+			g_CSEISIntfc->RegisterCommandURL(i->c_str(), (url + *i).c_str());
+		delete FunctionDocMap;
+	}
+}
 
 void MessageHandler(OBSEMessagingInterface::Message* msg) {
 	switch (msg->type) {
@@ -20,52 +41,13 @@ void MessageHandler(OBSEMessagingInterface::Message* msg) {
 void EditorMessageHandler(OBSEMessagingInterface::Message* msg) {
 	switch (msg->type) {
 		case OBSEMessagingInterface::kMessage_PostLoad:
-			msgInterface->RegisterListener(g_pluginHandle, "CSE", EditorMessageHandler);
-			_MESSAGE("OBSE Plugins loaded. Listening for CSE dispatches.");
+			msgInterface->RegisterListener(g_pluginHandle, "CSE", ConScribeMessageHandler);
+			_MESSAGE("Registered to receive messages from CSE");
 			break;
 
-		case 'CSEL':
-			_MESSAGE("\nDocumenting functions for CSE.");
-			FunctionDocMap = new std::map<const char*, const char*>;
-			doc("NifGetAltGrip");
-			doc("NifGetOffHand");
-			doc("NifGetBackShield");
-			doc("NifOpen");
-			doc("NifClose");
-			doc("NifGetPath");
-			doc("NifGetOriginalPath");
-			doc("NifGetNumExtraData");
-			doc("NifAddExtraData");
-			doc("NifDeleteNthExtraData");
-			doc("NifGetNthExtraDataName");
-			doc("NifSetNthExtraDataName");
-			doc("NifGetExtraDataIndexByName");
-			doc("NifGetNthExtraDataType");
-			doc("NifGetNthExtraDataString");
-			doc("NifSetNthExtraDataString");
-			doc("NifGetNumChildren");
-			doc("NifDeleteNthChild");
-			doc("NifGetNthChildName");
-			doc("NifSetNthChildName");
-			doc("NifGetChildIndexByName");
-			doc("NifGetNthChildType");
-			doc("NifGetNthChildLocalTransform");
-			doc("NifGetNthChildLocalTranslation");
-			doc("NifGetNthChildLocalRotation");
-			doc("NifGetNthChildLocalScale");
-			doc("NifSetNthChildLocalScale");
-			doc("NifSetNthChildLocalTransformTEMP");
-			doc("NifSetNthChildLocalTranslationTEMP");
-			doc("NifSetNthChildLocalRotationTEMP");
-			doc("NifNthChildHasMaterial");
-			doc("NifGetNthChildMaterial");
-			doc("NifSetNthChildMaterial");
-			doc("NifNthChildHasTexturingProp");
-			doc("NifNthChildHasBaseTexture");
-			doc("NifGetNthChildBaseTexture");
-			doc("NifSetNthChildBaseTexture");
-			msgInterface->Dispatch(g_pluginHandle, 'CSEL', FunctionDocMap, sizeof(&FunctionDocMap), "CSE");
-			_MESSAGE("CSE Documentation dispatched.");
+		case OBSEMessagingInterface::kMessage_PostPostLoad:
+			_MESSAGE("Requesting an interface from CSE");
+			msgInterface->Dispatch(g_pluginHandle, 'CSEI', NULL, 0, "CSE");	
 			break;
 	}
 }
@@ -268,7 +250,6 @@ void NifSE_PreloadCallback(void * reserved) {
 							case kNiflibType_NiExtraData:
 							case kNiflibType_BSBound:
 							case kNiflibType_BSDecalPlacementVectorExtraData:
-							case kNiflibType_BSFurnitureMarker:
 							case kNiflibType_BSWArray:
 							case kNiflibType_NiArkAnimationExtraData:
 							case kNiflibType_NiArkImporterExtraData:
@@ -291,6 +272,9 @@ void NifSE_PreloadCallback(void * reserved) {
 							case kNiflibType_NiVertWeightsExtraData:
 								nifPtr->loadChNiExtraData(chNode, chAct, chType, chVal);
 								break;
+								
+							case kNiflibType_BSFurnitureMarker:
+								nifPtr->loadChBSFurnMkr(chNode, chAct, chVal);
 
 							case kNiflibType_NiObjectNET:
 								nifPtr->loadChNiObjectNET(chNode, chAct, chVal);
