@@ -1,20 +1,16 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NifSE", "NifSE.vcproj", "{D4DDA734-7E93-4581-8F82-32BB738F69FE}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NifSE", "NifSE.vcxproj", "{D4DDA734-7E93-4581-8F82-32BB738F69FE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "..\common\common.vcproj", "{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "..\common\common.vcxproj", "{20C6411C-596F-4B85-BE4E-8BC91F59D8A6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NifScript", "..\DUMMY NifScript\NifScript.vcproj", "{DFA23054-DC80-47DE-9F8D-F47A0FAE8787}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NifScript", "..\DUMMY NifScript\NifScript.vcxproj", "{DFA23054-DC80-47DE-9F8D-F47A0FAE8787}"
+	ProjectSection(ProjectDependencies) = postProject
+		{20C6411C-596F-4B85-BE4E-8BC91F59D8A6} = {20C6411C-596F-4B85-BE4E-8BC91F59D8A6}
+	EndProjectSection
 EndProject
 Global
-	GlobalSection(SourceCodeControl) = preSolution
-		SccNumberOfProjects = 1
-		SccProjectName0 = Perforce\u0020Project
-		SccLocalPath0 = ..
-		SccProvider0 = MSSCCI:Perforce\u0020SCM
-		SccProjectFilePathRelativizedFromConnection0 = NifSE\\
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug - Static|Win32 = Debug - Static|Win32
 		Debug|Win32 = Debug|Win32

@@ -1,0 +1,293 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="obse">
+      <UniqueIdentifier>{a60b73e7-e4b2-4826-9569-223073799e52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Commands">
+      <UniqueIdentifier>{b322f540-4db5-4862-91d4-4a9c09c2cfb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Backbone">
+      <UniqueIdentifier>{051c4a26-ae2b-4eca-90e4-f1c4f600876b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Backbone\Niflib_Includes">
+      <UniqueIdentifier>{1810f2fa-3624-48ff-9ce0-9b503cea391d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Callbacks">
+      <UniqueIdentifier>{85901b8d-f4f6-498f-ab72-25b11c42d6f6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\obse\obse\GameActorValues.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse\GameAPI.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse\GameBSExtraData.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse\GameData.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse\GameForms.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse\GameObjects.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse\GameTasks.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse\GameTypes.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse\NiAPI.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse\NiNodes.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse\NiRTTI.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse_common\SafeWrite.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse\Script.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\obse\obse\Utilities.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_Basic.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_BSFurnitureMarker.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_Debug.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_Deprecated.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_NiAlphaProperty.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_NiAVObject.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_NiExtraData.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_NiMaterialProperty.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_NiNode.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_NiObject.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_NiObjectNET.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_NiSourceTexture.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_NiStencilProperty.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_NiTexturingProperty.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Commands_NiVertexColorProperty.cpp">
+      <Filter>Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="changeLog.cpp">
+      <Filter>Backbone</Filter>
+    </ClCompile>
+    <ClCompile Include="Hooks_NifSE.cpp">
+      <Filter>Backbone</Filter>
+    </ClCompile>
+    <ClCompile Include="NifFile.cpp">
+      <Filter>Backbone</Filter>
+    </ClCompile>
+    <ClCompile Include="Utilities.cpp">
+      <Filter>Backbone</Filter>
+    </ClCompile>
+    <ClCompile Include="NiflibTypes.cpp">
+      <Filter>Backbone\Niflib_Includes</Filter>
+    </ClCompile>
+    <ClCompile Include="Load.cpp">
+      <Filter>Callbacks</Filter>
+    </ClCompile>
+    <ClCompile Include="New.cpp">
+      <Filter>Callbacks</Filter>
+    </ClCompile>
+    <ClCompile Include="Save.cpp">
+      <Filter>Callbacks</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.c" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Versioning.cpp" />
+    <ClCompile Include="..\obse\obse\GameExtraData.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\obse\obse\GameActorValues.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\GameAPI.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\GameBSExtraData.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\GameData.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\GameForms.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\GameObjects.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\GameTasks.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\GameTypes.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\NiAPI.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\NiNodes.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\NiRTTI.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\ParamInfos.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\PluginAPI.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse_common\SafeWrite.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\Script.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\obse\obse\Utilities.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="Command_Macros.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_Basic.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_BSFurnitureMarker.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_Debug.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_Deprecated.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_NiAlphaProperty.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_NiAVObject.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_NiExtraData.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_NiMaterialProperty.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_NiNode.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_NiObject.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_NiObjectNET.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_NiSourceTexture.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_NiStencilProperty.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_NiTexturingProperty.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands_NiVertexColorProperty.h">
+      <Filter>Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="BSfile.h">
+      <Filter>Backbone</Filter>
+    </ClInclude>
+    <ClInclude Include="changeLog.h">
+      <Filter>Backbone</Filter>
+    </ClInclude>
+    <ClInclude Include="Hooks_NifSE.h">
+      <Filter>Backbone</Filter>
+    </ClInclude>
+    <ClInclude Include="NifFile.h">
+      <Filter>Backbone</Filter>
+    </ClInclude>
+    <ClInclude Include="Param_Infos.h">
+      <Filter>Backbone</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities.h">
+      <Filter>Backbone</Filter>
+    </ClInclude>
+    <ClInclude Include="NiExtraData.h">
+      <Filter>Backbone\Niflib_Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="NiflibTypes.h">
+      <Filter>Backbone\Niflib_Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="NiProperties.h">
+      <Filter>Backbone\Niflib_Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="Load.h">
+      <Filter>Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="New.h">
+      <Filter>Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="Save.h">
+      <Filter>Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h" />
+    <ClInclude Include="Versioning.h" />
+    <ClInclude Include="..\obse\obse\GameExtraData.h">
+      <Filter>obse</Filter>
+    </ClInclude>
+    <ClInclude Include="CSEAPI.h">
+      <Filter>Backbone</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\obse\obse\GameRTTI_1_1.inl">
+      <Filter>obse</Filter>
+    </None>
+    <None Include="..\obse\obse\GameRTTI_1_2.inl">
+      <Filter>obse</Filter>
+    </None>
+    <None Include="..\obse\obse\GameRTTI_1_2_416.inl">
+      <Filter>obse</Filter>
+    </None>
+    <None Include="exports.def" />
+  </ItemGroup>
+</Project>

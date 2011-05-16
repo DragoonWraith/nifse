@@ -16,6 +16,7 @@
 #include "Commands_NiTexturingProperty.h"
 #include "Commands_NiVertexColorProperty.h"
 #include "Commands_NiSourceTexture.h"
+#include "Commands_BSFurnitureMarker.h"
 #include "Commands_Deprecated.h"
 
 #ifdef _DEBUG
@@ -25,3 +26,14 @@
 #include "New.h"
 #include "Save.h"
 #include "Load.h"
+
+extern std::vector<string>* FunctionDocMap;
+
+#define REG(cmd) \
+	FunctionDocMap->push_back(string(#cmd)); \
+	obse->RegisterCommand( &kCommandInfo_ ## cmd ## )
+
+#define REGT(cmd, retn) \
+	FunctionDocMap->push_back(string(#cmd)); \
+	obse->RegisterTypedCommand( &kCommandInfo_ ## cmd ## , kRetnType_ ## retn ## )
+

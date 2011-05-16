@@ -896,7 +896,7 @@ STDNIFLIBGET(NiAVObject, GetCollisionMode, NiAVObjGetCollMode, UInt, collision m
 
 STDNIFLIBSETUINTCAST(NiAVObject, SetCollisionMode, NiAVObjSetCollMode, kNiAVObjAct_SetCollMode, true, collision mode, Niflib::NiAVObject::CollisionType);
 
-STDNIFLIBGETBLOCK(NiAVObject, GetCollisionObject(), NiAVObjectGetCollisionObject, NiAVObjGetCollObj, UInt, collision object);
+STDNIFLIBGETBLOCK(NiAVObject, GetCollisionObject, NiAVObjectGetCollisionObject, NiAVObjGetCollObj, NiCollisionObject, collision object);
 
 static bool Cmd_NiAVObjectClearCollisionObject_Execute(COMMAND_ARGS) {
 	*result = 0;
@@ -939,7 +939,7 @@ static bool Cmd_NiAVObjectCopyCollisionObject_Execute(COMMAND_ARGS) {
 	UInt32 blockIDto = 0;
 	if (ExtractArgs(PASS_EXTRACT_ARGS, &nifIDfrom, &blockIDfrom, &nifIDto, &blockIDto)) {
 		UInt8 modID = scriptObj->GetModIndex();
-		dPrintAndLog("NiAVObjectCopyCollisionObject","Copying NiCollisionObject (Nif #"+UIntToString(modID)+"-"+UIntToString(nifIDfrom)+" block #"+UIntToString(blockIDfrom)+" as the collision object of NiAVObject (Nif #"+UIntToString(modID)+"-"+UIntToString(nifIDto)+" block #"+UIntToString(blockIDto)+".");
+		dPrintAndLog("NiAVObjectCopyCollisionObject","Copying NiCollisionObject (Nif #"+UIntToString(modID)+"-"+UIntToString(nifIDfrom)+" block #"+UIntToString(blockIDfrom)+") as the collision object of NiAVObject (Nif #"+UIntToString(modID)+"-"+UIntToString(nifIDto)+" block #"+UIntToString(blockIDto)+").");
 		NifFile* nifFromPtr = NULL;
 		NifFile* nifToPtr = NULL;
 		if ( NifFile::getRegNif(modID, nifIDfrom, nifFromPtr) && NifFile::getRegNif(modID, nifIDto, nifToPtr) ) {
@@ -991,26 +991,29 @@ UInt32 Util_NiAVObjectCopyCollision(NifFile* nifFromPtr, UInt32 blockIDfrom, Nif
 			if ( nifToPtr->editable ) {
 				if ( blockIDfrom < nifFromPtr->nifList.size() && blockIDto < nifToPtr->nifList.size() ) {
 					Niflib::NiNodeRef avObj = Niflib::DynamicCast<Niflib::NiNode>(nifToPtr->nifList[blockIDto]);
-					Niflib::NiObjectRef coll = nifFromPtr->nifList[blockIDfrom];
-					if ( avObj && coll && coll->GetType().IsDerivedType(Niflib::NiCollisionObject::TYPE) ) {
+					Niflib::NiCollisionObjectRef coll = Niflib::DynamicCast<Niflib::NiCollisionObject>(nifFromPtr->nifList[blockIDfrom]);
+					if ( avObj && coll ) {
+						coll->SetTarget(NULL);
 						std::stringstream* nifStream = new std::stringstream(std::ios::binary|std::ios::in|std::ios::out);
-						Niflib::WriteNifTree(*nifStream, coll, *(nifFromPtr->headerInfo));
+						Niflib::WriteNifTree(*nifStream, Niflib::StaticCast<Niflib::NiObject>(coll), *(nifFromPtr->headerInfo));
 						vector<Niflib::NiObjectRef> copiedBranch = Niflib::ReadNifList(*nifStream, nifFromPtr->headerInfo);
 						if ( !(copiedBranch.empty()) ) {
-							Niflib::NiCollisionObjectRef collCopy = Niflib::DynamicCast<Niflib::NiCollisionObject>(copiedBranch[0]);
-							if ( collCopy ) {
-								UInt32 copiedStartIndex = nifToPtr->nifList.size();
-								for ( vector<Niflib::NiObjectRef>::iterator i = copiedBranch.begin(); i != copiedBranch.end(); ++i ) {
-									(*i)->internal_block_number = nifToPtr->nifList.size();
-									nifToPtr->nifList.push_back(*i);
-								}
-								if ( avObj->GetCollisionObject() )
-									avObj->GetCollisionObject()->SetTarget((Niflib::NiAVObject*)NULL);
-								avObj->SetCollisionObject(collCopy);
-								return copiedStartIndex;
+							vector<Niflib::NiObjectRef>::size_type i = 0;
+							Niflib::NiCollisionObjectRef collCopy = Niflib::DynamicCast<Niflib::NiCollisionObject>(copiedBranch[i]);
+							while ( !collCopy ) {
+								if ( i >= copiedBranch.size() )
+									throw std::exception("Copied branch does not contain any NiCollision Object");
+								collCopy = Niflib::DynamicCast<Niflib::NiCollisionObject>(copiedBranch[i++]);
 							}
-							else
-								throw std::exception("Could not find copied collision object.");
+							UInt32 copiedStartIndex = nifToPtr->nifList.size();
+							for ( vector<Niflib::NiObjectRef>::iterator i = copiedBranch.begin(); i != copiedBranch.end(); ++i ) {
+								(*i)->internal_block_number = nifToPtr->nifList.size();
+								nifToPtr->nifList.push_back(*i);
+							}
+							if ( avObj->GetCollisionObject() )
+								avObj->GetCollisionObject()->SetTarget((Niflib::NiAVObject*)NULL);
+							avObj->SetCollisionObject(collCopy);
+							return copiedStartIndex;
 						}
 						else
 							throw std::exception("Copied branch is empty.");

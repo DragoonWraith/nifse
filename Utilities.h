@@ -85,6 +85,8 @@ SInt32 StringToSInt(string str);
 string FloatToString(float flt);
 float StringToFloat(string str);
 
+vector<string> split(const string& str, char div);
+
 string VectorToString(vector<float> vec);
 string VectorToString(vector<Niflib::byte> vec);
 string VectorToString(vector<unsigned int> vec);

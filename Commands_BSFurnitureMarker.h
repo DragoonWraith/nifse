@@ -7,5 +7,5 @@ enum {
 	kNiBSFurnMrkAct_SetPositionRefs
 };
 
-extern CommandInfo kCommandInfo_NiBSFurnitureMarkerGetPositionRefs;
-extern CommandInfo kCommandInfo_NiBSFurnitureMarkerSetPositionRefs;
+extern CommandInfo kCommandInfo_BSFurnitureMarkerGetPositionRefs;
+extern CommandInfo kCommandInfo_BSFurnitureMarkerSetPositionRefs;

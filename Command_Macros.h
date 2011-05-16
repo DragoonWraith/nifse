@@ -39,7 +39,7 @@
 		kParams_OneInt_OneOptionalInt \
 	)
 
-#define STDNIFLIBGETBLOCK(blockType, funcName, cmdName, alias, retnType, desc) \
+#define STDNIFLIBGETBLOCK(blockType, funcName, cmdName, alias, getType, desc) \
 	static bool Cmd_ ## cmdName ## _Execute(COMMAND_ARGS) { \
 		*result = 0; \
 		\
@@ -50,11 +50,20 @@
 			dPrintAndLog( #cmdName, "Getting the " #desc " of " #blockType " (nif " NIFIDSTR+")."); \
 			try { \
 				GETBLOCK(blockType, block); \
-				*result = block-> ## funcName ## ->internal_block_number; \
-				dPrintAndLog( #cmdName, "Returning "+ ## retnType ## ToString(*result)+".\n"); \
+				Niflib:: ## getType ## Ref gotten = block-> ## funcName ## (); \
+				if ( gotten ) { \
+					*result = gotten->internal_block_number; \
+					dPrintAndLog( #cmdName, "Returning "+ UIntToString(*result)+".\n"); \
+				} else { \
+					*result = -1; \
+					dPrintAndLog( #cmdName, #blockType " #" NIFIDSTR + " does not have a " +  #getType + " block associated with it.\n"); \
+				}\
 			} catch (std::exception e) { \
 				*result = 0; \
 				dPrintAndLog( #cmdName, "Exception \""+string(e.what())+"\" thrown.\n"); \
+			} catch (...) { \
+				*result = 0; \
+				dPrintAndLog( #cmdName, "Unknown exception thrown.\n"); \
 			} \
 		} else \
 			dPrintAndLog( #cmdName, "Error extracting arguments.\n"); \
@@ -80,13 +89,13 @@
 		UInt32 blockID = 0; \
 		if (ExtractArgs(PASS_EXTRACT_ARGS, &in, &nifID, &blockID)) { \
 			UInt8 modID = scriptObj->GetModIndex(); \
-			dPrintAndLog( #cmdName, "Getting the " #desc " of " #blockType " (nif " NIFIDSTR+")."); \
+			dPrintAndLog( #cmdName, "Setting the " #desc " of " #blockType " (nif " NIFIDSTR+")."); \
 			try { \
 				GETBLOCK(blockType, block); \
 				block-> ## funcName ## (( ## inCast ## ) ## in); \
 				*result = 1; \
 				nifPtr->logChange(blockID, kNiflibType_ ## blockType, act, valStr ## (in), ovr); \
-				dPrintAndLog( #cmdName, "Set " #desc ".\n"); \
+				dPrintAndLog( #cmdName, "Set " #desc " to " + valStr ## (in) + ".\n"); \
 			} catch (std::exception e) { \
 				*result = 0; \
 				dPrintAndLog( #cmdName, "Exception \""+string(e.what())+"\" thrown.\n"); \

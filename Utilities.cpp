@@ -158,6 +158,18 @@ string VectorToString(Niflib::Color4 color) {
 	return "["+FloatToString(color.r)+"|"+FloatToString(color.g)+"|"+FloatToString(color.b)+"|"+FloatToString(color.a)+"|";
 }
 
+vector<string> split(const string& str, char div) {
+	vector<string> vec = vector<string>();
+	string::size_type posS = 0;
+	string::size_type posF;
+	while ( posS < str.size() ) {
+		posF = str.find(div, posS);
+		vec.push_back(str.substr(posS,posF-posS));
+		posS = posF + 1;
+	}
+	return vec;
+}
+
 vector<float> StringToVector(string str) {
 	vector<float> vec = vector<float>();
 	string::size_type posS = 1;
@@ -195,15 +207,7 @@ vector<unsigned int> StringToVectorU(string str) {
 }
 
 vector<string> StringToVectorS(string str) {
-	vector<string> vec = vector<string>();
-	string::size_type posS = 1;
-	string::size_type posF = str.find("|");
-	while ( posS < str.size() ) {
-		posF = str.find("|", posS);
-		vec.push_back(str.substr(posS,posF-posS));
-		posS = posF + 1;
-	}
-	return vec;
+	return split(str.substr(1), '|');
 }
 
 Niflib::Vector3 StringToVector3(string str) {

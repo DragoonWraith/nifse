@@ -82,6 +82,7 @@ public:
 	void loadChNiTexturingProperty(UInt32 block, UInt32 act, string& val);
 	void loadChNiVertColorProperty(UInt32 block, UInt32 act, string& val);
 	void loadChNiSourceTexture(UInt32 block, UInt32 act, string& val);
+	void loadChBSFurnMkr(UInt32 block, UInt32 act, string& val);
 };
 
 template <class T>
