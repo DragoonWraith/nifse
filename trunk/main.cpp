@@ -294,8 +294,8 @@ extern "C" {
 		REG(	NiAVObjectCopyCollisionObject						); //0x26EB T S L D
 
 		// BSFurnitureMarker //
-		REGT(	BSFurnitureMarkerGetPositionRefs,			Array	); //0x26EC   S L 
-		REG(	BSFurnitureMarkerSetPositionRefs					); //0x26ED   S L 
+		REGT(	BSFurnitureMarkerGetPositionRefs,			Array	); //0x26EC T S L D
+		REG(	BSFurnitureMarkerSetPositionRefs					); //0x26ED T S L D
 
 		// set up serialization callbacks when running in the runtime
 		if(!obse->isEditor)
