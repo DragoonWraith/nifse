@@ -4,7 +4,7 @@ static const UInt8 minor = 8;
 static const UInt8 major = 16;
 
 #define VERSION(majorV, minorV, betaV, alphaV) ((0x ## majorV)<<major | (0x ## minorV)<<minor | (0x ## betaV)<<beta | (0x ## alphaV)<<alpha)
-#define CURRENT_VERSION VERSION(1, 0, F, F)
+#define CURRENT_VERSION VERSION(1, 1, F, F)
 
 UInt8  getAlphaV(const UInt32 ver = CURRENT_VERSION);
 void setAlphaV(UInt8 a, UInt32 ver = CURRENT_VERSION);

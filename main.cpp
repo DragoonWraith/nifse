@@ -303,6 +303,9 @@ extern "C" {
 			BSAlist = GetBSAfiles();
 			_MESSAGE("List of BSA files: (excluding BSA files known to contain non-NIF data)");
 			for ( BSAit = BSAlist.begin(); BSAit != BSAlist.end(); ++BSAit ) {
+				for ( UInt8 i = 0; i < BSAit->length(); ++i )
+					if ( (*BSAit)[i] == '%' )
+						BSAit->insert(++i, 1, '%');
 				_MESSAGE(("\t"+(*BSAit)).c_str());
 			}
 			_MESSAGE(("\t\t"+UIntToString(BSAlist.size())+" total.").c_str());

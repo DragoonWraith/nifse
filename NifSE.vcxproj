@@ -104,7 +104,7 @@
     <PostBuildEvent>
       <Message>Installing DLL...</Message>
       <Command>copy "$(TargetPath)" "$(OblivionPath)\Data\obse\plugins\$(TargetFileName)"
-copy "$(TargetPath)" "$(OblivionPath)\Plug-Ins\NifSE\obse\plugins\$(TargetFileName)"
+copy "$(TargetPath)" "$(OblivionPath)\Plug-Ins\NifSE Debug\obse\plugins\$(TargetFileName)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -136,7 +136,7 @@ copy "$(TargetPath)" "$(OblivionPath)\Plug-Ins\NifSE\obse\plugins\$(TargetFileNa
     <PostBuildEvent>
       <Message>Installing DLL...</Message>
       <Command>copy "$(TargetPath)" "$(OblivionPath)\Data\obse\plugins\$(TargetFileName)"
-copy "$(TargetPath)" "$(OblivionPath)\Plug-Ins\NifSE\obse\plugins\$(TargetFileName)"
+copy "$(TargetPath)" "$(OblivionPath)\Plug-Ins\NifSE Release\obse\plugins\$(TargetFileName)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
