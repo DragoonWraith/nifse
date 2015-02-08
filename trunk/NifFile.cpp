@@ -9,7 +9,14 @@ NifFile::NifFile() : filePath(""), basePath(""), root(NULL), modID(255), nifID(-
 	dPrintAndLog("NifFile c'tor","Default constructor");
 }
 
-NifFile::NifFile(const string& file, UInt8 modIndex, bool forEdit) : filePath(file), basePath(""), nifSEversion(g_pluginVersion), editable(forEdit), modID(modIndex), nifID(0) {
+NifFile::NifFile(const string& file, UInt8 modIndex, bool forEdit)
+		: filePath(file)
+		, basePath("")
+		, nifSEversion(g_pluginVersion)
+		, editable(forEdit)
+		, modID(modIndex)
+		, nifID(0)
+{
 	dPrintAndLog("NifFile c'tor","NifFile created"+string(editable?" for editing.":" without editing."));
 	headerInfo = new Niflib::NifInfo();
 	loadNif();
@@ -131,7 +138,9 @@ void NifFile::loadNif() {
 	try {
 		readNif();
 		try {
+			dPrintAndLog("NifFile.loadNif", "Finding NIF root.");
 			findRoot();
+			dPrintAndLog("NifFile.loadNif", "Storing NIF header info.");
 			nifVersion = headerInfo->version;
 			dPrintAndLog("NifFile.loadNif","Nif is good; "+getVersion()+". Loaded "+UIntToString(nifSize)+" blocks.");
 		}
@@ -160,12 +169,15 @@ void NifFile::readNif() {
 			UInt32 readCount = nifBSfile->Read((void*)buffer, size);
 			dPrintAndLog("NifFile.readNif", "Read "+UIntToString(readCount)+" of "+UIntToString(size)+" bytes.");
 			stream->write(buffer, size);
+			dPrintAndLog("NifFile.readNif", "Wrote stream.");
 		}
 		catch (std::exception except) {
 			e = new std::exception(except);
 		}
+		dPrintAndLog("NifFile.readNif", "Cleaning up BSA file.");
 		if ( nifBSfile )
 			nifBSfile->Destructor(true);
+		dPrintAndLog("NifFile.readNif", "Cleaning up buffer.");
 		if ( buffer )
 			delete [] buffer;
 	}
@@ -192,7 +204,9 @@ void NifFile::readNif() {
 		throw except;
 	}
 	try {
+		dPrintAndLog("NifFile.readNif", "Reading NIF list.");
 		nifList = Niflib::ReadNifList(*stream, headerInfo);
+		dPrintAndLog("NifFile.readNif", "Getting NIF size.");
 		nifSize = nifList.size();
 	}
 	catch (std::exception except) {
@@ -204,14 +218,14 @@ void NifFile::readNif() {
 bool NifFile::getRegNif(UInt8 modID, UInt32 nifID, NifFile* &nifPtr) {
 	if ( RegList.find(modID) != RegList.end() ) {
 		if ( RegList[modID].find(nifID) != RegList[modID].end() ) {
-	//		if ( RegList[modID][nifID]->root ) {
-	//			dPrintAndLog("NifFile::getRegNif","Nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+"'s root is good.");
+//			if ( RegList[modID][nifID]->root ) {
+//				dPrintAndLog("NifFile::getRegNif","Nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+"'s root is good.");
 			if ( RegList[modID][nifID] ) {
 				nifPtr = RegList[modID][nifID];
 				return true;
 			}
 			else {
-	//			dPrintAndLog("NifFile::getRegNif","Nif root is no good.");
+//				dPrintAndLog("NifFile::getRegNif","Nif root is no good.");
 				dPrintAndLog("NifFile::getRegNif","Nif #"+UIntToString(modID)+"-"+UIntToString(nifID)+" has been deleted.");
 				return false;
 			}

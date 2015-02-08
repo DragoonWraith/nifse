@@ -1,5 +1,7 @@
 #include "Versioning.h"
 
+const UInt32 CURRENT_VERSION = VERSION(1, 2, 1, F);
+
 UInt8  getAlphaV(const UInt32 ver) { return (ver & 0x0000000F) >> alpha; }
 void setAlphaV(UInt8 a, UInt32 ver) { ver = (ver & 0xFFFFFFF0) | ((a & 0xF) << alpha); }
 bool isAlpha(const UInt32 ver) { return (getAlphaV(ver) != 0xF); }

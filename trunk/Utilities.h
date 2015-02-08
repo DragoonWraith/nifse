@@ -2,21 +2,21 @@
 
 #include "niflib.h"
 
-#include "obse/PluginAPI.h"
-#include "obse/CommandTable.h"
+#include "obse/obse/PluginAPI.h"
+#include "obse/obse/CommandTable.h"
 
 #if OBLIVION
-#include "obse/GameAPI.h"
+#include "obse/obse/GameAPI.h"
 #else
 #include "obse_editor/EditorAPI.h"
 #endif
 
-#include "obse/GameData.h"
-#include "obse/GameForms.h"
-#include "obse/GameObjects.h"
-#include "obse/ParamInfos.h"
-#include "obse/Utilities.h"
-#include "obse/Script.h"
+#include "obse/obse/GameData.h"
+#include "obse/obse/GameForms.h"
+#include "obse/obse/GameObjects.h"
+#include "obse/obse/ParamInfos.h"
+#include "obse/obse/Utilities.h"
+#include "obse/obse/Script.h"
 
 #include <list>
 using std::list;

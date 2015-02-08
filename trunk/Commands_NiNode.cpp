@@ -3,7 +3,11 @@
 #include "obj/NiObject.h"
 #include "obj/NiObjectNET.h"
 #include "obj/NiAVObject.h"
+#include "obj/NiGeometry.h"
+#include "obj/NiSkinInstance.h"
 #include "obj/NiNode.h"
+
+#include "Commands_NiObject.h"
 
 // returns the number of Children in the NifFile associated
 // with given nifID.
@@ -351,50 +355,47 @@ UInt32 Util_NiNodeAddChild(NifFile* nifPtr, Niflib::NiNodeRef node, UInt32 typeI
 }
 
 UInt32 Util_NiNodeCopyChild(NifFile* nifFromPtr, UInt32 blockIDfrom, NifFile* nifToPtr, UInt32 blockIDto) {
-	try {
-		if ( nifFromPtr->root && nifToPtr->root ) {
-			if ( nifToPtr->editable ) {
-				if ( blockIDfrom < nifFromPtr->nifList.size() && blockIDto < nifToPtr->nifList.size() ) {
-					Niflib::NiNodeRef node = Niflib::DynamicCast<Niflib::NiNode>(nifToPtr->nifList[blockIDto]);
-					Niflib::NiObjectRef child = nifFromPtr->nifList[blockIDfrom];
-					if ( node && child && child->GetType().IsDerivedType(Niflib::NiAVObject::TYPE) ) {
-						std::stringstream* nifStream = new std::stringstream(std::ios::binary|std::ios::in|std::ios::out);
-						Niflib::WriteNifTree(*nifStream, child, *(nifFromPtr->headerInfo));
-						vector<Niflib::NiObjectRef> copiedBranch = Niflib::ReadNifList(*nifStream, nifFromPtr->headerInfo);
-						if ( !(copiedBranch.empty()) ) {
-							Niflib::NiAVObjectRef childCopy = Niflib::DynamicCast<Niflib::NiAVObject>(copiedBranch[0]);
-							if ( childCopy ) {
-								UInt32 copiedStartIndex = nifToPtr->nifList.size();
-								while ( childCopy->GetParent() ) {
-									childCopy = childCopy->GetParent();
-								}
-								for ( vector<Niflib::NiObjectRef>::iterator i = copiedBranch.begin(); i != copiedBranch.end(); ++i ) {
-									(*i)->internal_block_number = nifToPtr->nifList.size();
-									nifToPtr->nifList.push_back(*i);
-								}
-								node->AddChild(childCopy);
-								return copiedStartIndex;
-							}
-							else
-								throw std::exception("Could not find copied child.");
-						}
-						else
-							throw std::exception("Copied branch is empty.");
-					}
-					else
-						throw std::exception("Not a NiNode.");
-				}
-				else
-					throw std::exception("Nif block index out of bounds.");
-			}
-			else
-				throw std::exception("Nif to copy to not editable.");
-		}
-		else
-			throw std::exception("Nif not found.");
+	if (!nifFromPtr->root || !nifToPtr->root) throw std::exception("Nif not found.");
+	if (!nifToPtr->editable) throw std::exception("Nif to copy to not editable.");
+	if (blockIDfrom >= nifFromPtr->nifList.size() || blockIDto >= nifToPtr->nifList.size()) throw std::exception("Nif block index out of bounds.");
+
+	Niflib::NiNodeRef node = Niflib::DynamicCast<Niflib::NiNode>(nifToPtr->nifList[blockIDto]);
+	Niflib::NiObjectRef child = nifFromPtr->nifList[blockIDfrom];
+		
+	if (!child || !child->GetType().IsDerivedType(Niflib::NiAVObject::TYPE)) throw std::exception("Child block to copy not a NiAVObject.");
+	if (!node) throw std::exception("Destination block not a NiNode.");
+
+	vector<Niflib::NiObjectRef> copiedBranch = Util_CopyBranch(child, nifFromPtr->headerInfo, Niflib::StaticCast<Niflib::NiObject>(node));
+
+	Niflib::NiAVObjectRef childCopy = Niflib::DynamicCast<Niflib::NiAVObject>(copiedBranch[0]);
+
+	if (!childCopy) throw std::exception("Could not find copied child.");
+
+	UInt32 copiedStartIndex = nifToPtr->nifList.size();
+	while ( childCopy->GetParent() ) {
+		childCopy = childCopy->GetParent();
 	}
-	catch (std::exception e) {
-		throw std::exception(("Exception \""+string(e.what())+"\" thrown\n").c_str());
+	for ( vector<Niflib::NiObjectRef>::iterator i = copiedBranch.begin(); i != copiedBranch.end(); ++i ) {
+		(*i)->internal_block_number = nifToPtr->nifList.size();
+		nifToPtr->nifList.push_back(*i);
+	}
+	node->AddChild(childCopy);
+
+	return copiedStartIndex;
+}
+
+void Util_NiNodeCopyChild_FixSkeleton(NifFile* nifFromPtr, NifFile* nifToPtr, Niflib::NiAVObjectRef avObj) {
+	if (Niflib::NiNodeRef node = Niflib::DynamicCast<Niflib::NiNode>(avObj)) {
+		for (vector<Niflib::NiAVObjectRef>::iterator it = node->GetChildren().begin(); it != node->GetChildren().end(); ++it) {
+			Util_NiNodeCopyChild_FixSkeleton(nifFromPtr, nifToPtr, *it);
+		}
+	}
+	else if (Niflib::NiGeometryRef geom = Niflib::DynamicCast<Niflib::NiGeometry>(avObj)) {
+		Niflib::NiSkinInstanceRef skin = geom->GetSkinInstance();
+		skin->SetSkeletonRoot(nifToPtr->root);
+		for (vector<Niflib::NiNodeRef>::iterator it = skin->GetBones().begin(); it != skin->GetBones().end(); ++it) {
+
+		}
 	}
 }
 
