@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug - Dynamic|Win32">
       <Configuration>Debug - Dynamic</Configuration>
@@ -28,21 +28,25 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Dynamic|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Static|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Static|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -75,21 +79,24 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release - Dynamic|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release - Dynamic|Win32'" />
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Static|Win32'">
+    <IncludePath>..\obse\obse;$(IncludePath)</IncludePath>
+    <LibraryPath>..\obse\obse;$(LibraryPath)</LibraryPath>
+    <SourcePath>..\obse\obse;$(SourcePath)</SourcePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Static|Win32'">
     <ClCompile>
       <AdditionalOptions>-D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(Niflib_dir)\include;$(zlib_dir);$(BOOST_ROOT);$(SolutionDir);$(SolutionDir)\..;$(SolutionDir)\..\obse\obse;$(SolutionDir)\..\obse\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Niflib_dir)\include;$(zlib_dir);$(BOOST_ROOT);$(SolutionDir);$(SolutionDir)\..;$(SolutionDir)\..\obse;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;OBLIVION_VERSION=0x010201A0;OBLIVION;NIFLIB_STATIC_LINK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996; 4800;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <ForcedIncludeFiles>obse_common/obse_prefix.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles>common\IPrefix.h;obse_common\obse_version.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;niflib_static_debug.lib;Psapi.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -104,8 +111,7 @@
     <PostBuildEvent>
       <Message>Installing DLL...</Message>
       <Command>copy "$(TargetPath)" "$(OblivionPath)\Data\obse\plugins\$(TargetFileName)"
-copy "$(TargetPath)" "$(OblivionPath)\Plug-Ins\NifSE Debug\obse\plugins\$(TargetFileName)"
-</Command>
+copy "$(TargetPath)" "$(OblivionPath)\Plug-Ins\NifSE Debug\obse\plugins\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Static|Win32'">
@@ -216,6 +222,7 @@ copy "$(TargetPath)" "$(OblivionPath)\Plug-Ins\NifSE\obse\plugins\$(TargetFileNa
     <ClCompile Include="..\obse\obse\GameExtraData.cpp" />
     <ClCompile Include="..\obse\obse\GameForms.cpp" />
     <ClCompile Include="..\obse\obse\GameObjects.cpp" />
+    <ClCompile Include="..\obse\obse\GameOSDepend.cpp" />
     <ClCompile Include="..\obse\obse\GameTasks.cpp" />
     <ClCompile Include="..\obse\obse\GameTypes.cpp" />
     <ClCompile Include="..\obse\obse\NiAPI.cpp" />
@@ -277,6 +284,7 @@ copy "$(TargetPath)" "$(OblivionPath)\Plug-Ins\NifSE\obse\plugins\$(TargetFileNa
     <ClInclude Include="..\obse\obse\GameExtraData.h" />
     <ClInclude Include="..\obse\obse\GameForms.h" />
     <ClInclude Include="..\obse\obse\GameObjects.h" />
+    <ClInclude Include="..\obse\obse\GameOSDepend.h" />
     <ClInclude Include="..\obse\obse\GameTasks.h" />
     <ClInclude Include="..\obse\obse\GameTypes.h" />
     <ClInclude Include="..\obse\obse\NiAPI.h" />

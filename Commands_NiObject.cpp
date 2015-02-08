@@ -153,3 +153,25 @@ DEFINE_CMD_PLUGIN_ALT(
 	0,
 	kParams_TwoInts_OneOptionalInt
 );
+
+vector<Niflib::NiObjectRef> Util_CopyBranch(Niflib::NiObjectRef branchRoot, Niflib::NifInfo* headerInfoPtr) {
+	return Util_CopyBranch(branchRoot, headerInfoPtr, branchRoot);
+}
+
+vector<Niflib::NiObjectRef> Util_CopyBranch(Niflib::NiObjectRef branchRoot, Niflib::NifInfo* headerInfoPtr, Niflib::NiObjectRef destRoot) {
+	std::stringstream nifStream = std::stringstream(std::ios::binary | std::ios::in | std::ios::out);
+
+	list<Niflib::NiObject*> missing_link_ptrs = list<Niflib::NiObject*>();
+
+	Niflib::WriteNifTree(nifStream, branchRoot, missing_link_ptrs, *headerInfoPtr);
+	dPrintAndLog("Util_CopyBranch", "WriteNifTree complete.");
+
+	list<Niflib::NiObjectRef> missing_link_refs = Niflib::CopyAndResolveMissingLinkStack(destRoot, missing_link_ptrs);
+
+	vector<Niflib::NiObjectRef> copiedBranch = Niflib::ReadNifList(nifStream, missing_link_refs, headerInfoPtr);
+	dPrintAndLog("Util_CopyBranch", "ReadNifTree complete.");
+
+	if (copiedBranch.empty()) throw std::exception("Copied branch is empty.");
+
+	return copiedBranch;
+}
